@@ -1,7 +1,8 @@
 import { Route, Routes} from 'react-router-dom'
-import LogIn from '../../auth/LogIn'
-import SignUp from '../../auth/SignUp'
-import {  useAuth } from '../../context/AuthContext'
+import LogIn from '../auth/LogIn'
+import SignUp from '../auth/SignUp'
+import {  useAuth } from '../context/AuthContext'
+import UserProfile from '../pages/userprofile/UserProfile';
 
 export default function AppRoutes() {
   const {loggedIn} = useAuth();
@@ -15,7 +16,7 @@ export default function AppRoutes() {
           <Route path="/signup" element={<SignUp />} />
 
           {loggedIn === true ? <>
-            <Route path="/dashboard" element={<SignUp />} />
+            <Route path="/userprofile" element={<UserProfile />} />
           </> :
           <Route path="/login" element={<LogIn />} />}
         </Routes>
