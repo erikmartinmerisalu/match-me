@@ -65,7 +65,6 @@ const UserProfile: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Profile saved! (Demo only)");
     console.log("User Profile:", formData);
   };
 
