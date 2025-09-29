@@ -19,22 +19,22 @@ function LogIn() {
     }
 
     try {
-      const response = await fetch("http://localhost:3000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      // const response = await fetch("http://localhost:3000/api/login", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ username, password }),
+      // });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.message || "Login failed");
+      // }
 
-      const data = await response.json();
-      localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      // const data = await response.json();
+      // localStorage.setItem("token", data.token);
+      navigate("/userprofile");
       setLoggedIn(true);
     } catch (err: any) {
       setError(err.message || "Something went wrong!");
