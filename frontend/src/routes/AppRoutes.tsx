@@ -3,6 +3,7 @@ import LogIn from '../auth/LogIn'
 import SignUp from '../auth/SignUp'
 import {  useAuth } from '../context/AuthContext'
 import UserProfile from '../pages/userprofile/UserProfile';
+import NotFound from '../pages/notfound/NotFound';
 
 export default function AppRoutes() {
   const {loggedIn} = useAuth();
@@ -10,15 +11,17 @@ export default function AppRoutes() {
   return (
     <div>
         <Routes>
-          {/* <Route path="/" element={< />} /> */}
-          {/* <Route path="/about" element={<About />} /> */}
           <Route path="/login" element={<LogIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/*" element={<NotFound />} />
+
+
 
           {loggedIn === true ? <>
             <Route path="/userprofile" element={<UserProfile />} />
           </> :
-          <Route path="/login" element={<LogIn />} />}
+          <Route path="/login" element={<LogIn />} />
+          }
         </Routes>
     </div>
   )
