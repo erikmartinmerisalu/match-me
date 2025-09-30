@@ -21,7 +21,7 @@ public class UserService {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
-    public User registerUser(String email, String password) {
+    public User registerUser(String email, String password, String displayName, java.time.LocalDate birthDate) {
         if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already exists");
         }
@@ -31,8 +31,8 @@ public class UserService {
         
         User savedUser = userRepository.save(user);
         
-        // Create empty profile
-        UserProfile profile = new UserProfile(savedUser, "");
+        // Create profile with the required fields to pass validation
+        UserProfile profile = new UserProfile(savedUser, displayName, birthDate);
         userProfileRepository.save(profile);
         savedUser.setProfile(profile);
         

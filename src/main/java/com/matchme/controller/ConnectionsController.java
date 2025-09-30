@@ -1,209 +1,66 @@
 package com.matchme.controller;
 
-import com.matchme.dto.UserProfileDto;
 import com.matchme.entity.User;
-import com.matchme.entity.UserProfile;
-import com.matchme.service.UserProfileService;
-import com.matchme.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.matchme.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
-@RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
-public class UserController {
+@RequestMapping("/connections")
+public class ConnectionsController {
 
-    @Autowired
-    private UserService userService;
+    private final UserRepository userRepo;
 
-    @Autowired
-    private UserProfileService userProfileService;
+    // In-memory maps just for demo. Replace with proper entity (Connection) + JPA repo.
+    private final Map<Long, Set<Long>> pendingRequests = new HashMap<>();
+    private final Map<Long, Set<Long>> acceptedConnections = new HashMap<>();
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
-        Optional<User> userOpt = userService.findById(id);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
-        // Check if current user can view this profile
-        if (!canViewProfile(userEmail, user)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(user.getId());
-        dto.setDisplayName(user.getProfile().getDisplayName());
-        // Only include public information
-
-        return ResponseEntity.ok(dto);
+    public ConnectionsController(UserRepository userRepo) {
+        this.userRepo = userRepo;
     }
 
-    @GetMapping("/{id}/profile")
-    public ResponseEntity<?> getUserProfile(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
-        Optional<UserProfile> profileOpt = userProfileService.findByUserId(id);
-        if (profileOpt.isEmpty()) {
+    // Request connection
+    @PostMapping("/{id}")
+    public ResponseEntity<?> requestConnection(@PathVariable Long id, @RequestHeader("X-User-Id") Long meId) {
+        if (!userRepo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-
-        UserProfile profile = profileOpt.get();
-        // Check if current user can view this profile
-        if (!canViewProfile(userEmail, profile.getUser())) {
-            return ResponseEntity.notFound().build();
+        if (Objects.equals(meId, id)) {
+            return ResponseEntity.badRequest().body("Cannot connect to yourself");
         }
-
-        UserProfileDto dto = mapToProfileDto(profile);
-        return ResponseEntity.ok(dto);
+        pendingRequests.computeIfAbsent(id, k -> new HashSet<>()).add(meId);
+        return ResponseEntity.ok("Connection request sent to user " + id);
     }
 
-    @GetMapping("/{id}/bio")
-    public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
-        Optional<UserProfile> profileOpt = userProfileService.findByUserId(id);
-        if (profileOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+    // Accept connection
+    @PostMapping("/{id}/accept")
+    public ResponseEntity<?> acceptConnection(@PathVariable Long id, @RequestHeader("X-User-Id") Long meId) {
+        var requests = pendingRequests.getOrDefault(meId, Set.of());
+        if (!requests.contains(id)) {
+            return ResponseEntity.badRequest().body("No pending request from user " + id);
         }
-
-        UserProfile profile = profileOpt.get();
-        // Check if current user can view this profile
-        if (!canViewProfile(userEmail, profile.getUser())) {
-            return ResponseEntity.notFound().build();
-        }
-
-        // Return only the biographical data used for recommendations
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(profile.getUser().getId());
-        dto.setPreferredServers(profile.getPreferredServers());
-        dto.setGames(profile.getGames());
-        dto.setGamingHours(profile.getGamingHours());
-        dto.setRank(profile.getRank());
-        dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
-        dto.setTimezone(profile.getTimezone());
-        dto.setRegion(profile.getRegion());
-
-        return ResponseEntity.ok(dto);
+        // remove from pending
+        pendingRequests.get(meId).remove(id);
+        // add to accepted for both sides
+        acceptedConnections.computeIfAbsent(meId, k -> new HashSet<>()).add(id);
+        acceptedConnections.computeIfAbsent(id, k -> new HashSet<>()).add(meId);
+        return ResponseEntity.ok("Connection accepted with user " + id);
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal String userEmail) {
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(user.getId());
-        dto.setDisplayName(user.getProfile().getDisplayName());
-
-        return ResponseEntity.ok(dto);
+    // List connections
+    @GetMapping
+    public ResponseEntity<?> listConnections(@RequestHeader("X-User-Id") Long meId) {
+        var connections = acceptedConnections.getOrDefault(meId, Set.of());
+        return ResponseEntity.ok(connections);
     }
 
-    @GetMapping("/me/profile")
-    public ResponseEntity<?> getCurrentUserProfile(@AuthenticationPrincipal String userEmail) {
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
-        UserProfileDto dto = mapToProfileDto(user.getProfile());
-        return ResponseEntity.ok(dto);
-    }
-
-    @GetMapping("/me/bio")
-    public ResponseEntity<?> getCurrentUserBio(@AuthenticationPrincipal String userEmail) {
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
-        UserProfile profile = user.getProfile();
-
-        // Return only the biographical data used for recommendations
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(profile.getUser().getId());
-        dto.setPreferredServers(profile.getPreferredServers());
-        dto.setGames(profile.getGames());
-        dto.setGamingHours(profile.getGamingHours());
-        dto.setRank(profile.getRank());
-        dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
-        dto.setTimezone(profile.getTimezone());
-        dto.setRegion(profile.getRegion());
-
-        return ResponseEntity.ok(dto);
-    }
-
-    @PutMapping("/me/profile")
-    public ResponseEntity<?> updateCurrentUserProfile(
-            @AuthenticationPrincipal String userEmail,
-            @Valid @RequestBody UserProfileDto profileDto) {
-        
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
-        UserProfile profile = user.getProfile();
-        
-        // Update profile fields with gamer-specific data
-        profile.setDisplayName(profileDto.getDisplayName());
-        profile.setAboutMe(profileDto.getAboutMe());
-        profile.setPreferredServers(profileDto.getPreferredServers());
-        profile.setGames(profileDto.getGames());
-        profile.setGamingHours(profileDto.getGamingHours());
-        profile.setRank(profileDto.getRank());
-        profile.setBirthDate(profileDto.getBirthDate());
-        profile.setTimezone(profileDto.getTimezone());
-        profile.setRegion(profileDto.getRegion());
-        profile.setLookingFor(profileDto.getLookingFor());
-        profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
-        profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
-
-        UserProfile savedProfile = userProfileService.saveProfile(profile);
-        UserProfileDto responseDto = mapToProfileDto(savedProfile);
-
-        return ResponseEntity.ok(responseDto);
-    }
-
-    private boolean canViewProfile(String currentUserEmail, User targetUser) {
-        // Users can always view their own profile
-        if (targetUser.getEmail().equals(currentUserEmail)) {
-            return true;
-        }
-
-        // TODO: Implement connection-based visibility logic
-        // For now, only allow viewing own profile
-        return false;
-    }
-
-    private UserProfileDto mapToProfileDto(UserProfile profile) {
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(profile.getUser().getId());
-        dto.setDisplayName(profile.getDisplayName());
-        dto.setAboutMe(profile.getAboutMe());
-        dto.setPreferredServers(profile.getPreferredServers());
-        dto.setGames(profile.getGames());
-        dto.setGamingHours(profile.getGamingHours());
-        dto.setRank(profile.getRank());
-        dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
-        dto.setTimezone(profile.getTimezone());
-        dto.setRegion(profile.getRegion());
-        dto.setLookingFor(profile.getLookingFor());
-        dto.setPreferredAgeMin(profile.getPreferredAgeMin());
-        dto.setPreferredAgeMax(profile.getPreferredAgeMax());
-        dto.setProfileCompleted(profile.isProfileCompleted());
-        
-        return dto;
+    // Disconnect
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> disconnect(@PathVariable Long id, @RequestHeader("X-User-Id") Long meId) {
+        acceptedConnections.getOrDefault(meId, new HashSet<>()).remove(id);
+        acceptedConnections.getOrDefault(id, new HashSet<>()).remove(meId);
+        return ResponseEntity.ok("Disconnected from user " + id);
     }
 }

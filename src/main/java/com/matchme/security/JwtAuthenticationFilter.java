@@ -1,7 +1,7 @@
 package com.matchme.security;
 
-import com.matchme.util.JwtUtil;
 import com.matchme.service.UserService;
+import com.matchme.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -28,7 +27,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        
+
+        // Skip JWT authentication for auth endpoints (login/register)
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/auth/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         final String authorizationHeader = request.getHeader("Authorization");
 
         String email = null;
@@ -40,18 +46,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 email = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
                 logger.warn("JWT token validation failed: " + e.getMessage());
+                // Send 403 immediately when JWT is invalid
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Invalid JWT token");
+                return;
             }
         }
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        // If no valid JWT token is provided for protected endpoints, block the request
+        if (email == null) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Authentication required");
+            return;
+        }
+
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtUtil.validateToken(jwt, email)) {
-                // Create a simple authentication token - in a real app, you might load UserDetails
-                UsernamePasswordAuthenticationToken authToken = 
-                    new UsernamePasswordAuthenticationToken(email, null, java.util.Collections.emptyList());
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(email, null, java.util.Collections.emptyList());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+            } else {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Invalid JWT token");
+                return;
             }
         }
+
         chain.doFilter(request, response);
     }
 }

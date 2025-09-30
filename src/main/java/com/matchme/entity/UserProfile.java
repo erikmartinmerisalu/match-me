@@ -60,9 +60,10 @@ public class UserProfile {
     // Constructors
     public UserProfile() {}
 
-    public UserProfile(User user, String displayName) {
+    public UserProfile(User user, String displayName, LocalDate birthDate) {
         this.user = user;
         this.displayName = displayName;
+        this.birthDate = birthDate;
     }
 
     // Calculate age from birthDate

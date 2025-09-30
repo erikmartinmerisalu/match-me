@@ -105,6 +105,7 @@ public class RecommendationService {
         return maxScore > 0 ? score / maxScore : 0;
     }
 
+    
     private double calculateRankCompatibility(String rank1, String rank2) {
         // Define rank tiers for compatibility
         Map<String, Integer> rankTiers = Map.of(

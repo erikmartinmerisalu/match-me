@@ -186,6 +186,7 @@ public class UserController {
         return false;
     }
 
+    
     private UserProfileDto mapToProfileDto(UserProfile profile) {
         UserProfileDto dto = new UserProfileDto();
         dto.setId(profile.getUser().getId());

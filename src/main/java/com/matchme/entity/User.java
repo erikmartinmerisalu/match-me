@@ -1,5 +1,5 @@
 // User.java
-package main.java.com.matchme.entity;
+package com.matchme.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -27,7 +27,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private String profilePicture;
     
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -55,6 +54,7 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
+
     // Constructors
     public User() {}
 
@@ -67,9 +67,6 @@ public class User {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getProfilePicture() {return profilePicture != null ? profilePicture : "👤";}
-    public void setProfilePicture(String profilePicture) {this.profilePicture = profilePicture;}
-}
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     

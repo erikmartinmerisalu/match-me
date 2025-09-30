@@ -26,22 +26,25 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody AuthRequest authRequest) {
         try {
-            // Validate email format
             if (!isValidEmail(authRequest.getEmail())) {
                 return ResponseEntity.badRequest().body("Invalid email format");
             }
-
-            // Validate password strength
             if (authRequest.getPassword().length() < 6) {
                 return ResponseEntity.badRequest().body("Password must be at least 6 characters long");
             }
 
-            User user = userService.registerUser(authRequest.getEmail(), authRequest.getPassword());
+            // Create user WITH profile data to avoid validation issues
+            User user = userService.registerUser(
+                authRequest.getEmail(), 
+                authRequest.getPassword(),
+                authRequest.getDisplayName(),
+                authRequest.getBirthDate()
+            );
+
             String token = jwtUtil.generateToken(user.getEmail());
-            
             AuthResponse response = new AuthResponse(token, user.getId(), user.getEmail());
             return ResponseEntity.ok(response);
-            
+
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {

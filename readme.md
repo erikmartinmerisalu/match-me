@@ -10,6 +10,50 @@ Technology Stack
     Security: JWT, BCrypt, Spring Security
     Build Tool: Maven
 
+PostGreSQL server setup:
+# 1. Update package list
+sudo apt update
+
+# 2. Install PostgreSQL server and client
+sudo apt install -y postgresql postgresql-contrib postgresql-client
+
+# 3. Check PostgreSQL service status
+sudo service postgresql status
+
+# 4. Start PostgreSQL service if not running
+sudo service postgresql start
+
+# 5. Switch to the postgres system user
+sudo -u postgres psql
+
+# 6. Inside the psql shell, create your database
+CREATE DATABASE matchme_gaming;
+
+# 7. Set the postgres user password
+ALTER USER postgres PASSWORD 'password';
+
+# 8. Exit psql
+\q
+
+# 9. Test connection to the new database
+psql -U postgres -d matchme_gaming -h localhost -W
+# Enter password: password
+service postgresql status should show active (exited)—that means PostgreSQL is running.
+Make sure the password you set matches the one in your application.properties.
+After this, your Spring Boot app should be able to connect to the database.
+
+
+Check if post
+# 1. Navigate to your project directory
+cd ~/match-me
+
+# 2. Build the project with Maven
+mvn clean install
+
+# 3. Run the Spring Boot application
+mvn spring-boot:run
+
+
 Security Implementation
 Authentication & Authorization
 
@@ -17,6 +61,7 @@ Authentication & Authorization
     BCrypt with salt for secure password hashing
     Spring Security for endpoint protection
     CORS configured for cross-origin requests
+
 
 Security Flow
 

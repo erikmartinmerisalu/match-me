@@ -1,6 +1,8 @@
 // AuthRequest.java
 package com.matchme.dto;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -11,7 +13,8 @@ public class AuthRequest {
 
     @NotBlank
     private String password;
-
+    private String displayName;
+    private LocalDate birthDate;
     // Constructors
     public AuthRequest() {}
 
@@ -20,7 +23,14 @@ public class AuthRequest {
         this.password = password;
     }
 
+    
     // Getters and Setters
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     

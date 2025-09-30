@@ -21,6 +21,7 @@ public class UserProfileService {
         int dataPoints = countBiographicalDataPoints(profile);
         profile.setProfileCompleted(dataPoints >= 5);
         
+        
         return userProfileRepository.save(profile);
     }
 

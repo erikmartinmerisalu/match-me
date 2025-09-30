@@ -4,6 +4,7 @@ package com.matchme.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = "connections")
 public class Connection {
