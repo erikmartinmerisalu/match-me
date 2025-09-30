@@ -4,7 +4,7 @@ import "./auth.css"; // ← impordi CSS-fail
 import { useAuth } from "../context/AuthContext";
 
 function LogIn() {
-  const [username, setUsername] = useState("");
+  const [email, setEMail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -13,27 +13,27 @@ function LogIn() {
   async function loginUser() {
     setError("");
 
-    if (!username || !password) {
+    if (!email || !password) {
       setError("Please fill all the fields!");
       return;
     }
 
     try {
-      // const response = await fetch("http://localhost:3000/api/login", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({ username, password }),
-      // });
+      const response = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || "Login failed");
-      // }
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(errorData || "Login failed");
+      }
 
-      // const data = await response.json();
-      // localStorage.setItem("token", data.token);
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
 
       
       navigate("/userprofile");
@@ -47,8 +47,8 @@ function LogIn() {
     <div className="login-container">
       <h2>Log In</h2>
 
-      <label>Username</label>
-      <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="login-input" />
+      <label>E-mail</label>
+      <input type="text" value={email} onChange={(e) => setEMail(e.target.value)} className="login-input" />
 
       <label>Password</label>
       <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="login-input" />

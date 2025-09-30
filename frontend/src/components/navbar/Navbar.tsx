@@ -5,7 +5,12 @@ import { useAuth } from '../../context/AuthContext';
 
 function Navbar() {
     const navigate = useNavigate();
-    const {loggedIn} = useAuth();
+    const {loggedIn, setLoggedIn, signOut} = useAuth();
+
+  const LogOutFromApp = () => {
+    signOut();
+    navigate("/home")
+  }
     
   return (
     <div className='navbar'>
@@ -29,7 +34,7 @@ function Navbar() {
         </>
         : 
         <>
-        <button onClick={() => navigate("/")}>SignOut</button>
+        <button onClick={() => LogOutFromApp()}>SignOut</button>
         </>
         }
         

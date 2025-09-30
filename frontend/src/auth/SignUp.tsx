@@ -57,20 +57,23 @@ function SignUp() {
 
     // Post to backend
     try {
-      const response = await fetch("http://localhost:3000/api/register", {
+      const response = await fetch("http://localhost:8080/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // Authorization : "Bearer " + sessionStorage.getItem("LokiAuthToken")
-        body: JSON.stringify({ email, username, password }),
+        body: JSON.stringify({ email, 
+          password,
+          displayName: username, 
+          birthDate: "2000-01-01"  }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Signup failed");
+        const errorData = await response.text();
+        throw new Error(errorData || "Signup failed");
       }
 
       setSuccess("Account made!!");
-      setTimeout(() => navigate("/dashboard"), 1500);
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err: any) {
       setError(err.message || "Error :/ ");
     }
