@@ -1,9 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import type { ReactNode, Dispatch, SetStateAction } from "react";
+import type { ReactNode} from "react";
 
 type AuthContextType = {
-    loggedIn : boolean,
-    setLoggedIn: Dispatch<SetStateAction<boolean>>;}
+    loggedIn : boolean | null,
+    setLoggedIn: (value : boolean) =>void ;
+    signOut : () => void;
+  }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -12,7 +14,7 @@ type AuthProviderProps = {
 };
 
 export const AuthContextProvider = ({children } : AuthProviderProps) => {
-    const [loggedIn, setLoggedIn] = useState<boolean>(false);
+    const [loggedIn, setLoggedIn] = useState<boolean | null >(null);
 
 
   useEffect(() => {
@@ -35,9 +37,14 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
     }
     }, []);
 
+    const signOut = () => {
+      sessionStorage.removeItem("token");
+      setLoggedIn(false);
+    }
+
 
     return(
-        <AuthContext.Provider value={{loggedIn, setLoggedIn}}>
+        <AuthContext.Provider value={{loggedIn, setLoggedIn, signOut}}>
             {children}
         </AuthContext.Provider>
     )
