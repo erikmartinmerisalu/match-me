@@ -34,6 +34,8 @@ function LogIn() {
 
       // const data = await response.json();
       // localStorage.setItem("token", data.token);
+
+      
       navigate("/userprofile");
       setLoggedIn(true);
     } catch (err: any) {

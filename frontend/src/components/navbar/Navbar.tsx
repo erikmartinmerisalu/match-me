@@ -12,17 +12,29 @@ function Navbar() {
       <div className='navbar-logo'>Gamely</div>
       
       {loggedIn === true ?
-      <div className='navbar-links'>
-        <div>Matches</div>
-        <div>Chat</div>
-        <div>Something</div>
-        <div>Idk</div>
-      </div>
-        : ""}
+        <div className='navbar-links'>
+          <div onClick={() => navigate("/match")}>Match</div>
+          <div>Chat</div>
+          <div>Something</div>
+          <div>Idk</div>
+        </div>
+          : ""
+      }
+        
       <div className='navbar-buttons'>
+        {loggedIn === false ? 
+        <>
         <button onClick={() => navigate("/signup")}>Signup</button>
         <button onClick={() => navigate("/login")}>Log In</button>
+        </>
+        : 
+        <>
+        <button onClick={() => navigate("/")}>SignOut</button>
+        </>
+        }
+        
       </div>
+      
     </div>
   );
 }
