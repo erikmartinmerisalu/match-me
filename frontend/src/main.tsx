@@ -6,12 +6,13 @@ import { BrowserRouter } from 'react-router-dom'
 import AppRoutes from './routes/AppRoutes.tsx'
 import { AuthContextProvider } from './context/AuthContext.tsx'
 
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthContextProvider>
         <AppRoutes />
-          <App />
+            <App />
       </AuthContextProvider>
     </BrowserRouter>
   </StrictMode>,

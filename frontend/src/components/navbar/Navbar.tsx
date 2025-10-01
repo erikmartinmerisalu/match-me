@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 
 function Navbar() {
     const navigate = useNavigate();
-    const {loggedIn, setLoggedIn, signOut} = useAuth();
+    const {loggedIn, signOut} = useAuth();
 
   const LogOutFromApp = () => {
     signOut();
@@ -14,7 +14,7 @@ function Navbar() {
     
   return (
     <div className='navbar'>
-      <div className='navbar-logo'>Gamely</div>
+      <div className='navbar-logo' onClick={() => navigate("/home")}>Gamely</div>
       
       {loggedIn === true ?
         <div className='navbar-links'>
