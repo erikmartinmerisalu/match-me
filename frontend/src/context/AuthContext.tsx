@@ -14,7 +14,7 @@ type AuthProviderProps = {
 };
 
 export const AuthContextProvider = ({children } : AuthProviderProps) => {
-    const [loggedIn, setLoggedIn] = useState<boolean | null >(null);
+    const [loggedIn, setLoggedIn] = useState<boolean | null >(false);
 
 
   useEffect(() => {
@@ -37,8 +37,11 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
     }
     }, []);
 
-    const signOut = () => {
-      sessionStorage.removeItem("token");
+    const signOut = async () => {
+      await fetch("http://localhost:8080/api/auth/logout", {
+        method: "POST",
+        credentials: "include"
+      });
       setLoggedIn(false);
     }
 

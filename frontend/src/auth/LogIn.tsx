@@ -25,6 +25,7 @@ function LogIn() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -33,7 +34,7 @@ function LogIn() {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.token);
+
 
       
       navigate("/userprofile");
