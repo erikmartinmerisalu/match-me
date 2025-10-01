@@ -14,7 +14,9 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
+
 @CrossOrigin(origins = "http://localhost:5173/")
+
 public class AuthController {
 
     @Autowired
@@ -33,13 +35,14 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Password must be at least 6 characters long");
             }
 
-            // Create user WITH profile data to avoid validation issues
+            // Register user with only email & password
             User user = userService.registerUser(
-                authRequest.getEmail(), 
-                authRequest.getPassword(),
-                authRequest.getDisplayName(),
-                authRequest.getBirthDate()
+                authRequest.getEmail(),
+                authRequest.getPassword()
             );
+
+            // JWT token generation
+
 
             String token = jwtUtil.generateToken(user.getEmail());
             AuthResponse response = new AuthResponse(token, user.getId(), user.getEmail());
@@ -56,11 +59,14 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest) {
         try {
             Optional<User> userOpt = userService.authenticateUser(authRequest.getEmail(), authRequest.getPassword());
-            
+
+
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 String token = jwtUtil.generateToken(user.getEmail());
-                
+
+            
+
                 AuthResponse response = new AuthResponse(token, user.getId(), user.getEmail());
                 return ResponseEntity.ok(response);
             } else {
@@ -73,13 +79,17 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
+
         // In a stateless JWT setup, logout is handled client-side by removing the token
         // We could implement a token blacklist here if needed
+
         return ResponseEntity.ok("Logged out successfully");
     }
 
     private boolean isValidEmail(String email) {
-        // Basic email validation
+
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 }
+
+
