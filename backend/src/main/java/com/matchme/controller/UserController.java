@@ -32,7 +32,8 @@ public class UserController {
         }
 
         User user = userOpt.get();
-        // Check if current user can view this profile
+
+
         if (!canViewProfile(userEmail, user)) {
             return ResponseEntity.notFound().build();
         }
@@ -40,20 +41,17 @@ public class UserController {
         UserProfileDto dto = new UserProfileDto();
         dto.setId(user.getId());
         dto.setDisplayName(user.getProfile().getDisplayName());
-        // Only include public information
+
+
 
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}/profile")
     public ResponseEntity<?> getUserProfile(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
-        Optional<UserProfile> profileOpt = userProfileService.findByUserId(id);
-        if (profileOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
 
-        UserProfile profile = profileOpt.get();
-        // Check if current user can view this profile
+        UserProfile profile = userProfileService.findByUserId(id);
+
         if (!canViewProfile(userEmail, profile.getUser())) {
             return ResponseEntity.notFound().build();
         }
@@ -64,18 +62,17 @@ public class UserController {
 
     @GetMapping("/{id}/bio")
     public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
-        Optional<UserProfile> profileOpt = userProfileService.findByUserId(id);
-        if (profileOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
 
-        UserProfile profile = profileOpt.get();
-        // Check if current user can view this profile
+        UserProfile profile = userProfileService.findByUserId(id);
+
+
         if (!canViewProfile(userEmail, profile.getUser())) {
             return ResponseEntity.notFound().build();
         }
 
+
         // Return only the biographical data used for recommendations
+
         UserProfileDto dto = new UserProfileDto();
         dto.setId(profile.getUser().getId());
         dto.setPreferredServers(profile.getPreferredServers());
@@ -85,6 +82,7 @@ public class UserController {
         dto.setBirthDate(profile.getBirthDate());
         dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
+
         dto.setRegion(profile.getRegion());
 
         return ResponseEntity.ok(dto);
@@ -124,10 +122,10 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        User user = userOpt.get();
-        UserProfile profile = user.getProfile();
 
-        // Return only the biographical data used for recommendations
+        UserProfile profile = userOpt.get().getProfile();
+
+
         UserProfileDto dto = new UserProfileDto();
         dto.setId(profile.getUser().getId());
         dto.setPreferredServers(profile.getPreferredServers());
@@ -137,7 +135,8 @@ public class UserController {
         dto.setBirthDate(profile.getBirthDate());
         dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
-        dto.setRegion(profile.getRegion());
+
+
 
         return ResponseEntity.ok(dto);
     }
@@ -146,7 +145,7 @@ public class UserController {
     public ResponseEntity<?> updateCurrentUserProfile(
             @AuthenticationPrincipal String userEmail,
             @Valid @RequestBody UserProfileDto profileDto) {
-        
+
         Optional<User> userOpt = userService.findByEmail(userEmail);
         if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -154,8 +153,7 @@ public class UserController {
 
         User user = userOpt.get();
         UserProfile profile = user.getProfile();
-        
-        // Update profile fields with gamer-specific data
+
         profile.setDisplayName(profileDto.getDisplayName());
         profile.setAboutMe(profileDto.getAboutMe());
         profile.setPreferredServers(profileDto.getPreferredServers());
@@ -164,7 +162,7 @@ public class UserController {
         profile.setRank(profileDto.getRank());
         profile.setBirthDate(profileDto.getBirthDate());
         profile.setTimezone(profileDto.getTimezone());
-        profile.setRegion(profileDto.getRegion());
+
         profile.setLookingFor(profileDto.getLookingFor());
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
@@ -176,17 +174,15 @@ public class UserController {
     }
 
     private boolean canViewProfile(String currentUserEmail, User targetUser) {
-        // Users can always view their own profile
+
         if (targetUser.getEmail().equals(currentUserEmail)) {
             return true;
         }
-
-        // TODO: Implement connection-based visibility logic
-        // For now, only allow viewing own profile
+        // Only allow viewing own profile for now
         return false;
     }
 
-    
+
     private UserProfileDto mapToProfileDto(UserProfile profile) {
         UserProfileDto dto = new UserProfileDto();
         dto.setId(profile.getUser().getId());
@@ -199,12 +195,12 @@ public class UserController {
         dto.setBirthDate(profile.getBirthDate());
         dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
-        dto.setRegion(profile.getRegion());
         dto.setLookingFor(profile.getLookingFor());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
         dto.setPreferredAgeMax(profile.getPreferredAgeMax());
         dto.setProfileCompleted(profile.isProfileCompleted());
-        
+
         return dto;
     }
 }
+
