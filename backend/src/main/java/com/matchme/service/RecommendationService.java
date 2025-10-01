@@ -1,3 +1,5 @@
+
+
 package com.matchme.service;
 
 import com.matchme.entity.User;
@@ -5,6 +7,8 @@ import com.matchme.entity.UserProfile;
 import com.matchme.repository.UserProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,6 +24,7 @@ public class RecommendationService {
 
     public List<Long> getRecommendations(Long userId, int maxResults) {
         Optional<User> currentUserOpt = userService.findById(userId);
+
         if (currentUserOpt.isEmpty() || currentUserOpt.get().getProfile() == null) return Collections.emptyList();
 
         User currentUser = currentUserOpt.get();
@@ -32,6 +37,7 @@ public class RecommendationService {
                 .map(profile -> new ScoredProfile(profile, calculateCompatibilityScore(currentProfile, profile)))
                 .filter(scored -> scored.score > 0.3)
                 .sorted((a, b) -> Double.compare(b.score, a.score))
+
                 .limit(maxResults)
                 .collect(Collectors.toList());
 
@@ -41,6 +47,7 @@ public class RecommendationService {
     }
 
     private double calculateCompatibilityScore(UserProfile profile1, UserProfile profile2) {
+
         double score = 0.0, maxScore = 0.0;
 
         // 1. Server matching (25%)
@@ -81,18 +88,22 @@ public class RecommendationService {
         if (profile1.getAge() != null && profile2.getAge() != null) {
             int diff = Math.abs(profile1.getAge() - profile2.getAge());
             double ageScore = diff <= 3 ? 0.15 : Math.max(0, 0.15 - (diff - 3) * 0.03);
+
             score += ageScore;
         }
         maxScore += 0.15;
 
         // Region bonus
+
         if (profile1.getRegion() != null && profile1.getRegion().equals(profile2.getRegion())) {
+
             score += 0.1;
             maxScore += 0.1;
         }
 
         return maxScore > 0 ? score / maxScore : 0;
     }
+
 
     private double calculateRankCompatibility(String rank1, String rank2) {
         Map<String, Integer> rankTiers = Map.of(
@@ -116,11 +127,14 @@ public class RecommendationService {
         if (diff==0) return 1.0;
         if (diff==1) return 0.7;
         return 0.3;
+
     }
 
     private static class ScoredProfile {
         UserProfile profile;
         double score;
+
         ScoredProfile(UserProfile profile, double score) { this.profile = profile; this.score = score; }
     }
 }
+
