@@ -1,10 +1,12 @@
+
 package com.matchme.dto;
+
+
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class AuthRequest {
-
     @NotBlank
     @Email
     private String email;
@@ -12,8 +14,10 @@ public class AuthRequest {
     @NotBlank
     private String password;
 
+
     // Removed displayName, birthDate, expLvl, games, servers, etc.
     // These will now be handled via UserProfile endpoints
+
 
     public AuthRequest() {}
 
@@ -21,6 +25,7 @@ public class AuthRequest {
         this.email = email;
         this.password = password;
     }
+
 
     // Getters & Setters
     public String getEmail() {
@@ -39,3 +44,4 @@ public class AuthRequest {
         this.password = password;
     }
 }
+

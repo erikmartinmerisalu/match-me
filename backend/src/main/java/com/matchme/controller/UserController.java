@@ -32,6 +32,8 @@ public class UserController {
         }
 
         User user = userOpt.get();
+
+
         if (!canViewProfile(userEmail, user)) {
             return ResponseEntity.notFound().build();
         }
@@ -40,12 +42,16 @@ public class UserController {
         dto.setId(user.getId());
         dto.setDisplayName(user.getProfile().getDisplayName());
 
+
+
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}/profile")
     public ResponseEntity<?> getUserProfile(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
+
         UserProfile profile = userProfileService.findByUserId(id);
+
         if (!canViewProfile(userEmail, profile.getUser())) {
             return ResponseEntity.notFound().build();
         }
@@ -56,10 +62,16 @@ public class UserController {
 
     @GetMapping("/{id}/bio")
     public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
+
         UserProfile profile = userProfileService.findByUserId(id);
+
+
         if (!canViewProfile(userEmail, profile.getUser())) {
             return ResponseEntity.notFound().build();
         }
+
+
+        // Return only the biographical data used for recommendations
 
         UserProfileDto dto = new UserProfileDto();
         dto.setId(profile.getUser().getId());
@@ -70,6 +82,8 @@ public class UserController {
         dto.setBirthDate(profile.getBirthDate());
         dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
+
+        dto.setRegion(profile.getRegion());
 
         return ResponseEntity.ok(dto);
     }
@@ -108,7 +122,10 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
+
         UserProfile profile = userOpt.get().getProfile();
+
+
         UserProfileDto dto = new UserProfileDto();
         dto.setId(profile.getUser().getId());
         dto.setPreferredServers(profile.getPreferredServers());
@@ -118,6 +135,8 @@ public class UserController {
         dto.setBirthDate(profile.getBirthDate());
         dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
+
+
 
         return ResponseEntity.ok(dto);
     }
@@ -143,6 +162,7 @@ public class UserController {
         profile.setRank(profileDto.getRank());
         profile.setBirthDate(profileDto.getBirthDate());
         profile.setTimezone(profileDto.getTimezone());
+
         profile.setLookingFor(profileDto.getLookingFor());
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
@@ -154,12 +174,14 @@ public class UserController {
     }
 
     private boolean canViewProfile(String currentUserEmail, User targetUser) {
+
         if (targetUser.getEmail().equals(currentUserEmail)) {
             return true;
         }
         // Only allow viewing own profile for now
         return false;
     }
+
 
     private UserProfileDto mapToProfileDto(UserProfile profile) {
         UserProfileDto dto = new UserProfileDto();
@@ -177,6 +199,8 @@ public class UserController {
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
         dto.setPreferredAgeMax(profile.getPreferredAgeMax());
         dto.setProfileCompleted(profile.isProfileCompleted());
+
         return dto;
     }
 }
+

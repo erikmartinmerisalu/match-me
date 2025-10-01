@@ -1,7 +1,10 @@
+
 package com.matchme.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+
+
 import java.util.Set;
 
 @Entity
@@ -13,6 +16,7 @@ public class UserProfile {
     private Long id;
 
     @OneToOne
+
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
@@ -95,3 +99,4 @@ public class UserProfile {
     public boolean isProfileCompleted() { return profileCompleted; }
     public void setProfileCompleted(boolean profileCompleted) { this.profileCompleted = profileCompleted; }
 }
+

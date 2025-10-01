@@ -1,3 +1,5 @@
+
+
 package com.matchme.service;
 
 import com.matchme.entity.UserProfile;
@@ -5,13 +7,16 @@ import com.matchme.repository.UserProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import java.util.Set;
 
 @Service
+
 public class UserProfileService {
 
     @Autowired
     private UserProfileRepository userProfileRepository;
+
 
     private static final Set<String> VALID_SERVERS = Set.of(
         "N-America", "S-America", "EU East", "EU West", "Asia", "AU+SEA", "Africa+Middle east"
@@ -74,3 +79,4 @@ public class UserProfileService {
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
     }
 }
+

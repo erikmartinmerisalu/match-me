@@ -21,16 +21,19 @@ public class UserService {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
+
     // ------------------------
     // Register with email & password only
     // ------------------------
     public User registerUser(String email, String password) {
+
         if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already exists");
         }
 
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         User user = new User(email, hashedPassword);
+
 
         // Save user first
         User savedUser = userRepository.save(user);
@@ -48,6 +51,7 @@ public class UserService {
 
 
     // Authenticate
+
     public Optional<User> authenticateUser(String email, String password) {
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isPresent()) {
@@ -59,7 +63,9 @@ public class UserService {
         return Optional.empty();
     }
 
+
     // Find by ID
+
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
@@ -79,4 +85,6 @@ public class UserService {
     public void delete(User user) {
         userRepository.delete(user);
     }
+
 }
+
