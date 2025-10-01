@@ -6,6 +6,7 @@ import com.matchme.entity.User;
 import com.matchme.service.UserService;
 import com.matchme.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +16,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 
-@CrossOrigin(origins = "http://localhost:5173/")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 
 public class AuthController {
 
@@ -64,11 +65,22 @@ public class AuthController {
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 String token = jwtUtil.generateToken(user.getEmail());
+                //
+            ResponseEntity<AuthResponse> response = ResponseEntity.ok()
+                .header("Set-Cookie", 
+                    ResponseCookie.from("jwt", token)
+                        .httpOnly(true)
+                        .secure(false)
+                        .path("/")
+                        .sameSite("Lax")
+                        .maxAge(24*60*60)
+                        .build()
+                        .toString()
+                )
+                .body(new AuthResponse(null, user.getId(), user.getEmail())); 
 
-            
-
-                AuthResponse response = new AuthResponse(token, user.getId(), user.getEmail());
-                return ResponseEntity.ok(response);
+            return response;
+            ///
             } else {
                 return ResponseEntity.badRequest().body("Invalid email or password");
             }
