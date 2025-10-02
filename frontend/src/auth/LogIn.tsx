@@ -34,8 +34,6 @@ function LogIn() {
       }
 
       const data = await response.json();
-
-
       
       navigate("/userprofile");
       setLoggedIn(true);
