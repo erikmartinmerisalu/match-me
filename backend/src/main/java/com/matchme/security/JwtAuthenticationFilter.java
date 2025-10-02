@@ -40,8 +40,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String email = null;
         String jwt = null;
 
+        //if we have  auth Header
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
+        }else if(request.getCookies() != null){
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+            if ("jwt".equals(cookie.getName())) {
+                jwt = cookie.getValue();
+            break;
+            }   
+        }
+    }
+                //if we have JWT, take email out
+        if(jwt != null){   
             try {
                 email = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {

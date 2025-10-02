@@ -4,39 +4,44 @@ import  {  ChangeEvent } from "react";
 import "./userprofile.css";
 
 const UserProfile: React.FC = () => {
-  const platformOptions = ["PC", "PlayStation", "Xbox", "Nintendo Switch", "Mobile"]
-  const playStyleOptions = ["Casual", "Competitive", "Hardcore", "Speedrun"]
-  const genreOptions = ["Action", "Action-adventure", "Adventure", "Puzzle", "Simulation", "Strategy", "Sports", "Role-playing"]
+  const serverOptions = ["N-America", "S-America", "EU East", "EU West", "Asia", "AU+SEA", "Africa+Middle east"]
+  const gameOptions = ["Game1", "Game2", "Game3", "Game4", "Game5"]
+  const gameExpLvl = ["Beginner", "Intermediate", "Advanced"]
+  const gaminghours = ["<100", "101-500", "501-1000", "1000+"]
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [selectedPlayStyles, setSelectedPlayStyles] = useState<string[]>([]);
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
-
-
+  const [servers, setServers] = useState<string[]>([]);
+  const [games, setGames] = useState<string[]>([]);
+  const [experience, SetExperience] = useState<string[]>([]);
+  const [hours, setHours] = useState<string[]>([]);
+  const [error, setError] = useState<string>("");
 
   const [formData, setFormData] = useState({
     username: "",
-    favoriteGame: "",
-    platform: [],
-    playStyle: [],
-    genre: [],
+    servers: [],
+    games: [],
+    experience: [],
+    hours: [],
     about: "",
-    email: "myemail@example.com", // private, only user sees
   });
 
-  const togglePlatform = (platform : string) => {
-    setSelectedPlatforms((prev) => prev.includes(platform) ? 
-  prev.filter((p) => p !== platform) : [...prev, platform])
+  const toggleServer = (server : string) => {
+    setServers((prev) => prev.includes(server) ? 
+  prev.filter((p) => p !== server) : [...prev, server])
   }
 
-  const togglePlayStyle = (style : string) => {
-    setSelectedPlayStyles((prev) => prev.includes(style) ? 
-  prev.filter((p) => p !== style) : [...prev, style])
+  const toggleGameOption = (game : string) => {
+    setGames((prev) => prev.includes(game) ? 
+  prev.filter((p) => p !== game) : [...prev, game])
   }
 
-  const toggleGenres = (genre : string) => {
-    setSelectedGenres((prev) => prev.includes(genre) ? 
-  prev.filter((p) => p !== genre) : [...prev, genre])
+  const toggleLvl = (lvl : string) => {
+    SetExperience((prev) => prev.includes(lvl) ? 
+  prev.filter((p) => p !== lvl) : [...prev, lvl])
+  }
+
+  const toggleHours = (hours: string) => {
+    setHours((prev) => prev.includes(hours) ?
+  prev.filter((p) => p !== hours) : [...prev, hours])
   }
 
   const handleChange = (
@@ -63,10 +68,42 @@ const UserProfile: React.FC = () => {
     setProfilePic(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("User Profile:", formData);
+
+    // Prepare the payload for api
+      const payload = {
+      username: formData.username,
+      servers: servers,
+      games: games,
+      experience: experience,
+      hours: hours,
+      about:formData.about
+    };
+
+    try {
+      const res = await fetch("http://localhost:8080/api/users/me/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        //send cookies, JWT
+        credentials: "include", 
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        setError("Failed to save profile");
+      }
+
+      const data = await res.json();
+      console.log("Saved profile:", data);
+    } catch (err) {
+      setError("Failed to save profile")
+      console.error(err);
+    }
   };
+
 
   return (
     <div className="profile-card">
@@ -101,33 +138,53 @@ const UserProfile: React.FC = () => {
         </div>
 
         <div>
-          <div className="sector">Gaming Platform</div>
+          <div className="sector">Age</div>
+          <select></select>
+        </div>
+
+        <div>
+          <div className="sector">Preferred Servers</div>
           <div className="optionsmap">
-          {platformOptions.map(platform => <div key={platform} 
+          {serverOptions.map(server => <div key={server} 
               className={`options ${
-              selectedPlatforms.includes(platform) ? "selected" : ""
-            }`} > <div onClick={() => togglePlatform(platform)}>{platform} </div> </div>)}
+              servers.includes(server) ? "selected" : ""
+            }`} > <div onClick={() => toggleServer(server)}>{server} </div> </div>)}
           </div>
         </div>
 
         <div>
-          <div className="sector">Play Style</div>
+          <div className="sector">Games</div>
           <div className="optionsmap">
-          {playStyleOptions.map(style => <div key={style} 
+          {gameOptions.map(game => <div key={game} 
               className={`options ${
-              selectedPlayStyles.includes(style) ? "selected" : ""
-            }`} > <div onClick={() => togglePlayStyle(style)}>{style} </div> </div>)}
+              games.includes(game) ? "selected" : ""
+            }`} > <div onClick={() => toggleGameOption(game)}>{game} </div> </div>)}
           </div>
         </div>
 
         <div>
-          <div className="sector">Favorite Genre</div>
+          <div className="sector">Game Experience</div>
           <div className="optionsmap">
-          {genreOptions.map(genre => <div key={genre} 
+          {gameExpLvl.map(lvl => <div key={lvl} 
               className={`options ${
-              selectedGenres.includes(genre) ? "selected" : ""
-            }`} > <div onClick={() => toggleGenres(genre)}>{genre} </div> </div>)}
+              experience.includes(lvl) ? "selected" : ""
+            }`} > <div onClick={() => toggleLvl(lvl)}>{lvl} </div> </div>)}
           </div>
+        </div>
+
+        <div>
+          <div className="sector">Gaming hours</div>
+          <div className="optionsmap">
+          {gaminghours.map(hour => <div key={hour} 
+              className={`options ${
+              hours.includes(hour) ? "selected" : ""
+            }`} > <div onClick={() => toggleHours(hour)}>{hour} </div> </div>)}
+          </div>
+        </div>
+
+        <div>
+          <div className="sector">Preferred age</div>
+            <select></select>
         </div>
 
         <div>
@@ -149,7 +206,7 @@ const UserProfile: React.FC = () => {
           Save Profile
         </button>
       </form>
-
+      <div>{error}</div>
     </div>
   );
 };
