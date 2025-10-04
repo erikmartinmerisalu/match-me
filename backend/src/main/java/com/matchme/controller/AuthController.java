@@ -36,25 +36,34 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Password must be at least 6 characters long");
             }
 
-            // Register user with only email & password
             User user = userService.registerUser(
-                authRequest.getEmail(),
-                authRequest.getPassword()
-            );
+            authRequest.getEmail(),
+            authRequest.getPassword()
+        );
 
-            // JWT token generation
+        String token = jwtUtil.generateToken(user.getEmail());
+        
+        // ADD COOKIE SETTING (same as login)
+        ResponseCookie cookie = ResponseCookie.from("jwt", token)
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Lax")
+            .maxAge(24*60*60)
+            .build();
 
-
-            String token = jwtUtil.generateToken(user.getEmail());
-            AuthResponse response = new AuthResponse(token, user.getId(), user.getEmail());
-            return ResponseEntity.ok(response);
+        AuthResponse responseBody = new AuthResponse(null, user.getId(), user.getEmail());
+        
+        return ResponseEntity.ok()
+            .header("Set-Cookie", cookie.toString())
+            .body(responseBody);
 
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Registration failed");
         }
-    }
+}
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest authRequest) {
@@ -90,14 +99,20 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> logout() {
+        // Clear the JWT cookie
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+            .httpOnly(true)
+            .secure(false)
+            .path("/")
+            .sameSite("Lax")
+            .maxAge(0)  // Expire immediately
+            .build();
 
-        // In a stateless JWT setup, logout is handled client-side by removing the token
-        // We could implement a token blacklist here if needed
-
-        return ResponseEntity.ok("Logged out successfully");
+        return ResponseEntity.ok()
+            .header("Set-Cookie", cookie.toString())
+            .body("Logged out successfully");
     }
-
     private boolean isValidEmail(String email) {
 
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");

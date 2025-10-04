@@ -19,6 +19,14 @@ public class JwtUtil {
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long JWT_TOKEN_VALIDITY = 1000 * 60 * 60 * 10; // 10 hours
 
+    public Boolean validateToken(String token) {
+        try {
+            final String username = extractUsername(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
