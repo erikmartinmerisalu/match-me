@@ -51,18 +51,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }   
         }
     }
-                //if we have JWT, take email out
-        if(jwt != null){   
-            try {
-                email = jwtUtil.extractUsername(jwt);
-            } catch (Exception e) {
-                logger.warn("JWT token validation failed: " + e.getMessage());
-                // Send 403 immediately when JWT is invalid
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Invalid JWT token");
-                return;
-            }
+        
+       if(jwt != null){   
+    try {
+        // Use the new single-parameter validation
+        if (jwtUtil.validateToken(jwt)) {
+            email = jwtUtil.extractUsername(jwt);
+        } else {
+            throw new Exception("Invalid token");
         }
+    } catch (Exception e) {
+        logger.warn("JWT token validation failed: " + e.getMessage());
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.getWriter().write("Invalid JWT token");
+        return;
+    }
+}
 
         // If no valid JWT token is provided for protected endpoints, block the request
         if (email == null) {
@@ -71,18 +75,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.validateToken(jwt, email)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(email, null, java.util.Collections.emptyList());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write("Invalid JWT token");
-                return;
-            }
-        }
+      if (SecurityContextHolder.getContext().getAuthentication() == null && email != null) {
+        UsernamePasswordAuthenticationToken authToken =
+        new UsernamePasswordAuthenticationToken(email, null, java.util.Collections.emptyList());
+        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+}
 
         chain.doFilter(request, response);
     }
