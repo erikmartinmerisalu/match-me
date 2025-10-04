@@ -206,7 +206,7 @@ The matching algorithm uses these 5 core criteria:
 
     Gaming Schedule - When the user is available to play
 
-    Skill Rank - Competitive ranking/tier
+    Game experience - Total hours played
 
     Age - For age-appropriate matching (±3 years)
 
