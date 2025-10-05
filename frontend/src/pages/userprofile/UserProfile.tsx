@@ -17,11 +17,10 @@ const UserProfile: React.FC = () => {
 
   const [formData, setFormData] = useState({
     username: "",
-    servers: [],
+    about: "",
     games: [],
     experience: [],
     hours: [],
-    about: "",
   });
 
   const toggleServer = (server : string) => {
@@ -138,56 +137,6 @@ const UserProfile: React.FC = () => {
         </div>
 
         <div>
-          <div className="sector">Age</div>
-          <select></select>
-        </div>
-
-        <div>
-          <div className="sector">Preferred Servers</div>
-          <div className="optionsmap">
-          {serverOptions.map(server => <div key={server} 
-              className={`options ${
-              servers.includes(server) ? "selected" : ""
-            }`} > <div onClick={() => toggleServer(server)}>{server} </div> </div>)}
-          </div>
-        </div>
-
-        <div>
-          <div className="sector">Games</div>
-          <div className="optionsmap">
-          {gameOptions.map(game => <div key={game} 
-              className={`options ${
-              games.includes(game) ? "selected" : ""
-            }`} > <div onClick={() => toggleGameOption(game)}>{game} </div> </div>)}
-          </div>
-        </div>
-
-        <div>
-          <div className="sector">Game Experience</div>
-          <div className="optionsmap">
-          {gameExpLvl.map(lvl => <div key={lvl} 
-              className={`options ${
-              experience.includes(lvl) ? "selected" : ""
-            }`} > <div onClick={() => toggleLvl(lvl)}>{lvl} </div> </div>)}
-          </div>
-        </div>
-
-        <div>
-          <div className="sector">Gaming hours</div>
-          <div className="optionsmap">
-          {gaminghours.map(hour => <div key={hour} 
-              className={`options ${
-              hours.includes(hour) ? "selected" : ""
-            }`} > <div onClick={() => toggleHours(hour)}>{hour} </div> </div>)}
-          </div>
-        </div>
-
-        <div>
-          <div className="sector">Preferred age</div>
-            <select></select>
-        </div>
-
-        <div>
           <div className="sector">About me</div>
           <textarea
             name="about"
@@ -197,6 +146,47 @@ const UserProfile: React.FC = () => {
             placeholder="Tell other gamers about yourself..."
           />
         </div>
+
+        <div>
+          <div className="sector">Age</div>
+          <select></select>
+        </div>
+
+        <div>
+          <div className="sector">Games you play</div>
+          <div className="optionsmap">
+          {gameOptions.map(game => <div key={game} 
+              className={`options ${
+              games.includes(game) ? "selected" : ""
+            }`} > <div onClick={() => toggleGameOption(game)}>{game} </div> </div>)}
+          </div>
+        </div>
+
+        {games.length === 0 ? "" : <div>
+          <div className="sector">Give us more information about your game experience</div>
+          <div>
+            {games.map(game => <div key={game}>
+              <div>{game}</div>
+              <div> Game experience  </div>
+              <select>{gameExpLvl.map(lvl => <option key={lvl}>{lvl}</option>)}</select>
+              <div> Played hours</div>
+              <select>{gaminghours.map(hour => <option key={hour}>{hour}</option>)}</select>
+              <div>Servers I play in</div>
+              <div className="optionsmap">{serverOptions.map(server => <div key={server} className={`options ${
+              servers.includes(game) ? "selected" : ""
+            }`}>{server}</div>)}</div>
+              </div>)}
+          </div>
+        </div>}
+
+
+
+        <div>
+          <div className="sector">Preferred age</div>
+            <select></select>
+        </div>
+
+
 
         <div className="private-email">
           <strong>Your Email (Private):</strong> {formData.email}

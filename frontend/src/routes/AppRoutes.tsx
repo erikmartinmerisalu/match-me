@@ -3,7 +3,7 @@ import LogIn from '../auth/LogIn'
 import SignUp from '../auth/SignUp'
 import {  useAuth } from '../context/AuthContext'
 import UserProfile from '../pages/userprofile/UserProfile';
-import NotFound from '../pages/notfound/NotFound';
+// import NotFound from '../pages/notfound/NotFound';
 import Match from '../pages/matches/Match';
 import Home from '../pages/frontpage/Home';
 
@@ -16,7 +16,7 @@ export default function AppRoutes() {
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<LogIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/*" element={<NotFound />} />
+          <Route path="/*" element={<Home />} />
 
           {loggedIn === true ? <>
             <Route path="/userprofile" element={<UserProfile />} />
