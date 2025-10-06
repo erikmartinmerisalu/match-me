@@ -1,7 +1,7 @@
 import  { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./auth.css"; // ← impordi CSS-fail
-import { useAuth } from "../context/AuthContext";
+import "./auth.css";
+import { useAuth } from "../../context/AuthContext";
 
 function LogIn() {
   const [email, setEMail] = useState("");

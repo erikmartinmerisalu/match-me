@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./auth.css"; // ← kasutame sama CSS-i!
+import "./auth.css";
 
 function SignUp() {
   const [email, setEMail] = useState("");
