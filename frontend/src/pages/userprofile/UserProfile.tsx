@@ -23,7 +23,7 @@ const UserProfile: React.FC = () => {
     hours: [],
   });
 
-  const toggleServer = (server : string) => {
+  const toggleServer = (server : string, index : number) => {
     setServers((prev) => prev.includes(server) ? 
   prev.filter((p) => p !== server) : [...prev, server])
   }
@@ -33,15 +33,6 @@ const UserProfile: React.FC = () => {
   prev.filter((p) => p !== game) : [...prev, game])
   }
 
-  const toggleLvl = (lvl : string) => {
-    SetExperience((prev) => prev.includes(lvl) ? 
-  prev.filter((p) => p !== lvl) : [...prev, lvl])
-  }
-
-  const toggleHours = (hours: string) => {
-    setHours((prev) => prev.includes(hours) ?
-  prev.filter((p) => p !== hours) : [...prev, hours])
-  }
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -161,18 +152,19 @@ const UserProfile: React.FC = () => {
             }`} > <div onClick={() => toggleGameOption(game)}>{game} </div> </div>)}
           </div>
         </div>
-
-        {games.length === 0 ? "" : <div>
+        
+        {/* We map the games and the content inside with functions */}
+        {games.length === 0 ? "" : <div className="games">
           <div className="sector">Give us more information about your game experience</div>
           <div>
-            {games.map(game => <div key={game}>
-              <div>{game}</div>
-              <div> Game experience  </div>
+            {games.map(game => <div key={game} className="gamesector">
+              <div className="gamename">{game}</div>
+              <div className="gamedata"> Game experience  </div>
               <select>{gameExpLvl.map(lvl => <option key={lvl}>{lvl}</option>)}</select>
-              <div> Played hours</div>
+              <div className="gamedata"> Played hours</div>
               <select>{gaminghours.map(hour => <option key={hour}>{hour}</option>)}</select>
-              <div>Servers I play in</div>
-              <div className="optionsmap">{serverOptions.map(server => <div key={server} className={`options ${
+              <div className="gamedata">Servers I play in</div>
+              <div className="optionsmap">{serverOptions.map((server, index) => <div key={server} onClick={(index) => toggleServer} className={`options ${
               servers.includes(game) ? "selected" : ""
             }`}>{server}</div>)}</div>
               </div>)}
@@ -181,16 +173,16 @@ const UserProfile: React.FC = () => {
 
 
 
-        <div>
+        <div className="preffered">
           <div className="sector">Preferred age</div>
             <select></select>
         </div>
 
 
-
-        <div className="private-email">
-          <strong>Your Email (Private):</strong> {formData.email}
+        <div className="preffered">
+          <div className="sector">Preferred distance from you</div>
         </div>
+
 
         <button type="submit" className="save-btn">
           Save Profile
