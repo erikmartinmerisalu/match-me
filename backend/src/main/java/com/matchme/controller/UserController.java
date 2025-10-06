@@ -4,6 +4,8 @@ import com.matchme.dto.UserProfileDto;
 import com.matchme.entity.User;
 import com.matchme.entity.UserProfile;
 import com.matchme.service.UserProfileService;
+import com.matchme.repository.ConnectionRepository;
+import com.matchme.entity.Connection;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -173,14 +175,28 @@ public class UserController {
         return ResponseEntity.ok(responseDto);
     }
 
-    private boolean canViewProfile(String currentUserEmail, User targetUser) {
+    @Autowired
+private ConnectionRepository connectionRepository;
 
-        if (targetUser.getEmail().equals(currentUserEmail)) {
-            return true;
-        }
-        // Only allow viewing own profile for now
-        return false;
+private boolean canViewProfile(String currentUserEmail, User targetUser) {
+    // Can always view own profile
+    if (targetUser.getEmail().equals(currentUserEmail)) {
+        return true;
     }
+    
+    // Check if users are connected
+    Optional<User> currentUser = userService.findByEmail(currentUserEmail);
+    if (currentUser.isPresent()) {
+        Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(
+            currentUser.get().getId(), 
+            targetUser.getId()
+        );
+        return connection.isPresent() && 
+               connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED;
+    }
+    
+    return false;
+}
 
 
     private UserProfileDto mapToProfileDto(UserProfile profile) {
