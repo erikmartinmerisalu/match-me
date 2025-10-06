@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 
 public class UserProfileDto {
@@ -16,17 +17,9 @@ public class UserProfileDto {
 
     private String aboutMe;
 
-    @NotNull
-    private String expLvl; // single value: Beginner, Intermediate, Advanced
 
     @NotNull
-    private String gamingHours; // single value: "<100", "101-500", "501-1000", "1000+"
-
-    @NotNull
-    private Set<String> preferredServers; // 1 or 2 values
-
-    @NotNull
-    private Set<String> games; // up to 3 games
+    private Map<String, GameProfileDto> games; // up to 3 games
 
     @NotNull
     private Integer preferredAgeMin;
@@ -52,20 +45,9 @@ public class UserProfileDto {
     public String getAboutMe() { return aboutMe; }
     public void setAboutMe(String aboutMe) { this.aboutMe = aboutMe; }
 
-    public String getExpLvl() { return expLvl; }
-    public void setExpLvl(String expLvl) { this.expLvl = expLvl; }
 
-    public String getGamingHours() { return gamingHours; }
-    public void setGamingHours(String gamingHours) { this.gamingHours = gamingHours; }
-
-    public Set<String> getPreferredServers() { return preferredServers; }
-    public void setPreferredServers(Set<String> preferredServers) { this.preferredServers = preferredServers; }
-
-    public Set<String> getGames() { return games; }
-    public void setGames(Set<String> games) { this.games = games; }
-
-    public String getRank() { return rank; }
-    public void setRank(String rank) { this.rank = rank; }
+    public Map<String, GameProfileDto> getGames() { return games; }
+    public void setGames(Map<String, GameProfileDto> games) { this.games = games; }
 
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
