@@ -106,12 +106,34 @@
   
 }
 
+.games{
+  padding-top: 5%;
+}
 
+.gamename{
+  font-weight: bold;
+  font-size: large;
+}
+
+.gamedata{
+  padding-top: 5%;
+}
+
+.gamesector{
+  border-top: 1px   solid white;
+  padding-bottom: 5%;
+}
 .optionsmap{
   display: flex;
   flex-wrap: wrap;
   max-width: 300px;
-  gap: 10px;  
+  gap: 10px;
+  justify-content: center;
+}
+
+.preffered{
+  border-top: 1px   solid white;
+  padding-bottom: 5%;
 }
 .selected{
   font-size: 12px;
