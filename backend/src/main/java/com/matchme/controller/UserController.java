@@ -2,6 +2,7 @@ package com.matchme.controller;
 
 import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
+import com.matchme.entity.GameProfile;
 import com.matchme.entity.User;
 import com.matchme.entity.UserProfile;
 import com.matchme.service.UserProfileService;
@@ -9,6 +10,7 @@ import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -124,10 +126,16 @@ public class UserController {
 
     @PutMapping("/me/profile")
     public ResponseEntity<?> updateCurrentUserProfile(
-            @AuthenticationPrincipal String userEmail,
+
+
+            // @AuthenticationPrincipal String userEmail,
             @Valid @RequestBody UserProfileDto profileDto) {
+        
+            String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Optional<User> userOpt = userService.findByEmail(userEmail);
+                System.out.println("Security principal: " + SecurityContextHolder.getContext().getAuthentication());
+        System.out.println("User email: " + userEmail);
         if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -144,6 +152,19 @@ public class UserController {
         profile.setLookingFor(profileDto.getLookingFor());
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
+
+        profile.getGames().clear();
+        if (profileDto.getGames() != null) {
+            profileDto.getGames().forEach((gameName, gameDto) -> {
+            GameProfile game = new GameProfile();
+            game.setGameName(gameName);
+            game.setRank(gameDto.getRank());
+            game.setGamingHours(gameDto.getGamingHours());
+            game.setPreferredServers(gameDto.getPreferredServers());
+            game.setUserProfile(profile);
+            profile.getGames().add(game);
+        });
+        }
 
         UserProfile savedProfile = userProfileService.saveProfile(profile);
         UserProfileDto responseDto = mapToProfileDto(savedProfile);

@@ -63,13 +63,28 @@ const UserProfile: React.FC = () => {
 
     // Prepare the payload for api
       const payload = {
-      username: formData.username,
-      servers: servers,
-      games: games,
-      experience: experience,
-      hours: hours,
-      about:formData.about
-    };
+  "displayName": "Gamer123",
+  "aboutMe": "I love competitive gaming",
+  "birthDate": "2000-05-15",
+  "age": 25,
+  "timezone": "Europe/Tallinn",
+  "lookingFor": "Team mates for FPS games",
+  "preferredAgeMin": 18,
+  "preferredAgeMax": 30,
+  "profileCompleted": true,
+  "games": {
+    "CS2": {
+      "preferredServers": ["EU West", "EU East"],
+      "gamingHours": "101-500",
+      "rank": "Gold"
+    },
+    "Valorant": {
+      "preferredServers": ["N-America"],
+      "gamingHours": "<100",
+      "rank": "Silver"
+    }
+  }
+}
 
     try {
       const res = await fetch("http://localhost:8080/api/users/me/profile", {
@@ -82,14 +97,15 @@ const UserProfile: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        setError("Failed to save profile");
-      }
+      // if (!res.ok) {
+
+      //   setError("Failed to save profile");
+      // }
 
       const data = await res.json();
       console.log("Saved profile:", data);
     } catch (err) {
-      setError("Failed to save profile")
+      // setError(err)
       console.error(err);
     }
   };

@@ -1,6 +1,6 @@
 import { Route, Routes} from 'react-router-dom'
-import LogIn from '../auth/LogIn'
-import SignUp from '../auth/SignUp'
+import LogIn from '../pages/auth/LogIn'
+import SignUp from '../pages/auth/SignUp'
 import {  useAuth } from '../context/AuthContext'
 import UserProfile from '../pages/userprofile/UserProfile';
 // import NotFound from '../pages/notfound/NotFound';
