@@ -22,13 +22,12 @@ public class GameProfile {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "profile_id", nullable = false)
     private UserProfile userProfile;
 
-    private String gameName; // "CS2", "Valorant"
+    private String gameName;
     private String expLvl;
     private String gamingHours;
-    private String rank;
 
     @ElementCollection
     @CollectionTable(name = "user_preferred_servers", joinColumns = @JoinColumn(name = "game_id"))
@@ -44,8 +43,6 @@ public class GameProfile {
     public UserProfile getUserProfile() { return userProfile; }
     public void setUserProfile(UserProfile userProfile) { this.userProfile = userProfile; }
 
-
-
     public String getGameName() { return gameName; }
     public void setGameName(String gameName) { this.gameName = gameName; }
 
@@ -54,9 +51,5 @@ public class GameProfile {
 
     public String getGamingHours() { return gamingHours; }
     public void setGamingHours(String gamingHours) { this.gamingHours = gamingHours; }
-
-    public String getRank() { return rank; }
-    public void setRank(String rank) { this.rank = rank; }
-
 
 }

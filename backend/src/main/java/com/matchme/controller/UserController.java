@@ -134,8 +134,6 @@ public class UserController {
             String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Optional<User> userOpt = userService.findByEmail(userEmail);
-                System.out.println("Security principal: " + SecurityContextHolder.getContext().getAuthentication());
-        System.out.println("User email: " + userEmail);
         if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -158,7 +156,7 @@ public class UserController {
             profileDto.getGames().forEach((gameName, gameDto) -> {
             GameProfile game = new GameProfile();
             game.setGameName(gameName);
-            game.setRank(gameDto.getRank());
+            game.setExpLvl(gameDto.getExpLvl()); 
             game.setGamingHours(gameDto.getGamingHours());
             game.setPreferredServers(gameDto.getPreferredServers());
             game.setUserProfile(profile);
@@ -192,9 +190,9 @@ public class UserController {
         Map<String, GameProfileDto> gamesMap = new HashMap<>();
         profile.getGames().forEach(game -> {
             GameProfileDto g = new GameProfileDto();
+            game.setExpLvl(game.getExpLvl()); 
             g.setPreferredServers(game.getPreferredServers());
             g.setGamingHours(game.getGamingHours());
-            g.setRank(game.getRank());
             gamesMap.put(game.getGameName(), g);
         });
         dto.setGames(gamesMap);

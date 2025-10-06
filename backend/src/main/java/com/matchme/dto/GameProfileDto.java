@@ -13,12 +13,16 @@ public class GameProfileDto {
     private Set<String> preferredServers;
     private String gamingHours;
     private String rank;
+    private String expLvl;
 
     
 
     // getterid ja setterid
     public Set<String> getPreferredServers() { return preferredServers; }
     public void setPreferredServers(Set<String> preferredServers) { this.preferredServers = preferredServers; }
+
+    public String getExpLvl() { return expLvl; }
+    public void setExpLvl(String expLvl) { this.expLvl = expLvl; }
 
     public String getGamingHours() { return gamingHours; }
     public void setGamingHours(String gamingHours) { this.gamingHours = gamingHours; }
