@@ -95,11 +95,11 @@ public class RecommendationService {
 
         // Region bonus
 
-        if (profile1.getRegion() != null && profile1.getRegion().equals(profile2.getRegion())) {
+        // if (profile1.getRegion() != null && profile1.getRegion().equals(profile2.getRegion())) {
 
-            score += 0.1;
-            maxScore += 0.1;
-        }
+        //     score += 0.1;
+        //     maxScore += 0.1;
+        // }
 
         return maxScore > 0 ? score / maxScore : 0;
     }

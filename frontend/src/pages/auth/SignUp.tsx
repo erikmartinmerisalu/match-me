@@ -62,7 +62,8 @@ function SignUp() {
         headers: { "Content-Type": "application/json" },
         // Authorization : "Bearer " + sessionStorage.getItem("LokiAuthToken")
         credentials: "include",
-        body: JSON.stringify({ email, 
+        body: JSON.stringify({ 
+          email, 
           password,
           displayName: username, 
           birthDate: "2000-01-01"  }),
