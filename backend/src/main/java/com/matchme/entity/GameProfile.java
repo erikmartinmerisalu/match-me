@@ -1,5 +1,7 @@
 package com.matchme.entity;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import jakarta.persistence.CollectionTable;
@@ -22,20 +24,26 @@ public class GameProfile {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "profile_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserProfile userProfile;
 
     private String gameName;
     private String expLvl;
     private String gamingHours;
 
-    @ElementCollection
-    @CollectionTable(name = "user_preferred_servers", joinColumns = @JoinColumn(name = "game_id"))
+    // @ElementCollection
+    // @CollectionTable(name = "user_preferred_servers", joinColumns = @JoinColumn(name = "game_id"))
     @Column(name = "server")
-    private Set<String> preferredServers;
+    private String preferredServers;
 
-    public Set<String> getPreferredServers() { return preferredServers; }
-    public void setPreferredServers(Set<String> preferredServers) { this.preferredServers = preferredServers; }
+    public Set<String> getPreferredServersSet() {
+        if (preferredServers == null || preferredServers.isEmpty()) return new HashSet<>();
+        return new HashSet<>(Arrays.asList(preferredServers.split(",")));
+    }
+
+    public void setPreferredServersSet(Set<String> servers) {
+        this.preferredServers = String.join(",", servers);
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

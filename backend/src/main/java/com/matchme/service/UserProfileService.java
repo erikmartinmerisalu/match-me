@@ -36,6 +36,7 @@ import javax.management.RuntimeErrorException;
         private static final Set<String> VALID_GAMES = Set.of(
             "Game1", "Game2", "Game3", "Game4", "Game5" // Replace with your actual game options
         );
+        
 
         // SAVE PROFILE WITH VALIDATIONS
         public UserProfile saveProfile(UserProfile profile) {
@@ -61,11 +62,16 @@ import javax.management.RuntimeErrorException;
                 if (!VALID_GAMING_HOURS.contains(game.getGamingHours())) {
                     throw new RuntimeException("Invalid gaming hours for game: " + game.getGameName());
                 }
-                if (game.getPreferredServers() == null 
-                    || game.getPreferredServers().isEmpty()
-                    || !VALID_SERVERS.containsAll(game.getPreferredServers())) {
+                if (game.getPreferredServersSet() == null 
+                    || game.getPreferredServersSet().isEmpty()
+                    || !VALID_SERVERS.containsAll(game.getPreferredServersSet())) {
                     throw new RuntimeException("Invalid preferred servers for game: " + game.getGameName());
                 }
+            }
+            
+            Integer maxDistance = profile.getMaxPreferredDistance();
+            if (maxDistance == null || maxDistance > 200 || maxDistance < 1) {
+                throw new RuntimeException("Profile distance must be less than 200km and more than 1 km");
             }
 
             return userProfileRepository.save(profile);

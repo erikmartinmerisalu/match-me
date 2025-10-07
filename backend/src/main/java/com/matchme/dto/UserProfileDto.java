@@ -34,6 +34,8 @@ public class UserProfileDto {
     private String region;
     private String lookingFor;
     private boolean profileCompleted;
+    private Integer maxPreferredDistance;
+
 
     // --- Getters & Setters ---
     public Long getId() { return id; }
@@ -69,6 +71,9 @@ public class UserProfileDto {
 
     public Integer getPreferredAgeMax() { return preferredAgeMax; }
     public void setPreferredAgeMax(Integer preferredAgeMax) { this.preferredAgeMax = preferredAgeMax; }
+
+    public Integer getMaxPreferredDistance() {return maxPreferredDistance; }
+    public void setMaxPreferredDistance(Integer maxPreferredDistance) {this.maxPreferredDistance = maxPreferredDistance; }
 
     public boolean isProfileCompleted() { return profileCompleted; }
     public void setProfileCompleted(boolean profileCompleted) { this.profileCompleted = profileCompleted; }
