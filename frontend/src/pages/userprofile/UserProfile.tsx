@@ -18,6 +18,7 @@ const UserProfile: React.FC = () => {
   const [formData, setFormData] = useState({
     username: "",
     about: "",
+    lookingfor: "",
     games: [],
     experience: [],
     hours: [],
@@ -62,29 +63,28 @@ const UserProfile: React.FC = () => {
     e.preventDefault();
 
     // Prepare the payload for api
-      const payload = {
-  "displayName": "Gamer123",
-  "aboutMe": "I love competitive gaming",
-  "birthDate": "2000-05-15",
-  "age": 25,
-  "timezone": "Europe/Tallinn",
-  "lookingFor": "Team mates for FPS games",
-  "preferredAgeMin": 18,
-  "preferredAgeMax": 30,
-  "profileCompleted": true,
-  "games": {
-    "CS2": {
-      "preferredServers": ["EU West", "EU East"],
-      "gamingHours": "101-500",
-      "rank": "Gold"
+    const payload = {
+    displayName: formData.username,
+    aboutMe: formData.about,
+    birthDate: "1995-06-15",
+    timezone: "Europe/Tallinn",
+    lookingFor: formData.lookingfor,
+    preferredAgeMin: 20,
+    preferredAgeMax: 35,
+    games: {
+      Game1: {
+        expLvl: "Intermediate",
+        gamingHours: "101-500",
+        preferredServers: ["EU East", "Asia"]
+      },
+      Game2: {
+        expLvl: "Intermediate",
+        gamingHours: "101-500",
+        preferredServers: ["EU East"]
+      }
     },
-    "Valorant": {
-      "preferredServers": ["N-America"],
-      "gamingHours": "<100",
-      "rank": "Silver"
-    }
+    maxPreferredDistance: 50
   }
-}
 
     try {
       const res = await fetch("http://localhost:8080/api/users/me/profile", {
@@ -151,6 +151,17 @@ const UserProfile: React.FC = () => {
             onChange={handleChange}
             maxLength={500}
             placeholder="Tell other gamers about yourself..."
+          />
+        </div>
+
+        <div>
+          <div className="sector">Looking for</div>
+          <textarea
+            name="about"
+            value={formData.lookingfor}
+            onChange={handleChange}
+            maxLength={100}
+            placeholder="Tell others what are you looking for.."
           />
         </div>
 

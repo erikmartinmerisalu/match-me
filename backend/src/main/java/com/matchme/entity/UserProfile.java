@@ -35,6 +35,7 @@ public class UserProfile {
     private String lookingFor;
     private Integer preferredAgeMin;
     private Integer preferredAgeMax;
+    private Integer maxPreferredDistance;
 
 
 
@@ -79,6 +80,10 @@ public class UserProfile {
 
     public List<GameProfile> getGames() { return games; }
     public void setGames(List<GameProfile> games) { this.games = games; }
+
+    public Integer getMaxPreferredDistance() {return maxPreferredDistance; }
+    public void setMaxPreferredDistance( Integer maxPreferredDistanxe) {this.maxPreferredDistance = maxPreferredDistanxe ;}
+
 
 }
 
