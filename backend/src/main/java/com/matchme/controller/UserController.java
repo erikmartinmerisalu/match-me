@@ -150,6 +150,7 @@ public class UserController {
         profile.setLookingFor(profileDto.getLookingFor());
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
+        profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
 
         profile.getGames().clear();
         if (profileDto.getGames() != null) {
@@ -158,7 +159,7 @@ public class UserController {
             game.setGameName(gameName);
             game.setExpLvl(gameDto.getExpLvl()); 
             game.setGamingHours(gameDto.getGamingHours());
-            game.setPreferredServers(gameDto.getPreferredServers());
+            game.setPreferredServersSet(gameDto.getPreferredServers());
             game.setUserProfile(profile);
             profile.getGames().add(game);
         });
@@ -190,13 +191,13 @@ public class UserController {
         Map<String, GameProfileDto> gamesMap = new HashMap<>();
         profile.getGames().forEach(game -> {
             GameProfileDto g = new GameProfileDto();
-            game.setExpLvl(game.getExpLvl()); 
-            g.setPreferredServers(game.getPreferredServers());
+            g.setExpLvl(game.getExpLvl()); 
+            g.setPreferredServers(game.getPreferredServersSet());
             g.setGamingHours(game.getGamingHours());
             gamesMap.put(game.getGameName(), g);
         });
         dto.setGames(gamesMap);
-
+        dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
         dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
