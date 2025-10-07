@@ -2,6 +2,7 @@ import  { useState } from "react";
 import  {  ChangeEvent } from "react";
 
 import "./userprofile.css";
+import ProfilePic from "../../components/profilepic/ProfilePic";
 
 const UserProfile: React.FC = () => {
   const serverOptions = ["N-America", "S-America", "EU East", "EU West", "Asia", "AU+SEA", "Africa+Middle east"]
@@ -15,13 +16,21 @@ const UserProfile: React.FC = () => {
   const [hours, setHours] = useState<string[]>([]);
   const [error, setError] = useState<string>("");
 
+  const [base64String, setBase64String] = useState<string | null>(null);
+
+
   const [formData, setFormData] = useState({
     username: "",
     about: "",
+    birthdate: "",
     lookingfor: "",
-    games: [],
-    experience: [],
-    hours: [],
+    games: {},
+    maxPreferredDistance: "",
+    timezone: "Europe/Tallinn",
+    lookingFor: "",
+    preferredAgeMin: "",
+    preferredAgeMax: "",
+    profilePic : base64String
   });
 
   const toggleServer = (server : string, index : number) => {
@@ -49,6 +58,9 @@ const UserProfile: React.FC = () => {
       reader.onload = (event) => {
         if (event.target) {
           setProfilePic(event.target.result as string);
+          const base64 = event.target.result as string;
+          setBase64String(base64);
+          console.log(base64);
         }
       };
       reader.readAsDataURL(file);
@@ -57,6 +69,7 @@ const UserProfile: React.FC = () => {
 
   const handleRemovePic = () => {
     setProfilePic(null);
+    setBase64String(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,21 +128,13 @@ const UserProfile: React.FC = () => {
     <div className="profile-card">
       <h2>🎮 Gamer Profile</h2>
 
-      <div className="profile-pic">
-        {profilePic ? (
-          <img src={profilePic} alt="Profile" />
-        ) : (
-          <span className="placeholder">👤</span>
-        )}
-        <div className="pic-actions">
-          <input type="file" accept="image/*" onChange={handleProfilePicUpload} />
-          {profilePic && (
-            <button type="button" onClick={handleRemovePic}>
-              Remove
-            </button>
-          )}
-        </div>
-      </div>
+        <ProfilePic
+        src={profilePic}
+        onUpload={handleProfilePicUpload}
+        onRemove={handleRemovePic}
+        width={150}
+        height={150}
+      />
 
       <form onSubmit={handleSubmit} className="profile-form">
         <div>
@@ -167,7 +172,7 @@ const UserProfile: React.FC = () => {
 
         <div>
           <div className="sector">Age</div>
-          <select></select>
+          <input type="date" value={formData.birthdate} onChange={handleChange}/>
         </div>
 
         <div>
