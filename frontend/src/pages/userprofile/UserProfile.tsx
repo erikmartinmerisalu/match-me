@@ -4,6 +4,27 @@ import  {  ChangeEvent } from "react";
 import "./userprofile.css";
 import ProfilePic from "../../components/profilepic/ProfilePic";
 
+interface Game {
+  key : string,
+  expLvl: string;
+  gamingHours: string;
+  preferredServers: string[];
+}
+
+interface formData {
+    username: string,
+    about: string,
+    birthdate: string,
+    lookingfor: string,
+    games: Game | null,
+    maxPreferredDistance: number,
+    timezone: string,
+    lookingFor: string,
+    preferredAgeMin: number | null,
+    preferredAgeMax: number,
+    profilePic : string
+}
+
 const UserProfile: React.FC = () => {
   const serverOptions = ["N-America", "S-America", "EU East", "EU West", "Asia", "AU+SEA", "Africa+Middle east"]
   const gameOptions = ["Game1", "Game2", "Game3", "Game4", "Game5"]
@@ -11,37 +32,41 @@ const UserProfile: React.FC = () => {
   const gaminghours = ["<100", "101-500", "501-1000", "1000+"]
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [servers, setServers] = useState<string[]>([]);
-  const [games, setGames] = useState<string[]>([]);
-  const [experience, SetExperience] = useState<string[]>([]);
-  const [hours, setHours] = useState<string[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
+  const [selectedGame, setSelectedGame] = useState<string []>([]);
   const [error, setError] = useState<string>("");
 
-  const [base64String, setBase64String] = useState<string | null>(null);
+  const [base64String, setBase64String] = useState<string | null >(null);
 
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState< formData>({
     username: "",
     about: "",
     birthdate: "",
     lookingfor: "",
-    games: {},
-    maxPreferredDistance: "",
-    timezone: "Europe/Tallinn",
+    games: null,
+    maxPreferredDistance: 2,
+    timezone: "",
     lookingFor: "",
-    preferredAgeMin: "",
-    preferredAgeMax: "",
-    profilePic : base64String
+    preferredAgeMin: 18,
+    preferredAgeMax: 65,
+    profilePic : ""
   });
+
+  const handleGameToggle = (game : string) => {
+    setSelectedGame(prev => prev.includes(game) ? prev.filter(g => g !== game) : [...prev, game])
+    console.log(selectedGame)
+  }
 
   const toggleServer = (server : string, index : number) => {
     setServers((prev) => prev.includes(server) ? 
   prev.filter((p) => p !== server) : [...prev, server])
   }
 
-  const toggleGameOption = (game : string) => {
-    setGames((prev) => prev.includes(game) ? 
-  prev.filter((p) => p !== game) : [...prev, game])
-  }
+  // const toggleGameOption = (gameKey : string) => {
+  //   setGames((prev) => prev.includes(gameKey) ? 
+  // prev.filter((p) => p !== gameKey) : [...prev, gameKey])
+  // }
 
 
   const handleChange = (
@@ -180,23 +205,24 @@ const UserProfile: React.FC = () => {
           <div className="optionsmap">
           {gameOptions.map(game => <div key={game} 
               className={`options ${
-              games.includes(game) ? "selected" : ""
-            }`} > <div onClick={() => toggleGameOption(game)}>{game} </div> </div>)}
+              selectedGame.includes(game) ? "selected" : ""
+            }`} > <div onClick={() =>  handleGameToggle(game)}>{game} </div> </div>)}
           </div>
         </div>
         
         {/* We map the games and the content inside with functions */}
-        {games.length === 0 ? "" : <div className="games">
+        {selectedGame.length === 0 ? "" : <div className="games">
           <div className="sector">Give us more information about your game experience</div>
           <div>
-            {games.map(game => <div key={game} className="gamesector">
-              <div className="gamename">{game}</div>
+            {selectedGame.map((game, index) => <div key={game.key} className="gamesector">
+              <div className="gamename">{game}</div>game
               <div className="gamedata"> Game experience  </div>
               <select>{gameExpLvl.map(lvl => <option key={lvl}>{lvl}</option>)}</select>
               <div className="gamedata"> Played hours</div>
               <select>{gaminghours.map(hour => <option key={hour}>{hour}</option>)}</select>
               <div className="gamedata">Servers I play in</div>
-              <div className="optionsmap">{serverOptions.map((server, index) => <div key={server} onClick={(index) => toggleServer} className={`options ${
+              <div className="optionsmap">{serverOptions.map((server, index) => 
+                <div key={server} onClick={(index) => toggleServer} className={`options ${
               servers.includes(game) ? "selected" : ""
             }`}>{server}</div>)}</div>
               </div>)}
