@@ -28,7 +28,7 @@ public class UserProfileDto {
     @NotNull
     private Integer maxPreferredDistance;
 
-
+    
     private LocalDate birthDate;
     private Integer age;
     private String timezone;
