@@ -3,9 +3,10 @@ package com.matchme.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+
 
 @Entity
 @Table(name = "user_profiles")
@@ -20,6 +21,11 @@ public class UserProfile {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GameProfile> games = new ArrayList<>();
+
+
+
     private String displayName;
     private LocalDate birthDate;
     private Integer age;
@@ -29,21 +35,9 @@ public class UserProfile {
     private String lookingFor;
     private Integer preferredAgeMin;
     private Integer preferredAgeMax;
+    private Integer maxPreferredDistance;
 
-    // Core matching fields
-    private String expLvl;       // Beginner, Intermediate, Advanced
-    private String gamingHours;  // Single string now
-    private String rank;         // Optional, not top 5 for matching
 
-    @ElementCollection
-    @CollectionTable(name = "user_preferred_servers", joinColumns = @JoinColumn(name = "profile_id"))
-    @Column(name = "server")
-    private Set<String> preferredServers;
-
-    @ElementCollection
-    @CollectionTable(name = "user_games", joinColumns = @JoinColumn(name = "profile_id"))
-    @Column(name = "game")
-    private Set<String> games;
 
     private boolean profileCompleted = false;
 
@@ -81,22 +75,15 @@ public class UserProfile {
     public Integer getPreferredAgeMax() { return preferredAgeMax; }
     public void setPreferredAgeMax(Integer preferredAgeMax) { this.preferredAgeMax = preferredAgeMax; }
 
-    public String getExpLvl() { return expLvl; }
-    public void setExpLvl(String expLvl) { this.expLvl = expLvl; }
-
-    public String getGamingHours() { return gamingHours; }
-    public void setGamingHours(String gamingHours) { this.gamingHours = gamingHours; }
-
-    public String getRank() { return rank; }
-    public void setRank(String rank) { this.rank = rank; }
-
-    public Set<String> getPreferredServers() { return preferredServers; }
-    public void setPreferredServers(Set<String> preferredServers) { this.preferredServers = preferredServers; }
-
-    public Set<String> getGames() { return games; }
-    public void setGames(Set<String> games) { this.games = games; }
-
     public boolean isProfileCompleted() { return profileCompleted; }
     public void setProfileCompleted(boolean profileCompleted) { this.profileCompleted = profileCompleted; }
+
+    public List<GameProfile> getGames() { return games; }
+    public void setGames(List<GameProfile> games) { this.games = games; }
+
+    public Integer getMaxPreferredDistance() {return maxPreferredDistance; }
+    public void setMaxPreferredDistance( Integer maxPreferredDistanxe) {this.maxPreferredDistance = maxPreferredDistanxe ;}
+
+
 }
 

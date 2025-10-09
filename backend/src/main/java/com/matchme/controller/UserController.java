@@ -1,18 +1,22 @@
 package com.matchme.controller;
 
+import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
+import com.matchme.entity.GameProfile;
 import com.matchme.entity.User;
 import com.matchme.entity.UserProfile;
 import com.matchme.service.UserProfileService;
-import com.matchme.repository.ConnectionRepository;
-import com.matchme.entity.Connection;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -43,7 +47,7 @@ public class UserController {
         UserProfileDto dto = new UserProfileDto();
         dto.setId(user.getId());
         dto.setDisplayName(user.getProfile().getDisplayName());
-
+        
 
 
         return ResponseEntity.ok(dto);
@@ -75,18 +79,7 @@ public class UserController {
 
         // Return only the biographical data used for recommendations
 
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(profile.getUser().getId());
-        dto.setPreferredServers(profile.getPreferredServers());
-        dto.setGames(profile.getGames());
-        dto.setGamingHours(profile.getGamingHours());
-        dto.setRank(profile.getRank());
-        dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
-        dto.setTimezone(profile.getTimezone());
-
-        dto.setRegion(profile.getRegion());
-
+        UserProfileDto dto = mapToProfileDto(profile);
         return ResponseEntity.ok(dto);
     }
 
@@ -124,29 +117,21 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-
         UserProfile profile = userOpt.get().getProfile();
 
-
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(profile.getUser().getId());
-        dto.setPreferredServers(profile.getPreferredServers());
-        dto.setGames(profile.getGames());
-        dto.setGamingHours(profile.getGamingHours());
-        dto.setRank(profile.getRank());
-        dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
-        dto.setTimezone(profile.getTimezone());
-
-
-
+        UserProfileDto dto = mapToProfileDto(profile);
         return ResponseEntity.ok(dto);
+
     }
 
     @PutMapping("/me/profile")
     public ResponseEntity<?> updateCurrentUserProfile(
-            @AuthenticationPrincipal String userEmail,
+
+
+            // @AuthenticationPrincipal String userEmail,
             @Valid @RequestBody UserProfileDto profileDto) {
+        
+            String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Optional<User> userOpt = userService.findByEmail(userEmail);
         if (userOpt.isEmpty()) {
@@ -158,16 +143,27 @@ public class UserController {
 
         profile.setDisplayName(profileDto.getDisplayName());
         profile.setAboutMe(profileDto.getAboutMe());
-        profile.setPreferredServers(profileDto.getPreferredServers());
-        profile.setGames(profileDto.getGames());
-        profile.setGamingHours(profileDto.getGamingHours());
-        profile.setRank(profileDto.getRank());
+
         profile.setBirthDate(profileDto.getBirthDate());
         profile.setTimezone(profileDto.getTimezone());
 
         profile.setLookingFor(profileDto.getLookingFor());
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
+        profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
+
+        profile.getGames().clear();
+        if (profileDto.getGames() != null) {
+            profileDto.getGames().forEach((gameName, gameDto) -> {
+            GameProfile game = new GameProfile();
+            game.setGameName(gameName);
+            game.setExpLvl(gameDto.getExpLvl()); 
+            game.setGamingHours(gameDto.getGamingHours());
+            game.setPreferredServersSet(gameDto.getPreferredServers());
+            game.setUserProfile(profile);
+            profile.getGames().add(game);
+        });
+        }
 
         UserProfile savedProfile = userProfileService.saveProfile(profile);
         UserProfileDto responseDto = mapToProfileDto(savedProfile);
@@ -175,39 +171,33 @@ public class UserController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @Autowired
-private ConnectionRepository connectionRepository;
+    private boolean canViewProfile(String currentUserEmail, User targetUser) {
 
-private boolean canViewProfile(String currentUserEmail, User targetUser) {
-    // Can always view own profile
-    if (targetUser.getEmail().equals(currentUserEmail)) {
-        return true;
+        if (targetUser.getEmail().equals(currentUserEmail)) {
+            return true;
+        }
+        // Only allow viewing own profile for now
+        return false;
     }
-    
-    // Check if users are connected
-    Optional<User> currentUser = userService.findByEmail(currentUserEmail);
-    if (currentUser.isPresent()) {
-        Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(
-            currentUser.get().getId(), 
-            targetUser.getId()
-        );
-        return connection.isPresent() && 
-               connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED;
-    }
-    
-    return false;
-}
 
 
     private UserProfileDto mapToProfileDto(UserProfile profile) {
         UserProfileDto dto = new UserProfileDto();
+
         dto.setId(profile.getUser().getId());
         dto.setDisplayName(profile.getDisplayName());
         dto.setAboutMe(profile.getAboutMe());
-        dto.setPreferredServers(profile.getPreferredServers());
-        dto.setGames(profile.getGames());
-        dto.setGamingHours(profile.getGamingHours());
-        dto.setRank(profile.getRank());
+
+        Map<String, GameProfileDto> gamesMap = new HashMap<>();
+        profile.getGames().forEach(game -> {
+            GameProfileDto g = new GameProfileDto();
+            g.setExpLvl(game.getExpLvl()); 
+            g.setPreferredServers(game.getPreferredServersSet());
+            g.setGamingHours(game.getGamingHours());
+            gamesMap.put(game.getGameName(), g);
+        });
+        dto.setGames(gamesMap);
+        dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
         dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
