@@ -4,7 +4,6 @@ import "./auth.css";
 
 function SignUp() {
   const [email, setEMail] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [passwordStrength, setPasswordStrength] = useState("");
@@ -40,7 +39,7 @@ function SignUp() {
     setError("");
     setSuccess("");
 
-    if (!email || !username || !password || !repeatPassword) {
+    if (!email || !password || !repeatPassword) {
       setError("All fields must be filled!");
       return;
     }
@@ -64,9 +63,8 @@ function SignUp() {
         credentials: "include",
         body: JSON.stringify({ 
           email, 
-          password,
-          displayName: username, 
-          birthDate: "2000-01-01"  }),
+          password
+         }),
       });
 
       if (!response.ok) {
@@ -93,13 +91,6 @@ function SignUp() {
         className="login-input"
       />
 
-      <label>Username</label>
-      <input
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        className="login-input"
-      />
 
       <label>Password</label>
       <input

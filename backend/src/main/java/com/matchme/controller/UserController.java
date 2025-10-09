@@ -203,7 +203,6 @@ public class UserController {
         dto.setGames(gamesMap);
         dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
         dto.setLookingFor(profile.getLookingFor());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
