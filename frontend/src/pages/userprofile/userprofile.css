@@ -1,7 +1,7 @@
 .profile-card {
-  max-width: 500px;
+  width: 310px;
   margin: 2rem auto;
-  padding: 2rem;
+  padding: 1rem ;
   background: #1e1e2f;
   color: #f0f0f0;
   border-radius: 12px;
@@ -39,7 +39,8 @@
 }
 
 .pic-actions input {
-  margin: 0.5rem 0;
+  margin: 0.5rem 0,5rem 0,5rem 0,5rem;
+  padding-right: 0,5rem;
 }
 
 .pic-actions button {
@@ -59,7 +60,7 @@
 .profile-form input,
 .profile-form select,
 .profile-form textarea {
-  width: 100%;
+  width: 90%;
   padding: 0.5rem;
   border-radius: 6px;
   border: none;
@@ -105,12 +106,34 @@
   
 }
 
+.games{
+  padding-top: 5%;
+}
 
+.gamename{
+  font-weight: bold;
+  font-size: large;
+}
+
+.gamedata{
+  padding-top: 5%;
+}
+
+.gamesector{
+  border-top: 1px   solid white;
+  padding-bottom: 5%;
+}
 .optionsmap{
   display: flex;
   flex-wrap: wrap;
   max-width: 300px;
-  gap: 10px;  
+  gap: 10px;
+  justify-content: center;
+}
+
+.preffered{
+  border-top: 1px   solid white;
+  padding-bottom: 5%;
 }
 .selected{
   font-size: 12px;

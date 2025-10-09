@@ -50,39 +50,39 @@ public class RecommendationService {
 
         double score = 0.0, maxScore = 0.0;
 
-        // 1. Server matching (25%)
-        if (profile1.getPreferredServers() != null && profile2.getPreferredServers() != null) {
-            Set<String> commonServers = new HashSet<>(profile1.getPreferredServers());
-            commonServers.retainAll(profile2.getPreferredServers());
-            score += commonServers.isEmpty() ? 0 : 0.25;
-        }
-        maxScore += 0.25;
+        // // 1. Server matching (25%)
+        // if (profile1.getPreferredServers() != null && profile2.getPreferredServers() != null) {
+        //     Set<String> commonServers = new HashSet<>(profile1.getPreferredServers());
+        //     commonServers.retainAll(profile2.getPreferredServers());
+        //     score += commonServers.isEmpty() ? 0 : 0.25;
+        // }
+        // maxScore += 0.25;
 
-        // 2. Game matching (25%)
-        if (profile1.getGames() != null && profile2.getGames() != null) {
-            Set<String> commonGames = new HashSet<>(profile1.getGames());
-            commonGames.retainAll(profile2.getGames());
-            score += commonGames.isEmpty() ? 0 : ((double) commonGames.size() / Math.max(profile1.getGames().size(), profile2.getGames().size())) * 0.25;
-        }
-        maxScore += 0.25;
+        // // 2. Game matching (25%)
+        // if (profile1.getGames() != null && profile2.getGames() != null) {
+        //     Set<String> commonGames = new HashSet<>(profile1.getGames());
+        //     commonGames.retainAll(profile2.getGames());
+        //     score += commonGames.isEmpty() ? 0 : ((double) commonGames.size() / Math.max(profile1.getGames().size(), profile2.getGames().size())) * 0.25;
+        // }
+        // maxScore += 0.25;
 
-        // 3. Gaming hours (20%) — now single string
-        if (profile1.getGamingHours() != null && profile2.getGamingHours() != null) {
-            score += profile1.getGamingHours().equals(profile2.getGamingHours()) ? 0.2 : 0;
-        }
-        maxScore += 0.2;
+        // // 3. Gaming hours (20%) — now single string
+        // if (profile1.getGamingHours() != null && profile2.getGamingHours() != null) {
+        //     score += profile1.getGamingHours().equals(profile2.getGamingHours()) ? 0.2 : 0;
+        // }
+        // maxScore += 0.2;
 
-        // 4. Experience level (15%)
-        if (profile1.getExpLvl() != null && profile2.getExpLvl() != null) {
-            score += calculateExpLvlScore(profile1.getExpLvl(), profile2.getExpLvl()) * 0.15;
-        }
-        maxScore += 0.15;
+        // // 4. Experience level (15%)
+        // if (profile1.getExpLvl() != null && profile2.getExpLvl() != null) {
+        //     score += calculateExpLvlScore(profile1.getExpLvl(), profile2.getExpLvl()) * 0.15;
+        // }
+        // maxScore += 0.15;
 
-        // 5. Rank (optional, 5%)
-        if (profile1.getRank() != null && profile2.getRank() != null) {
-            score += calculateRankCompatibility(profile1.getRank(), profile2.getRank()) * 0.05;
-        }
-        maxScore += 0.05;
+        // // 5. Rank (optional, 5%)
+        // if (profile1.getRank() != null && profile2.getRank() != null) {
+        //     score += calculateRankCompatibility(profile1.getRank(), profile2.getRank()) * 0.05;
+        // }
+        // maxScore += 0.05;
 
         // 6. Age (15%)
         if (profile1.getAge() != null && profile2.getAge() != null) {
