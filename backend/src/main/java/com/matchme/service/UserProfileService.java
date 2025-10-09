@@ -71,9 +71,9 @@ import javax.management.RuntimeErrorException;
             
             Integer maxDistance = profile.getMaxPreferredDistance();
             if (maxDistance == null || maxDistance > 200 || maxDistance < 1) {
-                throw new RuntimeException("Profile distance must be less than 200km and more than 1 km");
+                throw new RuntimeException("Preferred distance must be less than 200km and more than 1 km");
             }
-
+            profile.setProfileCompleted(true);
             return userProfileRepository.save(profile);
         }
 

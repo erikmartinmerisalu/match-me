@@ -1,29 +1,35 @@
-import  { useState } from "react";
-import  {  ChangeEvent } from "react";
+import  { useEffect, useState, type ChangeEvent } from "react";
 
 import "./userprofile.css";
 import ProfilePic from "../../components/profilepic/ProfilePic";
+import { useGeolocation } from "../../hooks/GeoLocation";
 
 interface Game {
-  key : string,
   expLvl: string;
   gamingHours: string;
   preferredServers: string[];
 }
 
-interface formData {
+interface Games {
+  [key : string] : Game
+}
+
+type formData = {
     username: string,
     about: string,
     birthdate: string,
     lookingfor: string,
-    games: Game | null,
+    games: Games | null,
     maxPreferredDistance: number,
     timezone: string,
     lookingFor: string,
-    preferredAgeMin: number | null,
+    preferredAgeMin: number,
     preferredAgeMax: number,
-    profilePic : string
-}
+    profilePic : string,
+    location : string,
+    latitude: number | null,
+    longitude : number | null
+};
 
 const UserProfile: React.FC = () => {
   const serverOptions = ["N-America", "S-America", "EU East", "EU West", "Asia", "AU+SEA", "Africa+Middle east"]
@@ -31,13 +37,18 @@ const UserProfile: React.FC = () => {
   const gameExpLvl = ["Beginner", "Intermediate", "Advanced"]
   const gaminghours = ["<100", "101-500", "501-1000", "1000+"]
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  const [servers, setServers] = useState<string[]>([]);
-  const [games, setGames] = useState<Game[]>([]);
   const [selectedGame, setSelectedGame] = useState<string []>([]);
   const [error, setError] = useState<string>("");
+  const { latitude, longitude } = useGeolocation();
+  // console.log(latitude)
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const default18 = `${yyyy - 18}-${mm}-${dd}`;
 
   const [base64String, setBase64String] = useState<string | null >(null);
-
 
   const [formData, setFormData] = useState< formData>({
     username: "",
@@ -45,29 +56,100 @@ const UserProfile: React.FC = () => {
     birthdate: "",
     lookingfor: "",
     games: null,
-    maxPreferredDistance: 2,
+    maxPreferredDistance: 5,
     timezone: "",
     lookingFor: "",
     preferredAgeMin: 18,
-    preferredAgeMax: 65,
-    profilePic : ""
+    preferredAgeMax: 100,
+    profilePic : "",
+    location : "",
+    latitude: latitude,
+    longitude : longitude
   });
 
+  useEffect(() => {
+  if (latitude && longitude) {
+    setFormData((prev) => ({
+      ...prev,
+      latitude,
+      longitude,
+    }));
+  }
+}, [latitude, longitude]);
+
+
   const handleGameToggle = (game : string) => {
-    setSelectedGame(prev => prev.includes(game) ? prev.filter(g => g !== game) : [...prev, game])
-    console.log(selectedGame)
+    setSelectedGame(prev => prev.includes(game) ? prev.filter(g => g !== game) : [...prev, game]);
+    setFormData((prev : any)=> {
+      const updatedGames = {...prev.games}
+
+      if(game in updatedGames){
+        delete updatedGames[game];
+      }else {
+        updatedGames[game] = {
+          expLvl: "",
+          gamingHours: "",
+          preferredServers : []
+        }
+      }
+      return {
+        ...prev,
+        games: updatedGames
+      }
+    })
+    console.log(formData)
   }
 
-  const toggleServer = (server : string, index : number) => {
-    setServers((prev) => prev.includes(server) ? 
-  prev.filter((p) => p !== server) : [...prev, server])
+  const toggleExpLvl = (game : any, lvl : string) => {
+    setFormData((prev : any) => {  
+        if (!prev.games[game]) return prev;
+
+        return {
+          ...prev,
+          games: {
+            ...prev.games, [game] : {
+              ...prev.games[game],
+              expLvl: lvl
+            }
+          }
+        }
+    })
   }
 
-  // const toggleGameOption = (gameKey : string) => {
-  //   setGames((prev) => prev.includes(gameKey) ? 
-  // prev.filter((p) => p !== gameKey) : [...prev, gameKey])
-  // }
+  const toggleHours = (game : string, hours : string) => {
+    setFormData((prev : any) => {
+      if(!prev.games[game]) return prev;
 
+      return {
+        ...prev,
+        games: {
+          ...prev.games, [game] : {
+            ...prev.games[game],
+            gamingHours : hours
+          }
+        }
+      }
+    })
+  }
+
+  const togglePreferredServers = (game : string, server : string) => {
+    setFormData((prev : any) => {
+      if(!prev.games[game]) return prev;
+
+      const currentServers = prev.games[game].preferredServers || [];
+      const updatedServers = currentServers.includes(server) ? currentServers.filter((s : string) => s !== server ) : [...currentServers, server]
+
+      return {
+        ...prev,
+        games: {
+          ...prev.games, [game] : {
+            ...prev.games[game],
+            preferredServers : updatedServers
+          }
+        }
+      }
+    })
+  }
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -104,26 +186,19 @@ const UserProfile: React.FC = () => {
     const payload = {
     displayName: formData.username,
     aboutMe: formData.about,
-    birthDate: "1995-06-15",
-    timezone: "Europe/Tallinn",
+    birthDate: formData.birthdate,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     lookingFor: formData.lookingfor,
-    preferredAgeMin: 20,
-    preferredAgeMax: 35,
-    games: {
-      Game1: {
-        expLvl: "Intermediate",
-        gamingHours: "101-500",
-        preferredServers: ["EU East", "Asia"]
-      },
-      Game2: {
-        expLvl: "Intermediate",
-        gamingHours: "101-500",
-        preferredServers: ["EU East"]
-      }
-    },
-    maxPreferredDistance: 50
+    preferredAgeMin: formData.preferredAgeMin,
+    preferredAgeMax: formData.preferredAgeMax,
+    games: formData.games,
+    maxPreferredDistance: formData.maxPreferredDistance,
+    profilePic : base64String,
+    location : formData.location,
+    latitude : latitude,
+    longitude : longitude
   }
-
+  console.log(payload)
     try {
       const res = await fetch("http://localhost:8080/api/users/me/profile", {
         method: "PUT",
@@ -135,10 +210,10 @@ const UserProfile: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
-      // if (!res.ok) {
+      if (!res.ok) {
 
-      //   setError("Failed to save profile");
-      // }
+        setError("Failed to save profile");
+      }
 
       const data = await res.json();
       console.log("Saved profile:", data);
@@ -187,7 +262,7 @@ const UserProfile: React.FC = () => {
         <div>
           <div className="sector">Looking for</div>
           <textarea
-            name="about"
+            name="lookingfor"
             value={formData.lookingfor}
             onChange={handleChange}
             maxLength={100}
@@ -196,8 +271,13 @@ const UserProfile: React.FC = () => {
         </div>
 
         <div>
+          <div className="sector">Location</div>
+          <input name="location" type="text" value={formData.location} placeholder="Tallinn, Estonia" onChange={handleChange}/>
+        </div>
+
+        <div>
           <div className="sector">Age</div>
-          <input type="date" value={formData.birthdate} onChange={handleChange}/>
+          <input type="date" name="birthdate" min="1900-01-01" max={default18} value={formData.birthdate || default18} onChange={handleChange}/>
         </div>
 
         <div>
@@ -214,16 +294,16 @@ const UserProfile: React.FC = () => {
         {selectedGame.length === 0 ? "" : <div className="games">
           <div className="sector">Give us more information about your game experience</div>
           <div>
-            {selectedGame.map((game, index) => <div key={game.key} className="gamesector">
-              <div className="gamename">{game}</div>game
+            {selectedGame.map((game) => <div key={game} className="gamesector">
+              <div className="gamename">{game}</div>
               <div className="gamedata"> Game experience  </div>
-              <select>{gameExpLvl.map(lvl => <option key={lvl}>{lvl}</option>)}</select>
+              <select >{gameExpLvl.map(lvl => <option onClick={() => toggleExpLvl(game, lvl)} key={lvl}>{lvl}</option>)}</select>
               <div className="gamedata"> Played hours</div>
-              <select>{gaminghours.map(hour => <option key={hour}>{hour}</option>)}</select>
+              <select>{gaminghours.map(hour => <option onClick={() => toggleHours(game, hour)}key={hour}>{hour}</option>)}</select>
               <div className="gamedata">Servers I play in</div>
               <div className="optionsmap">{serverOptions.map((server, index) => 
-                <div key={server} onClick={(index) => toggleServer} className={`options ${
-              servers.includes(game) ? "selected" : ""
+                <div key={server} onClick={() => togglePreferredServers(game, server)} className={`options ${
+              formData.games?.[game]?.preferredServers.includes(server) ? "selected" : ""
             }`}>{server}</div>)}</div>
               </div>)}
           </div>
@@ -233,12 +313,30 @@ const UserProfile: React.FC = () => {
 
         <div className="preffered">
           <div className="sector">Preferred age</div>
-            <select></select>
+          <div className="ageInputs">
+            <div>
+              <div>Minimum</div>
+                <input step={1} min={18} max={97} type="number" defaultValue={18} value={formData.preferredAgeMin} onChange={(e) =>
+                setFormData(prev => ({
+                  ...prev,
+                  preferredAgeMin: Number(e.target.value),
+                }))}  />
+            </div>
+            <div>
+              <div>Maximum</div>
+                <input step={1} min={20} max={100} type="number" defaultValue={100} value={formData.preferredAgeMax} onChange={(e) =>
+                setFormData(prev => ({
+                  ...prev,
+                  preferredAgeMax: Number(e.target.value),
+                }))} />
+            </div>
+          </div>
         </div>
 
 
         <div className="preffered">
-          <div className="sector">Preferred distance from you</div>
+          <div className="sector">Preferred distance from you (km)</div>
+            <input className="distance" type="number" min={5} max={200} defaultValue={50} />
         </div>
 
 
