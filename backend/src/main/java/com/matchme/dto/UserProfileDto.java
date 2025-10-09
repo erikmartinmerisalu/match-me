@@ -30,7 +30,6 @@ public class UserProfileDto {
 
     
     private LocalDate birthDate;
-    private Integer age;
     private String timezone;
     private String lookingFor;
     private boolean profileCompleted;
@@ -56,9 +55,6 @@ public class UserProfileDto {
 
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
-
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
 
     public String getTimezone() { return timezone; }
     public void setTimezone(String timezone) { this.timezone = timezone; }

@@ -27,16 +27,18 @@ public class UserProfile {
     @Column(nullable = true)
     private LocalDate birthDate;
 
+    @Lob
+    @Column(name = "profile_pic", columnDefinition = "TEXT")
+    private String profilePic;
+
 
     private String displayName;
-    private Integer age;
     private String timezone;
     private String aboutMe;
     private String lookingFor;
     private Integer preferredAgeMin;
     private Integer preferredAgeMax;
     private Integer maxPreferredDistance;
-    private String profilePic;
     private Double latitude;
     private Double longitude;
     private String location;
@@ -57,9 +59,6 @@ public class UserProfile {
 
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
-
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
 
     public String getTimezone() { return timezone; }
     public void setTimezone(String timezone) { this.timezone = timezone; }

@@ -85,13 +85,13 @@ public class RecommendationService {
         // maxScore += 0.05;
 
         // 6. Age (15%)
-        if (profile1.getAge() != null && profile2.getAge() != null) {
-            int diff = Math.abs(profile1.getAge() - profile2.getAge());
-            double ageScore = diff <= 3 ? 0.15 : Math.max(0, 0.15 - (diff - 3) * 0.03);
+        // if (profile1.getAge() != null && profile2.getAge() != null) {
+        //     int diff = Math.abs(profile1.getAge() - profile2.getAge());
+        //     double ageScore = diff <= 3 ? 0.15 : Math.max(0, 0.15 - (diff - 3) * 0.03);
 
-            score += ageScore;
-        }
-        maxScore += 0.15;
+        //     score += ageScore;
+        // }
+        // maxScore += 0.15;
 
         // Region bonus
 
