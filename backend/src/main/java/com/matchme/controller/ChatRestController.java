@@ -1,13 +1,16 @@
 package com.matchme.controller;
 
 import com.matchme.dto.*;
+import com.matchme.entity.Conversation;
 import com.matchme.entity.User;
+import com.matchme.repository.ConversationRepository;
 import com.matchme.service.ChatService;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
@@ -22,6 +25,9 @@ public class ChatRestController {
     
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private ConversationRepository conversationRepository;
     
     private Long getUserIdFromPrincipal(Principal principal) {
         String email = principal.getName();
@@ -61,6 +67,17 @@ public class ChatRestController {
         }
         
         chatService.validateUserInConversation(conversationId, userId);
+        
+        // Check if users are still connected
+        Conversation conv = conversationRepository.findById(conversationId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
+        Long otherUserId = conv.getOtherUserId(userId);
+        
+        if (!chatService.areUsersConnected(userId, otherUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Cannot view messages: users are no longer connected");
+        }
+        
         List<MessageDTO> messages = chatService.getConversationMessages(conversationId, page, size);
         return ResponseEntity.ok(messages);
     }
@@ -128,12 +145,12 @@ public class ChatRestController {
         }
     
         try {
-        chatService.sendMessage(userId, request.getReceiverId(), request.getContent());
+            chatService.sendMessage(userId, request.getReceiverId(), request.getContent());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-        e.printStackTrace();
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Error sending message: " + e.getMessage());
+                .body("Error sending message: " + e.getMessage());
         }
     }
 
@@ -142,22 +159,22 @@ public class ChatRestController {
         @PathVariable Long conversationId,
         Principal principal) {
     
-    if (principal == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        }
+        
+        Long userId = getUserIdFromPrincipal(principal);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        
+        try {
+            chatService.markConversationAsRead(conversationId, userId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error marking as read: " + e.getMessage());
+        }
     }
-    
-    Long userId = getUserIdFromPrincipal(principal);
-    if (userId == null) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-    }
-    
-    try {
-        chatService.markConversationAsRead(conversationId, userId);
-        return ResponseEntity.ok().build();
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Error marking as read: " + e.getMessage());
-    }
-}
 }

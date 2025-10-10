@@ -103,7 +103,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             
             System.out.println("User " + senderId + " marking conversation " + conversationId + " as read");
             
-            // Mark as read in database
+            // Mark as read in database (now also marks individual messages)
             chatService.markConversationAsRead(conversationId, senderId);
             
             // Notify the other person that their messages were read
@@ -114,7 +114,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 
                 if (otherSession != null && otherSession.isOpen()) {
                     Map<String, Object> readReceipt = Map.of(
-                        "type", "messageRead",
+                        "type", "messagesRead",  // Changed from "messageRead" to "messagesRead"
                         "conversationId", conversationId,
                         "readByUserId", senderId,
                         "timestamp", System.currentTimeMillis()
