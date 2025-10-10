@@ -9,6 +9,8 @@ type AuthContextType = {
     loggedIn : boolean | null,
     setLoggedIn: (value : boolean) =>void ;
     signOut : () => void;
+    userName : string | null;
+    profilePictureBase64 : string | null,
   }
 
 
@@ -24,11 +26,13 @@ type AuthProviderProps = {
 // This is the Provider component that holds the state and provides it to children
 export const AuthContextProvider = ({children } : AuthProviderProps) => {
     const [loggedIn, setLoggedIn] = useState<boolean | null >(false);
+    const [userName, setUsername] = useState<string |null>(" ");
+    const [profilePictureBase64, setProfilePictureBase64] = useState<string | null>(null)
 
 // useEffect runs on component mount to check if the user session is valid
 // Fetches /api/users/me which returns user info if logged in (cookie/session is valid)
   useEffect(() => {
-        fetch("http://localhost:8080/api/users/me", {
+        fetch("http://localhost:8080/api/users/me/profile", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -38,9 +42,16 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
         })
         .then((res) => {
             if (!res.ok) throw new Error("unauthorized");
-            //if res is ok, then set login true
             setLoggedIn(true);
             console.log(res);
+            return res.json()
+            //if res is ok, then set login true
+
+        })
+        .then((data) =>{   
+        setUsername(data.displayName);
+        console.log(userName);
+        setProfilePictureBase64(data.profilePic);
         })
         .catch(() => {
             setLoggedIn(false);
@@ -60,7 +71,7 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
 
     // Provide the state and functions to all children components
     return(
-        <AuthContext.Provider value={{loggedIn, setLoggedIn, signOut}}>
+        <AuthContext.Provider value={{loggedIn, setLoggedIn, signOut, userName, profilePictureBase64}}>
             {children}
         </AuthContext.Provider>
     )
