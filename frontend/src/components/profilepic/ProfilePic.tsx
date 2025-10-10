@@ -2,8 +2,8 @@ import type { ChangeEvent } from "react";
 
 type ProfilePicProps = {
   src: string | null;
-  onUpload: (e : ChangeEvent<HTMLInputElement> ) => void;
-  onRemove: () => void;
+  onUpload?: (e : ChangeEvent<HTMLInputElement> ) => void;
+  onRemove?: () => void ;
   width?: number;  // px
   height?: number; // px
 };
@@ -27,7 +27,7 @@ const ProfilePic: React.FC<ProfilePicProps> = ({
         <span className="placeholder" style={{ display: "inline-block", width, height, lineHeight: `${height}px`, textAlign: "center", borderRadius: "50%" }}>👤</span>
       )}
       <div className="pic-actions" style={{ marginTop: "10px" }}>
-        <input type="file" accept="image/*" onChange={onUpload} />
+        <input type="file"   accept="image/png, image/jpeg, image/jpg, image/webp" onChange={onUpload}   />
         {src && <button type="button" onClick={onRemove} style={{ marginLeft: "5px" }}>Remove</button>}
       </div>
     </div>

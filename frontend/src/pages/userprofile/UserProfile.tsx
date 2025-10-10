@@ -1,35 +1,10 @@
 import  { useEffect, useState, type ChangeEvent } from "react";
-
+import {  type FormData } from "../../types/UserProfileTypes";
 import "./userprofile.css";
 import ProfilePic from "../../components/profilepic/ProfilePic";
 import { useGeolocation } from "../../hooks/GeoLocation";
+import { userService } from "../../service/userService";
 
-interface Game {
-  expLvl: string;
-  gamingHours: string;
-  preferredServers: string[];
-}
-
-interface Games {
-  [key : string] : Game
-}
-
-type formData = {
-    username: string,
-    about: string,
-    birthdate: string,
-    lookingfor: string,
-    games: Games | null,
-    maxPreferredDistance: number,
-    timezone: string,
-    lookingFor: string,
-    preferredAgeMin: number,
-    preferredAgeMax: number,
-    profilePic : string,
-    location : string,
-    latitude: number | null,
-    longitude : number | null
-};
 
 const UserProfile: React.FC = () => {
   const serverOptions = ["N-America", "S-America", "EU East", "EU West", "Asia", "AU+SEA", "Africa+Middle east"]
@@ -50,10 +25,10 @@ const UserProfile: React.FC = () => {
 
   const [base64String, setBase64String] = useState<string | null >(null);
 
-  const [formData, setFormData] = useState< formData>({
+  const [formData, setFormData] = useState< FormData>({
     username: "",
     about: "",
-    birthdate: "",
+    birthdate: default18,
     lookingfor: "",
     games: null,
     maxPreferredDistance: 5,
@@ -179,16 +154,18 @@ const UserProfile: React.FC = () => {
     setBase64String(null);
   };
 
+
+  //INput validation and if all OK, make api call
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Prepare the payload for api
     const payload = {
-    displayName: formData.username,
-    aboutMe: formData.about,
+    displayName: formData.username.trim(),
+    aboutMe: formData.about.trim(),
     birthDate: formData.birthdate,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    lookingFor: formData.lookingfor,
+    lookingFor: formData.lookingfor.trim(),
     preferredAgeMin: formData.preferredAgeMin,
     preferredAgeMax: formData.preferredAgeMax,
     games: formData.games,
@@ -197,28 +174,57 @@ const UserProfile: React.FC = () => {
     location : formData.location,
     latitude : latitude,
     longitude : longitude
+  } 
+  //
+  if(!payload.displayName){
+    return setError("Username cannot be empty!");
   }
-  console.log(payload)
-    try {
-      const res = await fetch("http://localhost:8080/api/users/me/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        //send cookies, JWT
-        credentials: "include", 
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-
-        setError("Failed to save profile");
+  if(payload.displayName.length < 3 || payload.displayName.length > 20){
+    return setError("Username length must be greater than 3 charaters and less than 20 charaters")
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(payload.displayName)){   
+   return setError("Username may only contain letters, numbers and underscores");
+  }
+  if (payload.aboutMe.trim().length > 250){
+    return setError("About section cannot exceed 250 characters");
+  } 
+  if (payload.lookingFor.trim().length > 250){
+    return setError("Looking for section cannot exceed 250 characters");
+  }
+  if (payload.location.length > 100) {
+    return setError("Location is too long");
+  }
+  if (payload.preferredAgeMin > payload.preferredAgeMax) {
+    return setError("Minimum age cannot be greater than maximum age");
+  }
+  if (selectedGame.length === 0){
+    return setError("Please select at least one game");
+  }
+  if (formData.maxPreferredDistance < 5 || formData.maxPreferredDistance > 200) {
+  return setError("Preferred distance must be between 5 and 200 km");
+  }
+  if (!payload.timezone){
+    payload.timezone = "UTC"
+  }
+  if (selectedGame.length > 0) {
+    for (let game of selectedGame) {
+      const g = payload.games?.[game];
+      if (!g?.expLvl || !g?.gamingHours || g.preferredServers.length === 0) {
+        setError(`Please fill out all fields for ${game}`);
+        return;
       }
-
-      const data = await res.json();
-      console.log("Saved profile:", data);
+    }
+  }
+  const birthDate = new Date(payload.birthDate);
+  const age = today.getFullYear() - birthDate.getFullYear();
+  if (age < 18) {
+    setError("You must be at least 18 years old");
+    return;
+  }
+  
+    try {
+      const res = await userService.updateProfile(payload);
     } catch (err) {
-      // setError(err)
       console.error(err);
     }
   };
@@ -234,6 +240,7 @@ const UserProfile: React.FC = () => {
         onRemove={handleRemovePic}
         width={150}
         height={150}
+        
       />
 
       <form onSubmit={handleSubmit} className="profile-form">
@@ -245,6 +252,8 @@ const UserProfile: React.FC = () => {
             value={formData.username}
             onChange={handleChange}
             required
+            pattern="^[a-zA-Z0-9_]+$"
+            title="Username must be 3-20 characters and only letters, numbers, or underscores"
           />
         </div>
 
@@ -254,7 +263,7 @@ const UserProfile: React.FC = () => {
             name="about"
             value={formData.about}
             onChange={handleChange}
-            maxLength={500}
+            maxLength={250}
             placeholder="Tell other gamers about yourself..."
           />
         </div>
@@ -265,7 +274,7 @@ const UserProfile: React.FC = () => {
             name="lookingfor"
             value={formData.lookingfor}
             onChange={handleChange}
-            maxLength={100}
+            maxLength={250}
             placeholder="Tell others what are you looking for.."
           />
         </div>
@@ -332,7 +341,6 @@ const UserProfile: React.FC = () => {
             </div>
           </div>
         </div>
-
 
         <div className="preffered">
           <div className="sector">Preferred distance from you (km)</div>
