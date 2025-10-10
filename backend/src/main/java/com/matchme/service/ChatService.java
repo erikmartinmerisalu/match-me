@@ -31,16 +31,16 @@ public class ChatService {
     @Autowired
     private UserService userService;
 
-    private boolean areUsersConnected(Long userId1, Long userId2) {
-    System.out.println("Checking connection between users: " + userId1 + " and " + userId2);
-    Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(userId1, userId2);
-    System.out.println("Connection found: " + connection.isPresent());
-    if (connection.isPresent()) {
-        System.out.println("Connection status: " + connection.get().getStatus());
-        System.out.println("Status is ACCEPTED: " + (connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED));
+    public boolean areUsersConnected(Long userId1, Long userId2) {
+        System.out.println("Checking connection between users: " + userId1 + " and " + userId2);
+        Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(userId1, userId2);
+        System.out.println("Connection found: " + connection.isPresent());
+        if (connection.isPresent()) {
+            System.out.println("Connection status: " + connection.get().getStatus());
+            System.out.println("Status is ACCEPTED: " + (connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED));
+        }
+        return connection.isPresent() && connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED;
     }
-    return connection.isPresent() && connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED;
-}
 
     public void validateUserInConversation(Long conversationId, Long userId) {
         Conversation conv = conversationRepository.findById(conversationId)
@@ -92,6 +92,11 @@ public class ChatService {
         for (Conversation conv : conversations) {
             Long otherUserId = conv.getOtherUserId(userId);
             
+            // FILTER: Only show conversations with connected users
+            if (!areUsersConnected(userId, otherUserId)) {
+                continue; // Skip this conversation
+            }
+            
             ConversationDTO dto = new ConversationDTO();
             dto.setId(conv.getId());
             dto.setOtherUserId(otherUserId);
@@ -103,8 +108,6 @@ public class ChatService {
             Optional<User> otherUser = userService.findById(otherUserId);
             if (otherUser.isPresent() && otherUser.get().getProfile() != null) {
                 dto.setOtherUserName(otherUser.get().getProfile().getDisplayName());
-                // Add profile picture if available
-                // dto.setOtherUserAvatar(otherUser.get().getProfile().getProfilePictureUrl());
             } else {
                 dto.setOtherUserName("Unknown User");
             }
@@ -139,10 +142,31 @@ public class ChatService {
     }
     
     @Transactional
+    public void markMessagesAsRead(Long conversationId, Long readerId) {
+        List<Message> unreadMessages = messageRepository.findByConversationIdAndReceiverIdAndIsRead(
+            conversationId, 
+            readerId, 
+            false
+        );
+        
+        if (!unreadMessages.isEmpty()) {
+            for (Message msg : unreadMessages) {
+                msg.setRead(true);
+            }
+            messageRepository.saveAll(unreadMessages);
+            System.out.println("Marked " + unreadMessages.size() + " messages as read for user " + readerId);
+        }
+    }
+    
+    @Transactional
     public void markConversationAsRead(Long conversationId, Long userId) {
         Conversation conversation = conversationRepository.findById(conversationId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
         
+        // Mark messages as read
+        markMessagesAsRead(conversationId, userId);
+        
+        // Reset unread count
         conversation.resetUnreadCount(userId);
         conversationRepository.save(conversation);
     }

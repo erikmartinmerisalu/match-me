@@ -26,20 +26,47 @@ const ChatPage = () => {
   }, [messages]);
 
   const loadConversations = useCallback(async () => {
-    const convos = await chatService.getConversations();
-    setConversations(convos);
-  }, []);
+    try {
+      const convos = await chatService.getConversations();
+      setConversations(convos);
+      
+      // If current conversation is no longer in list (disconnected), clear it
+      if (selectedConv && !convos.find(c => c.id === selectedConv.id)) {
+        console.log('Current conversation no longer available (users disconnected)');
+        setSelectedConv(null);
+        setMessages([]);
+      }
+    } catch (err) {
+      console.error("Failed to load conversations", err);
+    }
+  }, [selectedConv]);
 
   const loadMessages = useCallback(async (conversationId: number) => {
-    const msgs = await chatService.getMessages(conversationId);
-    setMessages(msgs);
-  }, []);
+    try {
+      const msgs = await chatService.getMessages(conversationId);
+      setMessages(msgs);
+    } catch (err: any) {
+      console.error("Failed to load messages", err);
+      // If we get a 403, users are no longer connected
+      if (err.message?.includes('403') || err.message?.includes('no longer connected')) {
+        alert('You are no longer connected with this user. The conversation will be removed.');
+        await loadConversations();
+        setSelectedConv(null);
+        setMessages([]);
+      }
+    }
+  }, [loadConversations]);
 
   useEffect(() => {
     if (!loggedIn) return;
 
     getCurrentUser();
     loadConversations();
+    
+    // Refresh conversations every 30 seconds to catch connection changes
+    const refreshInterval = setInterval(() => {
+      loadConversations();
+    }, 30000);
     
     const handleWebSocketMessage = (data: any) => {
       console.log('WebSocket notification:', data);
@@ -76,6 +103,14 @@ const ChatPage = () => {
       } else if (data.type === 'messageRead') {
         console.log('Messages read in conversation', data.conversationId);
         loadConversations();
+      } else if (data.type === 'error') {
+        console.error('WebSocket error:', data.message);
+        if (data.message?.includes('not connected')) {
+          alert('You are no longer connected with this user.');
+          loadConversations();
+          setSelectedConv(null);
+          setMessages([]);
+        }
       }
     };
     
@@ -83,6 +118,7 @@ const ChatPage = () => {
 
     return () => {
       console.log('ChatPage unmounting, disconnecting WebSocket');
+      clearInterval(refreshInterval);
       chatService.disconnect();
     };
   }, [loggedIn, loadConversations, loadMessages]);
@@ -120,16 +156,23 @@ const ChatPage = () => {
       selectConversation(existing);
       navigate('/chat', { replace: true });
     } else {
-      const newConv = await chatService.getOrCreateConversation(otherUserId);
-      if (newConv) {
-        await loadConversations();
-        const created = conversations.find(c => c.otherUserId === otherUserId);
-        if (created) {
-          selectConversation(created);
+      try {
+        const newConv = await chatService.getOrCreateConversation(otherUserId);
+        if (newConv) {
+          await loadConversations();
+          const created = conversations.find(c => c.otherUserId === otherUserId);
+          if (created) {
+            selectConversation(created);
+          }
+          navigate('/chat', { replace: true });
         }
-        navigate('/chat', { replace: true });
-      } else {
-        alert(`Cannot start conversation with user ${otherUserId}. You may not be connected with this user.`);
+      } catch (err: any) {
+        console.error('Failed to create conversation:', err);
+        if (err.message?.includes('403') || err.message?.includes('not connected')) {
+          alert('Cannot start conversation. You must be connected with this user first.');
+        } else {
+          alert('Failed to start conversation. Please try again.');
+        }
         navigate('/chat', { replace: true });
       }
     }
@@ -164,13 +207,25 @@ const ChatPage = () => {
 
   const sendMessage = async () => {
     if (selectedConv && messageInput.trim()) {
-      const success = await chatService.sendMessage(selectedConv.otherUserId, messageInput);
-      if (success) {
-        setMessageInput("");
-        // Stop typing indicator
-        chatService.sendTypingIndicator(selectedConv.otherUserId, false);
-      } else {
-        alert('Failed to send message - WebSocket not connected. Try refreshing the page.');
+      try {
+        const success = await chatService.sendMessage(selectedConv.otherUserId, messageInput);
+        if (success) {
+          setMessageInput("");
+          // Stop typing indicator
+          chatService.sendTypingIndicator(selectedConv.otherUserId, false);
+        } else {
+          alert('Failed to send message - WebSocket not connected. Try refreshing the page.');
+        }
+      } catch (err: any) {
+        console.error('Failed to send message:', err);
+        if (err.message?.includes('403') || err.message?.includes('not connected')) {
+          alert('Cannot send message. You are no longer connected with this user.');
+          await loadConversations();
+          setSelectedConv(null);
+          setMessages([]);
+        } else {
+          alert('Failed to send message. Please try again.');
+        }
       }
     }
   };
