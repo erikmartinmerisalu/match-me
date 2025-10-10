@@ -7,10 +7,18 @@ import org.springframework.stereotype.Repository;
 
 import com.matchme.entity.Message;
 
+import java.util.List;
+
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
     
     Page<Message> findByConversationIdOrderByTimestampDesc(Long conversationId, Pageable pageable);
     
     Long countByConversationIdAndReceiverIdAndIsReadFalse(Long conversationId, Long receiverId);
+    
+    List<Message> findByConversationIdAndReceiverIdAndIsRead(
+        Long conversationId, 
+        Long receiverId, 
+        boolean isRead
+    );
 }

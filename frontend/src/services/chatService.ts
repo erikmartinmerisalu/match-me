@@ -116,11 +116,11 @@ class ChatService {
         return true;
       } catch (error) {
         console.error('Failed to send message via WebSocket:', error);
-        return false;
+        throw new Error('Failed to send message via WebSocket');
       }
     } else {
       console.error('❌ WebSocket is not connected, cannot send message');
-      return false;
+      throw new Error('WebSocket is not connected');
     }
   }
 
@@ -151,6 +151,9 @@ class ChatService {
       
       if (!response.ok) {
         console.error(`Failed to fetch conversations: ${response.status}`);
+        if (response.status === 403) {
+          throw new Error('403: Access denied - not connected with users');
+        }
         return [];
       }
       
@@ -158,7 +161,7 @@ class ChatService {
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error fetching conversations:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -173,6 +176,10 @@ class ChatService {
       
       if (!response.ok) {
         console.error(`Failed to fetch messages: ${response.status}`);
+        if (response.status === 403) {
+          const errorText = await response.text();
+          throw new Error(`403: ${errorText}`);
+        }
         return [];
       }
       
@@ -180,7 +187,7 @@ class ChatService {
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Error fetching messages:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -196,13 +203,17 @@ class ChatService {
       
       if (!response.ok) {
         console.error(`Failed to get/create conversation: ${response.status}`);
+        if (response.status === 403) {
+          const errorText = await response.text();
+          throw new Error(`403: ${errorText}`);
+        }
         return null;
       }
       
       return response.json();
     } catch (error) {
       console.error('Error getting/creating conversation:', error);
-      return null;
+      throw error;
     }
   }
 
