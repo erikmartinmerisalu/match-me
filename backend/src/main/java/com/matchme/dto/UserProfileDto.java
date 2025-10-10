@@ -25,17 +25,19 @@ public class UserProfileDto {
     private Integer preferredAgeMin;
     @NotNull
     private Integer preferredAgeMax;
-
-    private String rank; // optional
-
-    private LocalDate birthDate;
-    private Integer age;
-    private String timezone;
-    private String region;
-    private String lookingFor;
-    private boolean profileCompleted;
+    @NotNull
     private Integer maxPreferredDistance;
 
+    
+    private LocalDate birthDate;
+    private String timezone;
+    private String lookingFor;
+    private boolean profileCompleted;
+
+    private String profilePic;
+    private Double latitude;
+    private Double longitude;
+    private String location;
 
     // --- Getters & Setters ---
     public Long getId() { return id; }
@@ -54,14 +56,8 @@ public class UserProfileDto {
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
 
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
-
     public String getTimezone() { return timezone; }
     public void setTimezone(String timezone) { this.timezone = timezone; }
-
-    public String getRegion() { return region; }
-    public void setRegion(String region) { this.region = region; }
 
     public String getLookingFor() { return lookingFor; }
     public void setLookingFor(String lookingFor) { this.lookingFor = lookingFor; }
@@ -77,4 +73,16 @@ public class UserProfileDto {
 
     public boolean isProfileCompleted() { return profileCompleted; }
     public void setProfileCompleted(boolean profileCompleted) { this.profileCompleted = profileCompleted; }
+    
+    public String getProfilePic() { return profilePic; }
+    public void setProfilePic(String profilePic) { this.profilePic = profilePic; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 }
