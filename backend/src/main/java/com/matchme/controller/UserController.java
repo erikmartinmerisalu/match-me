@@ -151,6 +151,10 @@ public class UserController {
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
         profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
+        profile.setProfilePic(profileDto.getProfilePic());
+        profile.setLatitude(profileDto.getLatitude());
+        profile.setLongitude(profileDto.getLongitude());
+        profile.setLocation(profileDto.getLocation());
 
         profile.getGames().clear();
         if (profileDto.getGames() != null) {
@@ -199,12 +203,15 @@ public class UserController {
         dto.setGames(gamesMap);
         dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
         dto.setLookingFor(profile.getLookingFor());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
         dto.setPreferredAgeMax(profile.getPreferredAgeMax());
         dto.setProfileCompleted(profile.isProfileCompleted());
+        dto.setProfilePic(profile.getProfilePic());
+        dto.setLatitude(profile.getLatitude());
+        dto.setLongitude(profile.getLongitude());
+        dto.setLocation(profile.getLocation());
 
         return dto;
     }
