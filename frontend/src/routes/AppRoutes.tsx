@@ -6,6 +6,8 @@ import UserProfile from '../pages/userprofile/UserProfile';
 // import NotFound from '../pages/notfound/NotFound';
 import Match from '../pages/matches/Match';
 import Home from '../pages/frontpage/Home';
+import ChatPage from '../pages/chat/ChatPage';
+import ViewProfile from '../pages/viewprofile/ViewProfile';  // Add this import
 
 export default function AppRoutes() {
   const {loggedIn} = useAuth();
@@ -21,7 +23,9 @@ export default function AppRoutes() {
           {loggedIn === true ? <>
             <Route path="/userprofile" element={<UserProfile />} />
             <Route path="/match" element={<Match />} />
-
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat/:userId" element={<ChatPage />} />
+            <Route path="/viewprofile/:userId" element={<ViewProfile />} />
           </> :
           <Route path="/login" element={<LogIn />} />
           }
