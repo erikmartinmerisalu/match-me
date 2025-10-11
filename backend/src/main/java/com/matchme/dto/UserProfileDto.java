@@ -1,12 +1,9 @@
-
 package com.matchme.dto;
 
 import jakarta.validation.constraints.NotBlank;
-
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.Set;
 
 public class UserProfileDto {
 
@@ -17,9 +14,8 @@ public class UserProfileDto {
 
     private String aboutMe;
 
-
     @NotNull
-    private Map<String, GameProfileDto> games; // up to 3 games
+    private Map<String, GameProfileDto> games;
 
     @NotNull
     private Integer preferredAgeMin;
@@ -28,8 +24,8 @@ public class UserProfileDto {
     @NotNull
     private Integer maxPreferredDistance;
 
-    
     private LocalDate birthDate;
+    private Integer age;
     private String timezone;
     private String lookingFor;
     private boolean profileCompleted;
@@ -49,12 +45,14 @@ public class UserProfileDto {
     public String getAboutMe() { return aboutMe; }
     public void setAboutMe(String aboutMe) { this.aboutMe = aboutMe; }
 
-
     public Map<String, GameProfileDto> getGames() { return games; }
     public void setGames(Map<String, GameProfileDto> games) { this.games = games; }
 
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
 
     public String getTimezone() { return timezone; }
     public void setTimezone(String timezone) { this.timezone = timezone; }
