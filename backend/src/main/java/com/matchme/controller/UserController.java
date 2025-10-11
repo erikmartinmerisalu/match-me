@@ -2,9 +2,11 @@ package com.matchme.controller;
 
 import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
+import com.matchme.entity.Connection;
 import com.matchme.entity.GameProfile;
 import com.matchme.entity.User;
 import com.matchme.entity.UserProfile;
+import com.matchme.repository.ConnectionRepository;
 import com.matchme.service.UserProfileService;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,9 @@ public class UserController {
     @Autowired
     private UserProfileService userProfileService;
 
+    @Autowired
+    private ConnectionRepository connectionRepository;
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
         Optional<User> userOpt = userService.findById(id);
@@ -39,7 +44,6 @@ public class UserController {
 
         User user = userOpt.get();
 
-
         if (!canViewProfile(userEmail, user)) {
             return ResponseEntity.notFound().build();
         }
@@ -47,8 +51,6 @@ public class UserController {
         UserProfileDto dto = new UserProfileDto();
         dto.setId(user.getId());
         dto.setDisplayName(user.getProfile().getDisplayName());
-        
-
 
         return ResponseEntity.ok(dto);
     }
@@ -71,13 +73,9 @@ public class UserController {
 
         UserProfile profile = userProfileService.findByUserId(id);
 
-
         if (!canViewProfile(userEmail, profile.getUser())) {
             return ResponseEntity.notFound().build();
         }
-
-
-        // Return only the biographical data used for recommendations
 
         UserProfileDto dto = mapToProfileDto(profile);
         return ResponseEntity.ok(dto);
@@ -126,9 +124,6 @@ public class UserController {
 
     @PutMapping("/me/profile")
     public ResponseEntity<?> updateCurrentUserProfile(
-
-
-            // @AuthenticationPrincipal String userEmail,
             @Valid @RequestBody UserProfileDto profileDto) {
         
             String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -151,10 +146,6 @@ public class UserController {
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
         profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
-        profile.setProfilePic(profileDto.getProfilePic());
-        profile.setLatitude(profileDto.getLatitude());
-        profile.setLongitude(profileDto.getLongitude());
-        profile.setLocation(profileDto.getLocation());
 
         profile.getGames().clear();
         if (profileDto.getGames() != null) {
@@ -176,14 +167,23 @@ public class UserController {
     }
 
     private boolean canViewProfile(String currentUserEmail, User targetUser) {
-
+        // Can always view own profile
         if (targetUser.getEmail().equals(currentUserEmail)) {
             return true;
         }
-        // Only allow viewing own profile for now
+        
+        // Check if users are connected
+        Optional<User> currentUserOpt = userService.findByEmail(currentUserEmail);
+        if (currentUserOpt.isPresent()) {
+            Long currentUserId = currentUserOpt.get().getId();
+            Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(currentUserId, targetUser.getId());
+            if (connection.isPresent() && connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED) {
+                return true;
+            }
+        }
+        
         return false;
     }
-
 
     private UserProfileDto mapToProfileDto(UserProfile profile) {
         UserProfileDto dto = new UserProfileDto();
@@ -203,17 +203,13 @@ public class UserController {
         dto.setGames(gamesMap);
         dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
+        dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
         dto.setLookingFor(profile.getLookingFor());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
         dto.setPreferredAgeMax(profile.getPreferredAgeMax());
         dto.setProfileCompleted(profile.isProfileCompleted());
-        dto.setProfilePic(profile.getProfilePic());
-        dto.setLatitude(profile.getLatitude());
-        dto.setLongitude(profile.getLongitude());
-        dto.setLocation(profile.getLocation());
 
         return dto;
     }
 }
-
