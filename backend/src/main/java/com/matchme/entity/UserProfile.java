@@ -1,12 +1,10 @@
-
 package com.matchme.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
 
 @Entity
 @Table(name = "user_profiles")
@@ -17,7 +15,6 @@ public class UserProfile {
     private Long id;
 
     @OneToOne
-
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
@@ -31,7 +28,6 @@ public class UserProfile {
     @Column(name = "profile_pic", columnDefinition = "TEXT")
     private String profilePic;
 
-
     private String displayName;
     private String timezone;
     private String aboutMe;
@@ -42,8 +38,6 @@ public class UserProfile {
     private Double latitude;
     private Double longitude;
     private String location;
-
-
 
     private boolean profileCompleted = false;
 
@@ -95,5 +89,12 @@ public class UserProfile {
 
     public String getLocation() {return location; }
     public void setLocation( String location) {this.location = location ;}
-}
 
+    // Calculate age from birthDate
+    public Integer getAge() {
+        if (birthDate == null) {
+            return null;
+        }
+        return Period.between(birthDate, LocalDate.now()).getYears();
+    }
+}
