@@ -100,8 +100,17 @@ const ChatPage = () => {
             setIsOtherUserTyping(false);
           }, 3000);
         }
-      } else if (data.type === 'messageRead') {
-        console.log('Messages read in conversation', data.conversationId);
+      } else if (data.type === 'messagesRead') {
+        console.log('Messages marked as read in conversation', data.conversationId);
+        
+        // Reload messages to show updated read status
+        setSelectedConv(current => {
+          if (current && current.id === data.conversationId) {
+            loadMessages(current.id);
+          }
+          return current;
+        });
+        
         loadConversations();
       } else if (data.type === 'error') {
         console.error('WebSocket error:', data.message);
@@ -283,6 +292,11 @@ const ChatPage = () => {
                         hour: '2-digit', 
                         minute: '2-digit' 
                       })}
+                      {msg.senderId === currentUserId && (
+                        <span className={`message-status ${msg.isRead ? 'read' : 'sent'}`}>
+                          {msg.isRead ? ' ✓✓' : ' ✓'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
