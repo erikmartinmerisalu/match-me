@@ -133,7 +133,7 @@ const ChatPage = () => {
   }, [loggedIn, loadConversations, loadMessages]);
 
   useEffect(() => {
-    if (userId && conversations.length > 0 && currentUserId) {
+    if (userId && currentUserId) {
       const userIdNum = Number(userId);
       
       if (userIdNum === currentUserId) {
@@ -144,7 +144,7 @@ const ChatPage = () => {
       
       openConversationWithUser(userIdNum);
     }
-  }, [userId, conversations, currentUserId]);
+  }, [userId, currentUserId]);
 
   const getCurrentUser = async () => {
     try {
