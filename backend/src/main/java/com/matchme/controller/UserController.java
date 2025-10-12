@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"}, allowCredentials = "true")
 public class UserController {
 
     @Autowired
@@ -125,7 +125,7 @@ public class UserController {
     @PutMapping("/me/profile")
     public ResponseEntity<?> updateCurrentUserProfile(
             @Valid @RequestBody UserProfileDto profileDto) {
-        
+
             String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Optional<User> userOpt = userService.findByEmail(userEmail);
@@ -146,6 +146,10 @@ public class UserController {
         profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
         profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
         profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
+        profile.setProfilePic(profileDto.getProfilePic());
+        profile.setLatitude(profileDto.getLatitude());
+        profile.setLongitude(profileDto.getLongitude());
+        profile.setLocation(profileDto.getLocation());
 
         profile.getGames().clear();
         if (profileDto.getGames() != null) {
@@ -172,7 +176,7 @@ public class UserController {
             return true;
         }
         
-        // Check if users are connected
+        // Check if users are connected (for chat feature)
         Optional<User> currentUserOpt = userService.findByEmail(currentUserEmail);
         if (currentUserOpt.isPresent()) {
             Long currentUserId = currentUserOpt.get().getId();
@@ -203,12 +207,15 @@ public class UserController {
         dto.setGames(gamesMap);
         dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
-        dto.setAge(profile.getAge());
         dto.setTimezone(profile.getTimezone());
         dto.setLookingFor(profile.getLookingFor());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
         dto.setPreferredAgeMax(profile.getPreferredAgeMax());
         dto.setProfileCompleted(profile.isProfileCompleted());
+        dto.setProfilePic(profile.getProfilePic());
+        dto.setLatitude(profile.getLatitude());
+        dto.setLongitude(profile.getLongitude());
+        dto.setLocation(profile.getLocation());
 
         return dto;
     }
