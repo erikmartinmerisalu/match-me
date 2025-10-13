@@ -76,6 +76,7 @@ const UserProfile: React.FC = () => {
   }
 
   const toggleExpLvl = (game : any, lvl : string) => {
+    console.log("its working")
     setFormData((prev : any) => {  
         if (!prev.games[game]) return prev;
 
@@ -92,6 +93,8 @@ const UserProfile: React.FC = () => {
   }
 
   const toggleHours = (game : string, hours : string) => {
+    console.log(formData)
+    console.log("its working")
     setFormData((prev : any) => {
       if(!prev.games[game]) return prev;
 
@@ -174,7 +177,8 @@ const UserProfile: React.FC = () => {
     location : formData.location,
     latitude : latitude,
     longitude : longitude
-  } 
+  }
+  console.log(payload)
   //
   if(!payload.displayName){
     return setError("Username cannot be empty!");
@@ -305,15 +309,20 @@ const UserProfile: React.FC = () => {
           <div>
             {selectedGame.map((game) => <div key={game} className="gamesector">
               <div className="gamename">{game}</div>
+
               <div className="gamedata"> Game experience  </div>
-              <select >{gameExpLvl.map(lvl => <option onClick={() => toggleExpLvl(game, lvl)} key={lvl}>{lvl}</option>)}</select>
+              <select value={formData.games?.[game]?.expLvl || ""} onChange={(e) => toggleExpLvl(game, e.target.value)} > 
+                {gameExpLvl.map(lvl => <option key={lvl}>{lvl}</option>)} </select>
+
               <div className="gamedata"> Played hours</div>
-              <select>{gaminghours.map(hour => <option onClick={() => toggleHours(game, hour)}key={hour}>{hour}</option>)}</select>
+              <select value={formData.games?.[game]?.gamingHours || ""} onChange={(e) => toggleHours(game, e.target.value)} >
+                {gaminghours.map(hour => <option onClick={() => toggleHours(game, hour)}key={hour}>{hour}</option>)}</select>
+
               <div className="gamedata">Servers I play in</div>
-              <div className="optionsmap">{serverOptions.map((server, index) => 
+              <div className="optionsmap">{serverOptions.map(server => 
                 <div key={server} onClick={() => togglePreferredServers(game, server)} className={`options ${
-              formData.games?.[game]?.preferredServers.includes(server) ? "selected" : ""
-            }`}>{server}</div>)}</div>
+                  formData.games?.[game]?.preferredServers.includes(server) ? "selected" : ""
+                  }`}>{server}</div>)}</div>
               </div>)}
           </div>
         </div>}
