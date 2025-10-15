@@ -17,7 +17,6 @@ function Navbar() {
     navigate("/home");
   };
 
-  // Sulgeb dropdowni, kui klikid väljaspool
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -51,7 +50,7 @@ function Navbar() {
         ) : (
           <div className="user-dropdown" ref={dropdownRef}>
             <div className="user-info" >
-              <ProfilePicShow src={profilePictureBase64} width={30} height={30} />
+              {profilePictureBase64 !== null ? <ProfilePicShow src={profilePictureBase64} width={30} height={30} /> : ""}
               <span style={{ marginLeft: '8px' }}>{userName}</span>
             </div>
             
