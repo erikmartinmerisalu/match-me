@@ -2,6 +2,7 @@ package com.matchme.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,12 @@ public class UserProfile {
 
     @Column(nullable = true)
     private LocalDate birthDate;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     @Lob
     @Column(name = "profile_pic", columnDefinition = "TEXT")
@@ -97,4 +104,11 @@ public class UserProfile {
         }
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
 }
