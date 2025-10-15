@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -41,6 +43,9 @@ public class UserService {
         // Create an empty profile for future population
         UserProfile profile = new UserProfile();
         profile.setUser(savedUser);
+        profile.setCreatedAt(LocalDateTime.now());
+        profile.setUpdatedAt(LocalDateTime.now());
+
         userProfileRepository.save(profile);
 
         // Link profile to user
