@@ -154,14 +154,22 @@ public class UserController {
         profile.getGames().clear();
         if (profileDto.getGames() != null) {
             profileDto.getGames().forEach((gameName, gameDto) -> {
-            GameProfile game = new GameProfile();
-            game.setGameName(gameName);
-            game.setExpLvl(gameDto.getExpLvl()); 
-            game.setGamingHours(gameDto.getGamingHours());
-            game.setPreferredServersSet(gameDto.getPreferredServers());
-            game.setUserProfile(profile);
-            profile.getGames().add(game);
-        });
+                GameProfile game = new GameProfile();
+                game.setGameName(gameName);
+                game.setExpLvl(gameDto.getExpLvl()); 
+                game.setGamingHours(gameDto.getGamingHours());
+                game.setPreferredServersSet(gameDto.getPreferredServers());
+                
+                // NEW FIELDS
+                game.setCompetitiveness(gameDto.getCompetitiveness());
+                game.setVoiceChatPreference(gameDto.getVoiceChatPreference());
+                game.setPlaySchedule(gameDto.getPlaySchedule());
+                game.setMainGoal(gameDto.getMainGoal());
+                game.setCurrentRank(gameDto.getCurrentRank());
+                
+                game.setUserProfile(profile);
+                profile.getGames().add(game);
+            });
         }
 
         UserProfile savedProfile = userProfileService.saveProfile(profile);
@@ -202,6 +210,14 @@ public class UserController {
             g.setExpLvl(game.getExpLvl()); 
             g.setPreferredServers(game.getPreferredServersSet());
             g.setGamingHours(game.getGamingHours());
+            
+            // NEW FIELDS
+            g.setCompetitiveness(game.getCompetitiveness());
+            g.setVoiceChatPreference(game.getVoiceChatPreference());
+            g.setPlaySchedule(game.getPlaySchedule());
+            g.setMainGoal(game.getMainGoal());
+            g.setCurrentRank(game.getCurrentRank());
+            
             gamesMap.put(game.getGameName(), g);
         });
         dto.setGames(gamesMap);

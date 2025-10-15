@@ -11,6 +11,11 @@ const UserProfile: React.FC = () => {
   const gameOptions = ["Game1", "Game2", "Game3", "Game4", "Game5"]
   const gameExpLvl = ["Beginner", "Intermediate", "Advanced"]
   const gaminghours = ["<100", "101-500", "501-1000", "1000+"]
+  const competitivenessOptions = ["Just for fun", "Casual", "Semi-competitive", "Highly competitive"]
+  const voiceChatOptions = ["Always", "Sometimes", "Rarely", "Never"]
+  const playScheduleOptions = ["Weekday mornings", "Weekday evenings", "Weekend mornings", "Weekend evenings", "Late nights"]
+  const mainGoalOptions = ["Rank climbing", "Learning", "Making friends", "Casual fun"]
+  const rankOptions = ["Unranked", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster", "N/A"]
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [selectedGame, setSelectedGame] = useState<string []>([]);
   const [error, setError] = useState<string>("");
@@ -30,7 +35,7 @@ const UserProfile: React.FC = () => {
     about: "",
     birthdate: default18,
     lookingfor: "",
-    games: null,
+    games: {},
     maxPreferredDistance: 5,
     timezone: "",
     lookingFor: "",
@@ -54,26 +59,41 @@ const UserProfile: React.FC = () => {
 
 
   const handleGameToggle = (game : string) => {
-    setSelectedGame(prev => prev.includes(game) ? prev.filter(g => g !== game) : [...prev, game]);
-    setFormData((prev : any)=> {
-      const updatedGames = {...prev.games}
-
-      if(game in updatedGames){
-        delete updatedGames[game];
-      }else {
-        updatedGames[game] = {
-          expLvl: "",
-          gamingHours: "",
-          preferredServers : []
-        }
-      }
-      return {
-        ...prev,
-        games: updatedGames
-      }
-    })
-    console.log(formData)
+  // Prevent selecting more than 3 games
+  if (!selectedGame.includes(game) && selectedGame.length >= 3) {
+    setError("You can only select up to 3 games");
+    return;
   }
+  
+  // Clear error when deselecting
+  if (selectedGame.includes(game)) {
+    setError("");
+  }
+  
+  setSelectedGame(prev => prev.includes(game) ? prev.filter(g => g !== game) : [...prev, game]);
+  setFormData((prev : any)=> {
+    const updatedGames = {...prev.games}
+
+    if(game in updatedGames){
+      delete updatedGames[game];
+    }else {
+      updatedGames[game] = {
+        expLvl: "",
+        gamingHours: "",
+        preferredServers: [],
+        competitiveness: "",
+        voiceChatPreference: "",
+        playSchedule: "",
+        mainGoal: "",
+        currentRank: ""
+      }
+    }
+    return {
+      ...prev,
+      games: updatedGames
+    }
+  })
+}
 
   const toggleExpLvl = (game : any, lvl : string) => {
     setFormData((prev : any) => {  
@@ -125,6 +145,71 @@ const UserProfile: React.FC = () => {
       }
     })
   }
+
+  const toggleCompetitiveness = (game: string, value: string) => {
+  setFormData((prev: any) => {
+    if (!prev.games[game]) return prev;
+    return {
+      ...prev,
+      games: {
+        ...prev.games,
+        [game]: { ...prev.games[game], competitiveness: value }
+      }
+    }
+  })
+}
+
+const toggleVoiceChat = (game: string, value: string) => {
+  setFormData((prev: any) => {
+    if (!prev.games[game]) return prev;
+    return {
+      ...prev,
+      games: {
+        ...prev.games,
+        [game]: { ...prev.games[game], voiceChatPreference: value }
+      }
+    }
+  })
+}
+
+const togglePlaySchedule = (game: string, value: string) => {
+  setFormData((prev: any) => {
+    if (!prev.games[game]) return prev;
+    return {
+      ...prev,
+      games: {
+        ...prev.games,
+        [game]: { ...prev.games[game], playSchedule: value }
+      }
+    }
+  })
+}
+
+const toggleMainGoal = (game: string, value: string) => {
+  setFormData((prev: any) => {
+    if (!prev.games[game]) return prev;
+    return {
+      ...prev,
+      games: {
+        ...prev.games,
+        [game]: { ...prev.games[game], mainGoal: value }
+      }
+    }
+  })
+}
+
+const toggleCurrentRank = (game: string, value: string) => {
+  setFormData((prev: any) => {
+    if (!prev.games[game]) return prev;
+    return {
+      ...prev,
+      games: {
+        ...prev.games,
+        [game]: { ...prev.games[game], currentRank: value }
+      }
+    }
+  })
+}
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -209,7 +294,9 @@ const UserProfile: React.FC = () => {
   if (selectedGame.length > 0) {
     for (let game of selectedGame) {
       const g = payload.games?.[game];
-      if (!g?.expLvl || !g?.gamingHours || g.preferredServers.length === 0) {
+      if (!g?.expLvl || !g?.gamingHours || g.preferredServers.length === 0 ||
+          !g?.competitiveness || !g?.voiceChatPreference || !g?.playSchedule || 
+          !g?.mainGoal || !g?.currentRank) {
         setError(`Please fill out all fields for ${game}`);
         return;
       }
@@ -305,16 +392,57 @@ const UserProfile: React.FC = () => {
           <div>
             {selectedGame.map((game) => <div key={game} className="gamesector">
               <div className="gamename">{game}</div>
-              <div className="gamedata"> Game experience  </div>
-              <select >{gameExpLvl.map(lvl => <option onClick={() => toggleExpLvl(game, lvl)} key={lvl}>{lvl}</option>)}</select>
-              <div className="gamedata"> Played hours</div>
-              <select>{gaminghours.map(hour => <option onClick={() => toggleHours(game, hour)}key={hour}>{hour}</option>)}</select>
+      
+              <div className="gamedata">Game experience</div>
+              <select onChange={(e) => toggleExpLvl(game, e.target.value)} value={formData.games?.[game]?.expLvl || ""}>
+                <option value="">Select...</option>
+                {gameExpLvl.map(lvl => <option value={lvl} key={lvl}>{lvl}</option>)}
+              </select>
+      
+              <div className="gamedata">Played hours</div>
+              <select onChange={(e) => toggleHours(game, e.target.value)} value={formData.games?.[game]?.gamingHours || ""}>
+                <option value="">Select...</option>
+                {gaminghours.map(hour => <option value={hour} key={hour}>{hour}</option>)}
+              </select>
+      
               <div className="gamedata">Servers I play in</div>
-              <div className="optionsmap">{serverOptions.map((server, index) => 
+              <div className="optionsmap">{serverOptions.map((server) => 
                 <div key={server} onClick={() => togglePreferredServers(game, server)} className={`options ${
-              formData.games?.[game]?.preferredServers.includes(server) ? "selected" : ""
-            }`}>{server}</div>)}</div>
-              </div>)}
+                  formData.games?.[game]?.preferredServers.includes(server) ? "selected" : ""
+                }`}>{server}</div>)}
+              </div>
+
+              <div className="gamedata">Competitiveness</div>
+              <select onChange={(e) => toggleCompetitiveness(game, e.target.value)} value={formData.games?.[game]?.competitiveness || ""}>
+                <option value="">Select...</option>
+                {competitivenessOptions.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+              </select>
+      
+              <div className="gamedata">Voice chat preference</div>
+              <select onChange={(e) => toggleVoiceChat(game, e.target.value)} value={formData.games?.[game]?.voiceChatPreference || ""}>
+                <option value="">Select...</option>
+                {voiceChatOptions.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+              </select>
+      
+              <div className="gamedata">Play schedule</div>
+              <select onChange={(e) => togglePlaySchedule(game, e.target.value)} value={formData.games?.[game]?.playSchedule || ""}>
+                <option value="">Select...</option>
+                {playScheduleOptions.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+              </select>
+      
+              <div className="gamedata">Main goal</div>
+              <select onChange={(e) => toggleMainGoal(game, e.target.value)} value={formData.games?.[game]?.mainGoal || ""}>
+                <option value="">Select...</option>
+                {mainGoalOptions.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+              </select>
+      
+              <div className="gamedata">Current rank</div>
+              <select onChange={(e) => toggleCurrentRank(game, e.target.value)} value={formData.games?.[game]?.currentRank || ""}>
+                <option value="">Select...</option>
+                {rankOptions.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+              </select>
+
+            </div>)}
           </div>
         </div>}
 
