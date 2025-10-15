@@ -2,7 +2,7 @@
   width: 310px;
   margin: 2rem auto;
   padding: 1rem ;
-  background: #1e1e2f;
+  background: #7c857c;
   color: #f0f0f0;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
@@ -138,6 +138,7 @@
 .selected{
   font-size: 12px;
   border: 1px solid rgb(255, 0, 0); 
+  background: #44446a;;
   border-radius: 5px;
   padding: 1%;
   cursor: pointer;
