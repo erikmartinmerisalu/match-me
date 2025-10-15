@@ -96,6 +96,7 @@ const UserProfile: React.FC = () => {
 }
 
   const toggleExpLvl = (game : any, lvl : string) => {
+    console.log("its working")
     setFormData((prev : any) => {  
         if (!prev.games[game]) return prev;
 
@@ -112,6 +113,8 @@ const UserProfile: React.FC = () => {
   }
 
   const toggleHours = (game : string, hours : string) => {
+    console.log(formData)
+    console.log("its working")
     setFormData((prev : any) => {
       if(!prev.games[game]) return prev;
 
@@ -259,7 +262,8 @@ const toggleCurrentRank = (game: string, value: string) => {
     location : formData.location,
     latitude : latitude,
     longitude : longitude
-  } 
+  }
+  console.log(payload)
   //
   if(!payload.displayName){
     return setError("Username cannot be empty!");
