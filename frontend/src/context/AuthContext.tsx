@@ -67,6 +67,8 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
         credentials: "include"
       });
       setLoggedIn(false);
+      setUsername("");
+      setProfilePictureBase64("");
     }
 
     // Provide the state and functions to all children components
