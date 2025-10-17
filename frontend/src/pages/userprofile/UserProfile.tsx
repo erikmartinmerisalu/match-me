@@ -1,10 +1,13 @@
 import React, { useState, type ChangeEvent } from 'react'
 import ProfilePic from '../../components/profilepic/ProfilePic'
+import "./userprofile.css"
+import UserBioComponent from '../../components/userProfile/userBioComponent';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 
 function UserProfile() {
     const [profilePic, setProfilePic] = useState<string | null>(null);
     const [base64String, setBase64String] = useState<string | null >(null);
-    const [toast, setToast] = useState<{message: string, type: 'success'|'failure'|'warning'} | null>(null);
+    const [cardState, setCardState] = useState<number>(0);
 
 
 
@@ -31,32 +34,58 @@ function UserProfile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
   }
-  function makeClick(){
-    {toast && (
-        <ToastComponent
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
+
+  const nextCardState = (currentCardState : number) => {
+    if(cardState == 0){
+
+      toast.error("again")
+    }
   }
+
+
     
   return (
-    <div className='profile-card'>
-      <h2>🎮 Gamer Profile</h2>
+    <div>
+      <div className='profile-card'>
+        <h2>🎮 Gamer Profile</h2>
 
-        <ProfilePic
-        src={profilePic}
-        onUpload={handleProfilePicUpload}
-        onRemove={handleRemovePic}
-        width={150}
-        height={150}
-      />
+        { cardState == 0 &&   <ProfilePic
+          src={profilePic}
+          onUpload={handleProfilePicUpload}
+          onRemove={handleRemovePic}
+          width={150}
+          height={150}
+        />}
 
-      <form onSubmit={handleSubmit} className="profile-form">
-            <div onClick={() => makeClick()}> 
-                yee
-            </div>
-      </form>
+        <form onSubmit={handleSubmit} className="profile-form">
+          { cardState == 0 && 
+            <UserBioComponent 
+            userName=''
+            about=''
+            lookingfor=''
+            location=''
+            birthdate=''
+            handleChange={handleSubmit}
+            />
+          }
+          
+        </form>
+      </div>
+      <button onClick={() => nextCardState(cardState)}>Save</button>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+        />
     </div>
   )
 }
