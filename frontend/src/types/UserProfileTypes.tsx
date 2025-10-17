@@ -30,3 +30,12 @@ export type FormData = {
   latitude: number | null;
   longitude: number | null;
 };
+
+export interface UserBioProps {
+  userName: string;
+  about: string;
+  lookingfor: string;
+  location: string;
+  birthdate?: string;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}
