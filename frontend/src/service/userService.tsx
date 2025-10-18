@@ -27,15 +27,21 @@ export const userService = {
 
   async getUserProfile(){
     try{
-      const res = await fetch(`${API_BASE_URL}/me/profile`, {
+      await fetch(`${API_BASE_URL}/me/profile`, {
         method : "GET",
         credentials : "include",
       })
-      if(!res.ok){
-        return "unauthorized"
-      }
-        const data = await res.json()
-        return data
+      .then((res) => {  
+        if(!res.ok){
+        return;
+        }
+        const data = await res.json();
+        console.log("this is response" ,res)
+        console.log("this is data", data)
+        console.log(data.displayName)
+        console.log("yess")
+        return res;
+      })
       
     } catch {
       return;

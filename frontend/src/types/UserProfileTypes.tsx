@@ -35,7 +35,11 @@ export interface UserBioProps {
   userName: string;
   about: string;
   lookingfor: string;
-  location: string;
-  birthdate?: string;
+  birthdate: string;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}
+
+export interface UserGameProps {
+  games: string[];
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
