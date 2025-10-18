@@ -11,7 +11,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthContextProvider>
-        <AppRoutes />
+          <AppRoutes />
             <App />
       </AuthContextProvider>
     </BrowserRouter>

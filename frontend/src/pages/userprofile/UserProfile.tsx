@@ -1,8 +1,9 @@
 import React, { useState, type ChangeEvent } from 'react'
 import ProfilePic from '../../components/profilepic/ProfilePic'
 import "./userprofile.css"
-import UserBioComponent from '../../components/userProfile/userBioComponent';
 import { Bounce, toast, ToastContainer } from 'react-toastify';
+import UserGamesComponent from '../../components/userProfile/UserGamesComponent';
+import UserBioComponent from '../../components/userProfile/UserBioComponent';
 
 function UserProfile() {
     const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -59,33 +60,23 @@ function UserProfile() {
 
         <form onSubmit={handleSubmit} className="profile-form">
           { cardState == 0 && 
-            <UserBioComponent 
+            <UserBioComponent
             userName=''
             about=''
             lookingfor=''
-            location=''
             birthdate=''
             handleChange={handleSubmit}
             />
+          }
+          { cardState == 1 &&
+          <UserGamesComponent />
           }
           
         </form>
       </div>
       <button onClick={() => nextCardState(cardState)}>Save</button>
 
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        transition={Bounce}
-        />
+
     </div>
   )
 }

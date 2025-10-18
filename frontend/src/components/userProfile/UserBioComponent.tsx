@@ -2,7 +2,7 @@ import type { UserBioProps } from '../../types/UserProfileTypes';
 
 
 
-function UserBioComponent ( {userName , about , lookingfor, location, birthdate, handleChange } : UserBioProps) {
+function UserBioComponent ( {userName , about , lookingfor, birthdate, handleChange } : UserBioProps) {
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
@@ -46,10 +46,6 @@ function UserBioComponent ( {userName , about , lookingfor, location, birthdate,
           />
         </div>
 
-        <div>
-          <div className="sector">Location</div>
-          <input name="location" type="text" value={location} placeholder="Tallinn, Estonia" onChange={handleChange}/>
-        </div>
 
         <div>
           <div className="sector">Age</div>
