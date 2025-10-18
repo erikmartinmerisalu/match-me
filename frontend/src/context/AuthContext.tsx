@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode} from "react";
+import { userService } from "../service/userService";
 
 //React Context --> Auth context is for providing login boolean state over the application. If user or app refreshes,
 // then we need to fetch and check if the cookie is still valid, because context loses all of the values after refresh
@@ -32,30 +33,20 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
 // useEffect runs on component mount to check if the user session is valid
 // Fetches /api/users/me which returns user info if logged in (cookie/session is valid)
   useEffect(() => {
-        fetch("http://localhost:8080/api/users/me/profile", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        //cookies are included
-        credentials: "include"
-        })
-        .then((res) => {
-            if (!res.ok) throw new Error("unauthorized");
-            setLoggedIn(true);
-            console.log(res);
-            return res.json()
-            //if res is ok, then set login true
+    try{
+      const res = userService.getUserProfile();
+      if(!res){
+        setLoggedIn(false);
+      }
+      setLoggedIn(true);
+      console.log("done")
+      console.log(res)
+      setUsername(res.displayName)
+      console.log(res.displayName)
+    }catch (err){
+        console.log(err)
+    }
 
-        })
-        .then((data) =>{   
-        setUsername(data.displayName);
-        console.log(userName);
-        setProfilePictureBase64(data.profilePic);
-        })
-        .catch(() => {
-            setLoggedIn(false);
-        });
     },[]);
 
     // Function to log out the user
