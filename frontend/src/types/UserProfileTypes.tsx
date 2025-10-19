@@ -14,7 +14,8 @@ export interface Games {
   [key: string]: Game;
 }
 
-export type FormData = {
+export type UserFormData = {
+  id : number | null,
   displayName: string;
   aboutMe: string;
   birthdate: string;
@@ -29,6 +30,8 @@ export type FormData = {
   location: string;
   latitude: number | null;
   longitude: number | null;
+  profileCompleted: boolean,
+  age: number,
 };
 
 export interface UserBioProps {
