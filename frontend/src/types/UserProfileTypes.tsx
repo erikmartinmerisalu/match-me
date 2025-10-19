@@ -15,8 +15,8 @@ export interface Games {
 }
 
 export type FormData = {
-  username: string;
-  about: string;
+  displayName: string;
+  aboutMe: string;
   birthdate: string;
   lookingfor: string;
   games: Games;

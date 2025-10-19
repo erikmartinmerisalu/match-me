@@ -1,3 +1,5 @@
+import type { FormData } from "../types/UserProfileTypes";
+
 // src/services/userService.ts
 const API_BASE_URL = "http://localhost:8080/api/users";
 
@@ -25,26 +27,21 @@ export const userService = {
     }
   },
 
-  async getUserProfile(){
+  async getUserProfile() : Promise <FormData | null> {
     try{
-      await fetch(`${API_BASE_URL}/me/profile`, {
+      const res = await fetch(`${API_BASE_URL}/me/profile`, {
         method : "GET",
         credentials : "include",
       })
-      .then((res) => {  
         if(!res.ok){
-        return;
+        return null;
         }
-        const data = await res.json();
-        console.log("this is response" ,res)
-        console.log("this is data", data)
-        console.log(data.displayName)
-        console.log("yess")
-        return res;
-      })
+        const data : FormData= await res.json();
+        return data;
+      
       
     } catch {
-      return;
+      return null;
     }
   } 
 };
