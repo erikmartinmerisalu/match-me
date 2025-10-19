@@ -30,22 +30,22 @@ const UserProfile2: React.FC = () => {
 
   const [base64String, setBase64String] = useState<string | null >(null);
 
-  const [formData, setFormData] = useState< FormData>({
-    username: "",
-    about: "",
-    birthdate: default18,
-    lookingfor: "",
-    games: {},
-    maxPreferredDistance: 5,
-    timezone: "",
-    lookingFor: "",
-    preferredAgeMin: 18,
-    preferredAgeMax: 100,
-    profilePic : "",
-    location : "",
-    latitude: latitude,
-    longitude : longitude
-  });
+  // const [formData, setFormData] = useState< FormData>({
+  //   displayName: "",
+  //   aboutMe: "",
+  //   birthdate: default18,
+  //   lookingfor: "",
+  //   games: {},
+  //   maxPreferredDistance: 5,
+  //   timezone: "",
+  //   lookingFor: "",
+  //   preferredAgeMin: 18,
+  //   preferredAgeMax: 100,
+  //   profilePic : "",
+  //   location : "",
+  //   latitude: latitude,
+  //   longitude : longitude
+  // });
 
   useEffect(() => {
   if (latitude && longitude) {

@@ -36,11 +36,13 @@ function UserProfile() {
   const handleSubmit = async (e: React.FormEvent) => {
   }
 
-  const nextCardState = (currentCardState : number) => {
+  const nextCardState = (cardState : number) => {
     if(cardState == 0){
 
       toast.error("again")
     }
+    toast.success("Profile saved")
+    setCardState(cardState +1)
   }
 
 
@@ -65,7 +67,6 @@ function UserProfile() {
             about=''
             lookingfor=''
             birthdate=''
-            handleChange={handleSubmit}
             />
           }
           { cardState == 1 &&
@@ -75,6 +76,20 @@ function UserProfile() {
         </form>
       </div>
       <button onClick={() => nextCardState(cardState)}>Save</button>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+        />
 
 
     </div>
