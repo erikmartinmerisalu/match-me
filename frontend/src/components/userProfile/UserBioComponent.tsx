@@ -1,15 +1,24 @@
-import type { UserBioProps } from '../../types/UserProfileTypes';
+import type { ChangeEvent } from 'react';
+import type { UserBioProps, UserFormData } from '../../types/UserProfileTypes';
+import { useAuth } from '../../context/AuthContext';
 
 
 
-function UserBioComponent ( {userName , about , lookingfor, birthdate, handleChange } : UserBioProps) {
+function UserBioComponent ( {userName , about , lookingfor, birthdate } : UserBioProps) {
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
     const dd = String(today.getDate()).padStart(2, "0");
     const default18 = `${yyyy - 18}-${mm}-${dd}`;
-
+    const {loggedInUserData, setLoggedInUserData} = useAuth();
     
+
+    const handleChange = (
+      e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
+      const { name, value } = e.target;
+      setLoggedInUserData((prev : UserFormData) => ({ ...prev, [name]: value }));
+    };
 
   return (
     <div>
