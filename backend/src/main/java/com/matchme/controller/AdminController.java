@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final UserService userService;
-    private final FakeUserSeederService fakeUserSeederService; // ← Add this
+    private final FakeUserSeederService fakeUserSeederService;
 
     @Autowired
     public AdminController(UserService userService, FakeUserSeederService fakeUserSeederService) {
         this.userService = userService;
-        this.fakeUserSeederService = fakeUserSeederService; // ← Add this
+        this.fakeUserSeederService = fakeUserSeederService;
     }
 
     @PostMapping("/create-fake-users")
