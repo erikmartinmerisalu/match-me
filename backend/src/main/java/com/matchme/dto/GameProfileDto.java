@@ -13,6 +13,29 @@ public class GameProfileDto {
     private String playSchedule;
     private String mainGoal;
     private String currentRank;
+    
+    public GameProfileDto() {
+    }
+
+    public GameProfileDto(
+        Set<String> preferredServers,
+        String expLvl,
+        String gamingHours,
+        String competitiveness,
+        String voiceChatPreference,
+        String playSchedule,
+        String mainGoal,
+        String currentRank
+    ) {
+        this.preferredServers = preferredServers;
+        this.expLvl = expLvl;
+        this.gamingHours = gamingHours;
+        this.competitiveness = competitiveness;
+        this.voiceChatPreference = voiceChatPreference;
+        this.playSchedule = playSchedule;
+        this.mainGoal = mainGoal;
+        this.currentRank = currentRank;
+    }
 
     // Existing getters/setters
     public Set<String> getPreferredServers() { return preferredServers; }

@@ -9,19 +9,19 @@ public class UserProfileDto {
 
     private Long id;
 
-    @NotBlank
+    // @NotBlank
     private String displayName;
 
     private String aboutMe;
 
-    @NotNull
+    // @NotNull
     private Map<String, GameProfileDto> games;
 
-    @NotNull
+    // @NotNull
     private Integer preferredAgeMin;
-    @NotNull
+    // @NotNull
     private Integer preferredAgeMax;
-    @NotNull
+    // @NotNull
     private Integer maxPreferredDistance;
 
     private LocalDate birthDate;

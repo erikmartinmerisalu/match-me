@@ -6,12 +6,10 @@ import { useAuth } from '../../context/AuthContext';
 
 function UserGameComponent ( {} : UserGameProps) { 
     const gameOptions = ["Game1", "Game2", "Game3", "Game4", "Game5"];
-    const [selectedGame, setSelectedGame] = useState<string []>([]);
     const {loggedInUserData, setLoggedInUserData} = useAuth();
     
     const handleGameToggle = (game : string) => {
 
-    setSelectedGame(prev => prev.includes(game) ? prev.filter(g => g !== game) : [...prev, game]);
     setLoggedInUserData((prev : UserFormData) => {
       console.log("this is prev" ,prev)
     const updatedGames = {...prev.games}
@@ -39,12 +37,12 @@ function UserGameComponent ( {} : UserGameProps) {
 
   return (
     <div>
-        <div className="sector">Games you play</div>
+        <title className="sector">What games do you play?</title>
           <div className="optionsmap">
           {gameOptions.map(game => <div key={game} 
               className={`options ${
-              selectedGame.includes(game) ? "selected" : ""
-            }`} > <div onClick={() =>  handleGameToggle(game)}>{game} </div> </div>)}
+              loggedInUserData?.games[game] ? "selected" : ""
+            }`} > <p onClick={() =>  handleGameToggle(game)}>{game} </p> </div>)}
         </div>
     </div>
   )
