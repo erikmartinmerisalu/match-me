@@ -45,6 +45,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
         
+
+
         Map<String, Object> payload = objectMapper.readValue(message.getPayload(), Map.class);
         String type = (String) payload.get("type");
         
