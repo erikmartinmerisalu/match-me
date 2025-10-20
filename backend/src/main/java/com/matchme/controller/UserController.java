@@ -123,59 +123,19 @@ public class UserController {
     }
 
     @PutMapping("/me/profile")
-    public ResponseEntity<?> updateCurrentUserProfile(
-            @Valid @RequestBody UserProfileDto profileDto) {
+    public ResponseEntity<?> updateCurrentUserProfile( @Valid @RequestBody UserProfileDto dto ) {
 
             String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+         try {
+            UserProfile updatedProfile = userProfileService.updateCurrentUserProfile(userEmail, dto);
+            return ResponseEntity.ok(mapToProfileDto(updatedProfile));
+        } catch (RuntimeException ex) {
+            Map<String, String> errors = new HashMap<>();
+            errors.put("error", ex.getMessage());
+            return ResponseEntity.badRequest().body(errors);
         }
 
-        User user = userOpt.get();
-        UserProfile profile = user.getProfile();
-
-        profile.setDisplayName(profileDto.getDisplayName());
-        profile.setAboutMe(profileDto.getAboutMe());
-
-        profile.setBirthDate(profileDto.getBirthDate());
-        profile.setTimezone(profileDto.getTimezone());
-
-        profile.setLookingFor(profileDto.getLookingFor());
-        profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
-        profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
-        profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
-        profile.setProfilePic(profileDto.getProfilePic());
-        profile.setLatitude(profileDto.getLatitude());
-        profile.setLongitude(profileDto.getLongitude());
-        profile.setLocation(profileDto.getLocation());
-
-        profile.getGames().clear();
-        if (profileDto.getGames() != null) {
-            profileDto.getGames().forEach((gameName, gameDto) -> {
-                GameProfile game = new GameProfile();
-                game.setGameName(gameName);
-                game.setExpLvl(gameDto.getExpLvl()); 
-                game.setGamingHours(gameDto.getGamingHours());
-                game.setPreferredServersSet(gameDto.getPreferredServers());
-                
-                // NEW FIELDS
-                game.setCompetitiveness(gameDto.getCompetitiveness());
-                game.setVoiceChatPreference(gameDto.getVoiceChatPreference());
-                game.setPlaySchedule(gameDto.getPlaySchedule());
-                game.setMainGoal(gameDto.getMainGoal());
-                game.setCurrentRank(gameDto.getCurrentRank());
-                
-                game.setUserProfile(profile);
-                profile.getGames().add(game);
-            });
-        }
-
-        UserProfile savedProfile = userProfileService.saveProfile(profile);
-        UserProfileDto responseDto = mapToProfileDto(savedProfile);
-
-        return ResponseEntity.ok(responseDto);
     }
 
     private boolean canViewProfile(String currentUserEmail, User targetUser) {
@@ -203,24 +163,6 @@ public class UserController {
         dto.setId(profile.getUser().getId());
         dto.setDisplayName(profile.getDisplayName());
         dto.setAboutMe(profile.getAboutMe());
-
-        Map<String, GameProfileDto> gamesMap = new HashMap<>();
-        profile.getGames().forEach(game -> {
-            GameProfileDto g = new GameProfileDto();
-            g.setExpLvl(game.getExpLvl()); 
-            g.setPreferredServers(game.getPreferredServersSet());
-            g.setGamingHours(game.getGamingHours());
-            
-            // NEW FIELDS
-            g.setCompetitiveness(game.getCompetitiveness());
-            g.setVoiceChatPreference(game.getVoiceChatPreference());
-            g.setPlaySchedule(game.getPlaySchedule());
-            g.setMainGoal(game.getMainGoal());
-            g.setCurrentRank(game.getCurrentRank());
-            
-            gamesMap.put(game.getGameName(), g);
-        });
-        dto.setGames(gamesMap);
         dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
         dto.setTimezone(profile.getTimezone());
@@ -232,6 +174,22 @@ public class UserController {
         dto.setLatitude(profile.getLatitude());
         dto.setLongitude(profile.getLongitude());
         dto.setLocation(profile.getLocation());
+
+        dto.setGames(new HashMap<>());
+        if (profile.getGames() != null) {
+            profile.getGames().forEach(game -> {
+                dto.getGames().put(game.getGameName(), new GameProfileDto(
+                        game.getPreferredServersSet(),
+                        game.getExpLvl(),
+                        game.getGamingHours(),
+                        game.getCompetitiveness(),
+                        game.getVoiceChatPreference(),
+                        game.getPlaySchedule(),
+                        game.getMainGoal(),
+                        game.getCurrentRank()
+                ));
+            });
+        }
 
         return dto;
     }

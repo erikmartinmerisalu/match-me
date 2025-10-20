@@ -26,7 +26,7 @@ export type UserFormData = {
   lookingFor: string;
   preferredAgeMin: number;
   preferredAgeMax: number;
-  profilePic: string;
+  profilePic: string | null;
   location: string;
   latitude: number | null;
   longitude: number | null;
@@ -36,7 +36,7 @@ export type UserFormData = {
 
 export interface UserBioProps {
   userName: string;
-  about: string;
+  aboutMe: string;
   lookingfor: string;
   birthdate: string;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;

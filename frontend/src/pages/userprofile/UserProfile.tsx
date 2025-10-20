@@ -1,43 +1,34 @@
 import React, { useState, type ChangeEvent } from 'react'
-import ProfilePic from '../../components/profilepic/ProfilePic'
+import ProfilePic from '../../components/profilepic/ProfilePicChange'
 import "./userprofile.css"
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import UserGamesComponent from '../../components/userProfile/UserGamesComponent';
 import UserBioComponent from '../../components/userProfile/UserBioComponent';
+import ProfilePicChange from '../../components/profilepic/ProfilePicChange';
+import { useAuth } from '../../context/AuthContext';
+import { userService } from '../../service/userService';
 
 function UserProfile() {
-    const [profilePic, setProfilePic] = useState<string | null>(null);
-    const [base64String, setBase64String] = useState<string | null >(null);
-    const [cardState, setCardState] = useState<number>(0);
-
-
-
-  const handleProfilePicUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target) {
-          setProfilePic(event.target.result as string);
-          const base64 = event.target.result as string;
-          setBase64String(base64);
-          console.log(base64);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemovePic = () => {
-    setProfilePic(null);
-    setBase64String(null);
-  };
+  const [cardState, setCardState] = useState<number>(0);
+  const {loggedInUserData, setLoggedInUserData} = useAuth();
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
   }
 
-  const nextCardState = (cardState : number) => {
+   async function nextCardState(cardState : number){
     if(cardState == 0){
+      const payload = {
+        profilePic : loggedInUserData?.profilePic,
+        userName : loggedInUserData?.aboutMe,
+        lookingFor : loggedInUserData?.lookingFor,
+        birthDate : loggedInUserData?.birthdate
+      }
+      const res = await userService.updateProfile(payload);
+
+      if(!res.ok){
+        return;
+      }
 
       toast.error("again")
     }
@@ -52,21 +43,14 @@ function UserProfile() {
       <div className='profile-card'>
         <h2>🎮 Gamer Profile</h2>
 
-        { cardState == 0 &&   <ProfilePic
-          src={profilePic}
-          onUpload={handleProfilePicUpload}
-          onRemove={handleRemovePic}
+        { cardState == 0 &&   <ProfilePicChange
           width={150}
           height={150}
         />}
 
-        <form onSubmit={handleSubmit} className="profile-form">
+        <form className="profile-form">
           { cardState == 0 && 
             <UserBioComponent
-            userName=''
-            about=''
-            lookingfor=''
-            birthdate=''
             />
           }
           { cardState == 1 &&
@@ -75,7 +59,7 @@ function UserProfile() {
           
         </form>
       </div>
-      <button onClick={() => nextCardState(cardState)}>Save</button>
+      <button onClick={() => nextCardState(cardState)}>Next</button>
 
       <ToastContainer
         position="top-right"
