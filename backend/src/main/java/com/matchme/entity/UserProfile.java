@@ -22,13 +22,13 @@ public class UserProfile {
     @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameProfile> games = new ArrayList<>();
 
-    @Column(nullable = true)
+    // @Column(nullable = true)
     private LocalDate birthDate;
 
-    @Column(nullable = false)
+    // @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    // @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Lob

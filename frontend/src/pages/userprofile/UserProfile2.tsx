@@ -1,7 +1,7 @@
 import  { useEffect, useState, type ChangeEvent } from "react";
 import {  type FormData } from "../../types/UserProfileTypes";
 import "./userprofile.css";
-import ProfilePic from "../../components/profilepic/ProfilePic";
+import ProfilePic from "../../components/profilepic/ProfilePicChange";
 import { useGeolocation } from "../../hooks/GeoLocation";
 import { userService } from "../../service/userService";
 

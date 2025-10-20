@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 
 
-function UserBioComponent ( {userName , about , lookingfor, birthdate } : UserBioProps) {
+function UserBioComponent () {
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
@@ -26,9 +26,9 @@ function UserBioComponent ( {userName , about , lookingfor, birthdate } : UserBi
           <div>Username</div> 
           <input
             type="text"
-            name="username"
-            value={userName}
-            onChange={handleChange}
+            name="displayName"
+            value={loggedInUserData?.displayName || ""}
+            onChange={(e) => handleChange(e)}
             required
             pattern="^[a-zA-Z0-9_]+$"
             title="Username must be 3-20 characters and only letters, numbers, or underscores"
@@ -38,8 +38,8 @@ function UserBioComponent ( {userName , about , lookingfor, birthdate } : UserBi
         <div>
           <div className="sector">About me</div>
           <textarea
-            name="about"
-            value={about}
+            name="aboutMe"
+            value={loggedInUserData?.aboutMe || ""}
             onChange={handleChange}
             maxLength={250}
             placeholder="Tell other gamers about yourself..."
@@ -49,8 +49,8 @@ function UserBioComponent ( {userName , about , lookingfor, birthdate } : UserBi
         <div>
           <div className="sector">Looking for</div>
           <textarea
-            name="lookingfor"
-            value={lookingfor}
+            name="lookingFor"
+            value={loggedInUserData?.lookingFor || ""}
             onChange={handleChange}
             maxLength={250}
             placeholder="Tell others what are you looking for.."
@@ -60,7 +60,7 @@ function UserBioComponent ( {userName , about , lookingfor, birthdate } : UserBi
 
         <div>
           <div className="sector">Age</div>
-          <input type="date" name="birthdate" min="1900-01-01" max={default18} value={birthdate || default18} onChange={handleChange}/>
+          <input type="date" name="birthdate" min="1900-01-01" max={default18} value={loggedInUserData?.birthdate || default18} onChange={handleChange}/>
         </div>
     </div>
   )
