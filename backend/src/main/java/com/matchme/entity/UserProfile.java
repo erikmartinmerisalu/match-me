@@ -32,6 +32,7 @@ public class UserProfile {
     private LocalDateTime updatedAt;
 
     @Lob
+    @Basic(fetch = FetchType.EAGER)
     @Column(name = "profile_pic", columnDefinition = "TEXT")
     private String profilePic;
 

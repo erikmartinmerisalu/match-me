@@ -8,10 +8,10 @@ export interface Game {
   playSchedule: string;
   mainGoal: string;
   currentRank: string;
-}
+}  ;
 
 export interface Games {
-  [key: string]: Game;
+  [key: string]: Game | {};
 }
 
 export type UserFormData = {
@@ -32,7 +32,7 @@ export type UserFormData = {
   longitude: number | null;
   profileCompleted: boolean,
   age: number,
-};
+} | null;
 
 export interface UserBioProps {
   userName: string;
@@ -42,7 +42,7 @@ export interface UserBioProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-export interface UserGameProps {
-  games: string[];
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
+// export interface UserGameProps {
+//   games: string[];
+//   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+// }

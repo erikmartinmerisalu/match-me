@@ -6,8 +6,9 @@ import type { UserFormData } from "../types/UserProfileTypes";
 type AuthContextType = {
     loggedIn : boolean | null,
     signOut : () => void;
+    logIn : () => void;
     loggedInUserData : UserFormData | null;
-    setLoggedInUserData : React.Dispatch<React.SetStateAction<UserFormData>>
+    setLoggedInUserData : React.Dispatch<React.SetStateAction<UserFormData | null>>
   }
 
 
@@ -22,7 +23,7 @@ type AuthProviderProps = {
 // This is the Provider component that holds the state and provides it to children
 export const AuthContextProvider = ({children } : AuthProviderProps) => {
     const [loggedIn, setLoggedIn] = useState<boolean | null >(false);
-    const [loggedInUserData, setLoggedInUserData] = useState<UserFormData>({
+    const [loggedInUserData, setLoggedInUserData] = useState<UserFormData | null>({
     id: null,
     displayName: "",
     aboutMe: "",
@@ -45,17 +46,17 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
 
 
   useEffect(() => {
-    const fetchUser = async ()=> { 
+    const fetchUser = async ()=> {
       try{
         const res  = await userService.getUserProfile();
         
-        if(!res){
+        if(res !== null){
+          setLoggedIn(true);
+          setLoggedInUserData(res);
+        }else{
           setLoggedIn(false);
+          setLoggedInUserData(null)
         }
-        
-        setLoggedIn(true);
-        setLoggedInUserData(res)
-        console.log(res)
       }catch (err){
           console.log(err)
       }
@@ -69,13 +70,29 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
         credentials: "include"
       });
       setLoggedIn(false);
-      
-      // setUsername("");
-      // setProfilePictureBase64("");
+      setLoggedInUserData(null)
+      cookieStore.delete("jwt");
+    }
+
+    const logIn = async () => {
+      try{
+        const res  = await userService.getUserProfile();
+        
+        if(res !== null){
+          setLoggedIn(true);
+          setLoggedInUserData(res);
+        }else{
+          setLoggedIn(false);
+          setLoggedInUserData(null)
+        }
+      }catch (err){
+          console.log(err)
+      }
+      setLoggedIn(true);
     }
 
     return(
-        <AuthContext.Provider value={{loggedIn, loggedInUserData, setLoggedInUserData, signOut}}>
+        <AuthContext.Provider value={{loggedIn, logIn, loggedInUserData, setLoggedInUserData, signOut}}>
             {children}
         </AuthContext.Provider>
     )
