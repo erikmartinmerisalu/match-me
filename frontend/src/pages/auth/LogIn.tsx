@@ -8,7 +8,7 @@ function LogIn() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const {setLoggedIn} = useAuth();
+  const {logIn} = useAuth();
 
   async function loginUser() {
     setError("");
@@ -17,6 +17,7 @@ function LogIn() {
       setError("Please fill all the fields!");
       return;
     }
+
 
     try {
       const response = await fetch("http://localhost:8080/api/auth/login", {
@@ -33,10 +34,9 @@ function LogIn() {
         throw new Error(errorData || "Login failed");
       }
 
-      const data = await response.json();
+      logIn();
       
       navigate("/userprofile");
-      setLoggedIn(true);
     } catch (err: any) {
       setError(err.message || "Something went wrong!");
     }

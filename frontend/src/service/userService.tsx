@@ -1,10 +1,12 @@
-import type { FormData } from "../types/UserProfileTypes";
+import type { UserFormData } from "../types/UserProfileTypes";
 
 // src/services/userService.ts
 const API_BASE_URL = "http://localhost:8080/api/users";
 
 export const userService = {
   async updateProfile(payload: any) {
+    console.log("it started")
+    console.log(payload)
     try {
       const res = await fetch(`${API_BASE_URL}/me/profile`, {
         method: "PUT",
@@ -16,10 +18,12 @@ export const userService = {
       });
 
       if (!res.ok) {
+        console.log("failed")
         return "Failed to save profile";
       }
 
       const data = await res.json();
+      console.log(data)
       return data;
     } catch (err) {
       console.error("UpdateProfile failed:", err);
@@ -27,7 +31,7 @@ export const userService = {
     }
   },
 
-  async getUserProfile() : Promise <FormData | null> {
+  async getUserProfile() : Promise <UserFormData | null> {
     try{
       const res = await fetch(`${API_BASE_URL}/me/profile`, {
         method : "GET",
@@ -36,7 +40,7 @@ export const userService = {
         if(!res.ok){
         return null;
         }
-        const data : FormData= await res.json();
+        const data : UserFormData= await res.json();
         return data;
       
       
