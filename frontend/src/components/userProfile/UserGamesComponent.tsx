@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import type { UserBioProps, UserFormData, UserGameProps } from '../../types/UserProfileTypes';
+import type {  UserFormData } from '../../types/UserProfileTypes';
 import { useAuth } from '../../context/AuthContext';
 
 
 
-function UserGameComponent ( {} : UserGameProps) { 
+function UserGameComponent ( ) { 
     const gameOptions = ["Game1", "Game2", "Game3", "Game4", "Game5"];
     const {loggedInUserData, setLoggedInUserData} = useAuth();
     
     const handleGameToggle = (game : string) => {
 
-    setLoggedInUserData((prev : UserFormData) => {
-      console.log("this is prev" ,prev)
+    setLoggedInUserData((prev ) => {
+      if(prev === null) return null
     const updatedGames = {...prev.games}
 
     if(game in updatedGames){

@@ -125,15 +125,16 @@ public class UserController {
     @PutMapping("/me/profile")
     public ResponseEntity<?> updateCurrentUserProfile( @Valid @RequestBody UserProfileDto dto ) {
 
-            String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<User> userOpt = userService.findByEmail(userEmail);
+        if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
 
+        Long userId = userOpt.get().getId(); // ← SIIT SAAD USER_ID
          try {
-            UserProfile updatedProfile = userProfileService.updateCurrentUserProfile(userEmail, dto);
+            UserProfile updatedProfile = userProfileService.updateCurrentUserProfile(userId, dto);
             return ResponseEntity.ok(mapToProfileDto(updatedProfile));
-        } catch (RuntimeException ex) {
-            Map<String, String> errors = new HashMap<>();
-            errors.put("error", ex.getMessage());
-            return ResponseEntity.badRequest().body(errors);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
 
     }
