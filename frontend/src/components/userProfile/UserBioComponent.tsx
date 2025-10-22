@@ -1,24 +1,40 @@
-import type { ChangeEvent } from 'react';
-import type { UserBioProps, UserFormData } from '../../types/UserProfileTypes';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import type { UserBioData, UserBioProps } from '../../types/UserBioComponentTypes';
 
 
-
-function UserBioComponent () {
+function UserBioComponent ({onDataChange} : UserBioProps ) {
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, "0");
     const dd = String(today.getDate()).padStart(2, "0");
     const default18 = `${yyyy - 18}-${mm}-${dd}`;
     const {loggedInUserData, setLoggedInUserData} = useAuth();
-    
+    const [userData, setUserData] = useState<UserBioData>({
+      displayName : loggedInUserData?.displayName || null,
+      aboutMe : loggedInUserData?.aboutMe || null,
+      lookingFor : loggedInUserData?.lookingFor || null,
+      birthDate : loggedInUserData?.birthdate || null
+    });    
 
-    const handleChange = (
-      e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-    ) => {
-      const { name, value } = e.target;
-      setLoggedInUserData((prev : UserFormData) => ({ ...prev, [name]: value }));
-    };
+    useEffect(() => {
+    if (onDataChange) {
+      onDataChange(userData);
+    }
+  }, [userData, onDataChange]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setUserData(prev => ({ ...prev, [name]: value }));
+  };
+
+      // const saveDataToAuthUser = () => {
+      //   setLoggedInUserData((prev : any) => ({
+      //     ...prev,
+      //     ...userData
+      //   }));
+      // };
+
 
   return (
     <div>
@@ -27,7 +43,7 @@ function UserBioComponent () {
           <input
             type="text"
             name="displayName"
-            value={loggedInUserData?.displayName || ""}
+            value={userData.displayName ?? loggedInUserData?.displayName ?? ""}
             onChange={(e) => handleChange(e)}
             required
             pattern="^[a-zA-Z0-9_]+$"
@@ -39,7 +55,7 @@ function UserBioComponent () {
           <div className="sector">About me</div>
           <textarea
             name="aboutMe"
-            value={loggedInUserData?.aboutMe || ""}
+            value={userData.aboutMe ?? loggedInUserData?.aboutMe ?? ""}
             onChange={handleChange}
             maxLength={250}
             placeholder="Tell other gamers about yourself..."
@@ -50,7 +66,7 @@ function UserBioComponent () {
           <div className="sector">Looking for</div>
           <textarea
             name="lookingFor"
-            value={loggedInUserData?.lookingFor || ""}
+            value={userData.lookingFor ?? loggedInUserData?.lookingFor ?? ""}
             onChange={handleChange}
             maxLength={250}
             placeholder="Tell others what are you looking for.."
@@ -60,7 +76,7 @@ function UserBioComponent () {
 
         <div>
           <div className="sector">Age</div>
-          <input type="date" name="birthdate" min="1900-01-01" max={default18} value={loggedInUserData?.birthdate || default18} onChange={handleChange}/>
+          <input type="date" name="birthDate" min="1900-01-01" max={default18} value={userData.birthDate ?? loggedInUserData?.birthdate ?? default18} onChange={handleChange}/>
         </div>
     </div>
   )

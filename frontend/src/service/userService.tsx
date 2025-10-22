@@ -5,8 +5,7 @@ const API_BASE_URL = "http://localhost:8080/api/users";
 
 export const userService = {
   async updateProfile(payload: any) {
-    console.log("it started")
-    console.log(payload)
+    console.log("it started", payload)
     try {
       const res = await fetch(`${API_BASE_URL}/me/profile`, {
         method: "PUT",
@@ -41,12 +40,14 @@ export const userService = {
         return null;
         }
         const data : UserFormData= await res.json();
+        console.log("This is userService getUserProfile data:", data)
         return data;
       
       
     } catch {
       return null;
     }
+    
   } 
 };
 
