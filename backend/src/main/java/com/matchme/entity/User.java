@@ -1,16 +1,20 @@
-// User.java
 package com.matchme.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,6 +55,16 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> roles = new HashSet<>();
+
+    //admin/fake user from admin
+
+    @Column(nullable = false)
+    private boolean isAdmin = false;
+
+    @Column(nullable = false)
+    private boolean isFake = false;
 
     // Constructors
     public User() {}
@@ -58,6 +72,42 @@ public class User {
     public User(String email, String password) {
         this.email = email;
         this.password = password;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        
+        // Add ADMIN role if user is admin
+        if (this.isAdmin) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+        return authorities;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 
     // Getters and Setters
@@ -84,4 +134,13 @@ public class User {
     
     public Set<Connection> getReceivedConnections() { return receivedConnections; }
     public void setReceivedConnections(Set<Connection> receivedConnections) { this.receivedConnections = receivedConnections; }
+
+    public Set<String> getRoles() {return roles;}
+    public void setRoles(Set<String> roles) {this.roles = roles;}
+
+    public boolean isAdmin() { return isAdmin; }
+    public void setIsAdmin(boolean isAdmin) { this.isAdmin = isAdmin; }
+
+    public boolean isFake() { return isFake; }
+    public void setIsFake(boolean isFake) { this.isFake = isFake; }
 }
