@@ -8,7 +8,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -85,6 +85,28 @@ public class UserService {
     public void delete(User user) {
         userRepository.delete(user);
     }
+    
+    @Transactional
+    public void deleteFakeUsers() {
+        List<User> fakeUsers = userRepository.findAllByIsFake(true);
+        
+        System.out.println("Found " + fakeUsers.size() + " fake users to delete");
+        
+        for (User user : fakeUsers) {
+            try {
+                // Safely handle profile deletion
+                if (user.getProfile() != null) {
+                    userProfileRepository.delete(user.getProfile());
+                    System.out.println("Deleted profile for user: " + user.getId());
+                }
+                userRepository.delete(user);
+                System.out.println("Deleted user: " + user.getId());
+            } catch (Exception e) {
+                System.err.println("Error deleting user " + user.getId() + ": " + e.getMessage());
+                // Continue with next user even if one fails
+            }
+        }
+    }
 
-}
+    }
 
