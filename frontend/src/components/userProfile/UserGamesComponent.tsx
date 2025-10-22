@@ -17,17 +17,18 @@ function UserGameComponent ( ) {
     if(game in updatedGames){
         delete updatedGames[game];
     }else {
-        updatedGames[game] = {
-        expLvl: "",
-        gamingHours: "",
-        preferredServers: [],
-        competitiveness: "",
-        voiceChatPreference: "",
-        playSchedule: "",
-        mainGoal: "",
-        currentRank: ""
-        }
+        updatedGames[game] = { 
+        expLvl: null,
+        gamingHours: null,
+        preferredServers: null,
+        competitiveness: null,
+        voiceChatPreference: null,
+        playSchedule: null,
+        mainGoal: null,
+        currentRank: null
+      }
     }
+    console.log(loggedInUserData)
     return {
       ...prev,
       games: updatedGames
@@ -37,7 +38,7 @@ function UserGameComponent ( ) {
 
   return (
     <div>
-        <title className="sector">What games do you play?</title>
+        <h2 className="sector">What games do you play?</h2>
           <div className="optionsmap">
           {gameOptions.map(game => <div key={game} 
               className={`options ${

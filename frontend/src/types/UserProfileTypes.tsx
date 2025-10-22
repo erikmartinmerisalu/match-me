@@ -15,7 +15,7 @@ export interface Games {
 }
 
 export type UserFormData = {
-  id : number | null,
+  id : number | null | undefined,
   displayName: string;
   aboutMe: string;
   birthdate: string;
@@ -34,13 +34,7 @@ export type UserFormData = {
   age: number,
 } | null;
 
-export interface UserBioProps {
-  userName: string;
-  aboutMe: string;
-  lookingfor: string;
-  birthdate: string;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
+
 
 // export interface UserGameProps {
 //   games: string[];

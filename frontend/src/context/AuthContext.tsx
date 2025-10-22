@@ -60,6 +60,7 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
       }catch (err){
           console.log(err)
       }
+
     }
     fetchUser();
       },[]);
@@ -81,6 +82,7 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
         if(res !== null){
           setLoggedIn(true);
           setLoggedInUserData(res);
+
         }else{
           setLoggedIn(false);
           setLoggedInUserData(null)
