@@ -2,11 +2,6 @@ export interface Game {
   expLvl: string;
   gamingHours: string;
   preferredServers: string[];
-  // ADD THESE NEW FIELDS:
-  competitiveness: string;
-  voiceChatPreference: string;
-  playSchedule: string;
-  mainGoal: string;
   currentRank: string;
 }  ;
 
@@ -32,6 +27,10 @@ export type UserFormData = {
   longitude: number | null;
   profileCompleted: boolean,
   age: number,
+  competitiveness: string;
+  voiceChatPreference: string;
+  playSchedule: string;
+  mainGoal: string;
 } | null;
 
 

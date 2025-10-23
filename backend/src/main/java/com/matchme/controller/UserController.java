@@ -175,6 +175,11 @@ public class UserController {
         dto.setLatitude(profile.getLatitude());
         dto.setLongitude(profile.getLongitude());
         dto.setLocation(profile.getLocation());
+        dto.setCompetitiveness(profile.getCompetitiveness());
+        dto.setVoiceChatPreference(profile.getVoiceChatPreference());
+        dto.setPlaySchedule(profile.getPlaySchedule());
+        dto.setMainGoal(profile.getMainGoal());
+
 
         dto.setGames(new HashMap<>());
         if (profile.getGames() != null) {
@@ -183,10 +188,6 @@ public class UserController {
                         game.getPreferredServersSet(),
                         game.getExpLvl(),
                         game.getGamingHours(),
-                        game.getCompetitiveness(),
-                        game.getVoiceChatPreference(),
-                        game.getPlaySchedule(),
-                        game.getMainGoal(),
                         game.getCurrentRank()
                 ));
             });
