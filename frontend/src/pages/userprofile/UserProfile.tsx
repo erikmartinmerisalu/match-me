@@ -10,14 +10,15 @@ import { userService } from '../../service/userService';
 import UserGameDetails from '../../components/userProfile/UserGameDetails';
 import type { UserBioData } from '../../types/UserBioComponentTypes';
 import UserPreferencesComponent from '../../components/userProfile/UserPreferencesComponent';
+import UserGamerType from '../../components/userProfile/UserGamerType';
 
   function UserProfile() {
     const [cardState, setCardState] = useState<number>(0);
     const {loggedInUserData, setLoggedInUserData} = useAuth();
     const [bioData, setBioData] = useState<UserBioData | null>(null);
     const [gameIndex, setGameIndex] = useState(0);
-    const gamesList = loggedInUserData?.games ? Object.entries(loggedInUserData.games): [];
-    const currentGame = gamesList[gameIndex]
+    const gamesList = loggedInUserData?.games ? Object.entries(loggedInUserData.games) : [];
+    const currentGame = gamesList[gameIndex] || null;
 
     
 
@@ -54,6 +55,10 @@ import UserPreferencesComponent from '../../components/userProfile/UserPreferenc
           toast.error("Please choose at least one game");
           return;
         }else{
+          const payload = {
+            games : loggedInUserData.games
+          }
+          const res = await userService.updateProfile(payload)
           toast.success("Games saved");
           setCardState(cardState+1);
           return;
@@ -64,10 +69,21 @@ import UserPreferencesComponent from '../../components/userProfile/UserPreferenc
           setGameIndex(gameIndex +1)
           return;
         }else{
+          const payload = {
+            games: loggedInUserData?.games
+          }
+          const res = await userService.updateProfile(payload);
+          console.log(res);
           setCardState(cardState+1)
           return;
         }
       }
+      if(cardState === 3){
+        console.log(loggedInUserData?.games)
+        setCardState(cardState+1)
+
+      }
+      
 
     }
 
@@ -78,16 +94,17 @@ import UserPreferencesComponent from '../../components/userProfile/UserPreferenc
         <div className='profile-card'>
           <h2>🎮 Gamer Profile</h2>
 
-          { cardState === 0 &&   <ProfilePicChange
-            width={150}
-            height={150}
-          />}
-
           <form className="profile-form">
-            { cardState === 0 && 
+            { cardState === 0 &&
+            <>
+              <ProfilePicChange
+                width={150}
+                height={150}
+              />  
               <UserBioComponent
-              onDataChange={handleBioChange}
+                onDataChange={handleBioChange}
               />
+            </>
             }
             { cardState === 1 &&
             <UserGamesComponent  />
@@ -98,16 +115,26 @@ import UserPreferencesComponent from '../../components/userProfile/UserPreferenc
               gameName={currentGame[0]}
               gameData={currentGame[1]}
               onChange={(updatedGame) => {
-              setLoggedInUserData((prev : any) => ({
-                ...prev,
-                games: {
-                  ...prev.games,
-                  [currentGame[0]]: updatedGame
-                }
-              }));
+                setLoggedInUserData((prev : any) => ({
+                  ...prev,
+                  games: {
+                    ...prev.games,
+                    [currentGame[0]]: updatedGame
+                  }
+                }));
               }}
             />}
             {cardState === 3 &&
+            <UserGamerType
+              gameData={loggedInUserData }
+              onChange={(updatedData ) => {
+                setLoggedInUserData((prev: any) => ({
+                  ...prev,
+                  ...updatedData 
+                }));
+              }} 
+            />}
+            {cardState === 4 &&
             <UserPreferencesComponent />}
             
           </form>
@@ -127,7 +154,6 @@ import UserPreferencesComponent from '../../components/userProfile/UserPreferenc
           theme="light"
           transition={Bounce}
           />
-
 
       </div>
     )

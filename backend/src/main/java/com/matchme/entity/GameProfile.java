@@ -32,10 +32,7 @@ public class GameProfile {
     @Column(name = "server")
     private String preferredServers;
 
-    private String competitiveness;      
-    private String voiceChatPreference;  
-    private String playSchedule;         
-    private String mainGoal;             
+         
     private String currentRank;          
 
     public Set<String> getPreferredServersSet() {
@@ -64,17 +61,8 @@ public class GameProfile {
     public void setGamingHours(String gamingHours) { this.gamingHours = gamingHours; }
 
     // NEW GETTERS/SETTERS
-    public String getCompetitiveness() { return competitiveness; }
-    public void setCompetitiveness(String competitiveness) { this.competitiveness = competitiveness; }
 
-    public String getVoiceChatPreference() { return voiceChatPreference; }
-    public void setVoiceChatPreference(String voiceChatPreference) { this.voiceChatPreference = voiceChatPreference; }
 
-    public String getPlaySchedule() { return playSchedule; }
-    public void setPlaySchedule(String playSchedule) { this.playSchedule = playSchedule; }
-
-    public String getMainGoal() { return mainGoal; }
-    public void setMainGoal(String mainGoal) { this.mainGoal = mainGoal; }
 
     public String getCurrentRank() { return currentRank; }
     public void setCurrentRank(String currentRank) { this.currentRank = currentRank; }

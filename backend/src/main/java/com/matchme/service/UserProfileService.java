@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.management.RuntimeErrorException;
@@ -54,7 +55,6 @@ import javax.management.RuntimeErrorException;
             UserProfile profile = userProfileRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Profile not found"));
 
-            Map<String, String> errors = new HashMap<>();
 
             if (profileDto.getDisplayName() != null) {
                 if (profileDto.getDisplayName().isBlank()) {
@@ -106,7 +106,11 @@ import javax.management.RuntimeErrorException;
             if (profileDto.getProfilePic() != null) profile.setProfilePic(profileDto.getProfilePic());
             if (profileDto.getLatitude() != null) profile.setLatitude(profileDto.getLatitude());
             if (profileDto.getLongitude() != null) profile.setLongitude(profileDto.getLongitude());
-            if (profileDto.getLocation() != null) profile.setLocation(profileDto.getLocation());
+
+            if (profileDto.getCompetitiveness() != null) profile.setCompetitiveness(profileDto.getCompetitiveness());
+            if (profileDto.getVoiceChatPreference() != null) profile.setVoiceChatPreference(profileDto.getVoiceChatPreference());
+            if (profileDto.getPlaySchedule() != null) profile.setPlaySchedule(profileDto.getPlaySchedule());
+            if (profileDto.getMainGoal() != null) profile.setMainGoal(profileDto.getMainGoal());
 
             if (profileDto.getGames() != null) {
                 profile.getGames().clear();
@@ -115,20 +119,24 @@ import javax.management.RuntimeErrorException;
                     if (!VALID_GAMES.contains(gameName)) {
                         throw new IllegalArgumentException("We ran into error: Invalid game");
                     }
+                    GameProfile game = new GameProfile();
+                    game.setUserProfile(profile);
+                    game.setGameName(gameName);
+
                     if (gameDto.getExpLvl() != null) {
                         if (!VALID_EXP_LVL.contains(gameDto.getExpLvl().trim())) {
                             throw new IllegalArgumentException("We ran into error: Invalid experience for: " + gameName);
                         }
+                        game.setExpLvl(gameDto.getExpLvl().trim());
                     }
                     if (gameDto.getGamingHours() != null) {
                         if (!VALID_GAMING_HOURS.contains(gameDto.getGamingHours().trim())) {
                             throw new IllegalArgumentException("We ran into error: Invalid gaming hour level for: " + gameName );
                         }
+                        game.setGamingHours(gameDto.getGamingHours().trim());
+
                     }
-                    if (gameDto.getPreferredServers() != null  ) {
-                        if(gameDto.getPreferredServers().isEmpty()){
-                            throw new IllegalArgumentException("We ran into error: Servers not chosen for game: " + gameName);
-                        }else {
+                    if (gameDto.getPreferredServers() != null && !gameDto.getPreferredServers().isEmpty() ) {
                             for (String server : gameDto.getPreferredServers()) {
                                 if (server == null || server.isBlank()) {
                                     throw new IllegalArgumentException("We ran into error: Preferred serves must not be empty for game: " + gameName);
@@ -137,57 +145,23 @@ import javax.management.RuntimeErrorException;
                                     throw new IllegalArgumentException("We ran into error: Incorrect server for game: " + gameName);
                                 }
                             }
-                        }
+                        game.setPreferredServersSet(gameDto.getPreferredServers());
+                    }else {
+                        game.setPreferredServersSet(new HashSet<>());
                     }
-                    if(gameDto.getCompetitiveness() != null){
-                        if(!VALID_COMPETITIVENESS.contains(gameDto.getCompetitiveness().trim())){
-                            throw new IllegalArgumentException("We ran into error: Invalid argument for game competitiveness: " + gameName);
-                        }
-                    } 
-                    if(gameDto.getVoiceChatPreference() != null){
-                        if(!VALID_VOICE_CHAT_PREFERENCES.contains(gameDto.getVoiceChatPreference().trim())){
-                            throw new IllegalArgumentException("We ran into error:Invalid argument for game voice chat preference: " + gameName);
-                        }
-                    }
-                    if(gameDto.getPlaySchedule() != null){
-                        if(!VALID_PLAY_SCHEDULE.contains(gameDto.getPlaySchedule().trim())){
-                            throw new IllegalArgumentException(" We ran into error: Invalid argument for gaming schedule preference: " + gameName);
-                        }
-                    }
-                    if(gameDto.getMainGoal() != null){
-                        if(!VALID_MAIN_GOAL.contains(gameDto.getMainGoal().trim())){
-                            throw new IllegalArgumentException("We ran into error: Invalid argument for game main goal: " + gameName);
-                        }
-                    }
+
                     if(gameDto.getCurrentRank() != null){
                         if(!VALID_RANK.contains(gameDto.getCurrentRank().trim())){
                             throw new IllegalArgumentException("We ran into error: Invalid argument for game rank: " + gameName);
                         }
+                        game.setCurrentRank(gameDto.getCurrentRank().trim());
                     }
-                
+                    profile.getGames().add(game);
 
-                    // Only add game if there are no errors for this game
-                    if (!errors.keySet().stream().anyMatch(k -> k.startsWith(gameName))) {
-                        GameProfile game = new GameProfile();
-                        game.setGameName(gameName);
-                        game.setExpLvl(gameDto.getExpLvl());
-                        game.setGamingHours(gameDto.getGamingHours());
-                        game.setPreferredServersSet(gameDto.getPreferredServers());
-                        game.setCompetitiveness(gameDto.getCompetitiveness());
-                        game.setVoiceChatPreference(gameDto.getVoiceChatPreference());
-                        game.setPlaySchedule(gameDto.getPlaySchedule());
-                        game.setMainGoal(gameDto.getMainGoal());
-                        game.setCurrentRank(gameDto.getCurrentRank());
-                        game.setUserProfile(profile);
-                        profile.getGames().add(game);
-                    }
                 });
                 
             }
 
-            if (!errors.isEmpty()) {
-                throw new RuntimeException(errors.toString());
-            }
 
                 return userProfileRepository.save(profile);
             }

@@ -21,10 +21,6 @@ function UserGameComponent ( ) {
         expLvl: null,
         gamingHours: null,
         preferredServers: null,
-        competitiveness: null,
-        voiceChatPreference: null,
-        playSchedule: null,
-        mainGoal: null,
         currentRank: null
       }
     }
