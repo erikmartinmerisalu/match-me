@@ -44,6 +44,11 @@ public class UserProfile {
     private Double longitude;
     private String location;
 
+    private String competitiveness;      
+    private String voiceChatPreference;  
+    private String playSchedule;         
+    private String mainGoal;    
+
     private boolean profileCompleted = false;
 
     // --- Getters & Setters ---
@@ -109,4 +114,15 @@ public class UserProfile {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
+    public String getCompetitiveness() { return competitiveness; }
+    public void setCompetitiveness(String competitiveness) { this.competitiveness = competitiveness; }
+
+    public String getVoiceChatPreference() { return voiceChatPreference; }
+    public void setVoiceChatPreference(String voiceChatPreference) { this.voiceChatPreference = voiceChatPreference; }
+
+    public String getPlaySchedule() { return playSchedule; }
+    public void setPlaySchedule(String playSchedule) { this.playSchedule = playSchedule; }
+
+    public String getMainGoal() { return mainGoal; }
+    public void setMainGoal(String mainGoal) { this.mainGoal = mainGoal; }
 }
