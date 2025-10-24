@@ -1,16 +1,16 @@
-import React, { useState, type ChangeEvent } from 'react'
-import ProfilePic from '../../components/profilepic/ProfilePicChange'
+import React, { useEffect, useState, type ChangeEvent } from 'react'
 import "./userprofile.css"
 import { Bounce, toast, ToastContainer } from 'react-toastify';
 import UserGamesComponent from '../../components/userProfile/UserGamesComponent';
 import UserBioComponent  from '../../components/userProfile/UserBioComponent';
 import ProfilePicChange from '../../components/profilepic/ProfilePicChange';
 import { useAuth } from '../../context/AuthContext';
-import { userService } from '../../service/userService';
+import { userService } from '../../services/userService';
 import UserGameDetails from '../../components/userProfile/UserGameDetails';
 import type { UserBioData } from '../../types/UserBioComponentTypes';
 import UserPreferencesComponent from '../../components/userProfile/UserPreferencesComponent';
 import UserGamerType from '../../components/userProfile/UserGamerType';
+import { useNavigate } from 'react-router-dom';
 
   function UserProfile() {
     const [cardState, setCardState] = useState<number>(0);
@@ -19,11 +19,7 @@ import UserGamerType from '../../components/userProfile/UserGamerType';
     const [gameIndex, setGameIndex] = useState(0);
     const gamesList = loggedInUserData?.games ? Object.entries(loggedInUserData.games) : [];
     const currentGame = gamesList[gameIndex] || null;
-
-    
-
-    const handleSubmit = async (e: React.FormEvent) => {
-    }
+    const navigate = useNavigate();
 
     const handleBioChange = (data: UserBioData) => {
       setBioData(data);
@@ -63,7 +59,7 @@ import UserGamerType from '../../components/userProfile/UserGamerType';
           setCardState(cardState+1);
           return;
         }
-        }
+      }
       if(cardState === 2){
         if(gameIndex < gamesList.length - 1){
           setGameIndex(gameIndex +1)
@@ -79,20 +75,69 @@ import UserGamerType from '../../components/userProfile/UserGamerType';
         }
       }
       if(cardState === 3){
-        console.log(loggedInUserData?.games)
+        const payload = {
+          competitiveness: loggedInUserData?.competitiveness,
+          voiceChatPreference: loggedInUserData?.voiceChatPreference,
+          playSchedule: loggedInUserData?.playSchedule,
+          mainGoal: loggedInUserData?.mainGoal,
+        }
+        const res = await userService.updateProfile(payload);
+
+        toast.success("Game saved!")
         setCardState(cardState+1)
-
       }
-      
+      if(cardState === 4){
+        const payload = {
+          preferredAgeMin : loggedInUserData?.preferredAgeMin,
+          preferredAgeMax : loggedInUserData?.preferredAgeMax,
+          location : loggedInUserData?.location,
+          latitude : loggedInUserData?.latitude,
+          longitude : loggedInUserData?.longitude,
+          maxPreferredDistance : loggedInUserData?.maxPreferredDistance,
+          timezone : loggedInUserData?.timezone? loggedInUserData.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone
+        }
+        const res = await userService.updateProfile(payload);
 
+        toast.success("Profile completed!")
+        
+        return;
+      }
     }
 
+    useEffect(() => {
+    if (!loggedInUserData) return;
 
+    if (!loggedInUserData.profilePic || !loggedInUserData.aboutMe || !loggedInUserData.displayName) {
+      setCardState(0);
+      return;
+    }
+
+    if (!loggedInUserData.games || Object.keys(loggedInUserData.games).length === 0) {
+      setCardState(1);
+      return;
+    }
+
+    const gamesList = Object.entries(loggedInUserData.games);
+    const incompleteGame = gamesList.find(([ game]) => !game || Object.keys(game).length === 0);
+    if (incompleteGame) {
+      setGameIndex(gamesList.indexOf(incompleteGame));
+      setCardState(2);
+      return;
+    }
+
+    if (!loggedInUserData.competitiveness || !loggedInUserData.voiceChatPreference || 
+        !loggedInUserData.playSchedule || !loggedInUserData.mainGoal) {
+      setCardState(3);
+      return;
+    }
+
+    setCardState(4);
+  }, []);
       
     return (
       <div>
         <div className='profile-card'>
-          <h2>🎮 Gamer Profile</h2>
+          <h2> Gamer Profile</h2>
 
           <form className="profile-form">
             { cardState === 0 &&

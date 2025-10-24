@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode} from "react";
-import { userService } from "../service/userService";
+import { userService } from "../services/userService";
 import type { UserFormData } from "../types/UserProfileTypes";
 
 type AuthContextType = {
