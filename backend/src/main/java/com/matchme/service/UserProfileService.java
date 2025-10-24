@@ -106,6 +106,8 @@ import javax.management.RuntimeErrorException;
             if (profileDto.getProfilePic() != null) profile.setProfilePic(profileDto.getProfilePic());
             if (profileDto.getLatitude() != null) profile.setLatitude(profileDto.getLatitude());
             if (profileDto.getLongitude() != null) profile.setLongitude(profileDto.getLongitude());
+            if (profileDto.getLocation() != null) profile.setLocation(profileDto.getLocation());
+
 
             if (profileDto.getCompetitiveness() != null) profile.setCompetitiveness(profileDto.getCompetitiveness());
             if (profileDto.getVoiceChatPreference() != null) profile.setVoiceChatPreference(profileDto.getVoiceChatPreference());
@@ -161,7 +163,6 @@ import javax.management.RuntimeErrorException;
                 });
                 
             }
-
 
                 return userProfileRepository.save(profile);
             }

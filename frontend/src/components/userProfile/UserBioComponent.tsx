@@ -28,14 +28,6 @@ function UserBioComponent ({onDataChange} : UserBioProps ) {
     setUserData(prev => ({ ...prev, [name]: value }));
   };
 
-      // const saveDataToAuthUser = () => {
-      //   setLoggedInUserData((prev : any) => ({
-      //     ...prev,
-      //     ...userData
-      //   }));
-      // };
-
-
   return (
     <div>
         <div>
@@ -72,7 +64,6 @@ function UserBioComponent ({onDataChange} : UserBioProps ) {
             placeholder="Tell others what are you looking for.."
           />
         </div>
-
 
         <div>
           <div className="sector">Age</div>
