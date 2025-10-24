@@ -129,7 +129,7 @@ public class UserController {
         Optional<User> userOpt = userService.findByEmail(userEmail);
         if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
 
-        Long userId = userOpt.get().getId(); // ← SIIT SAAD USER_ID
+        Long userId = userOpt.get().getId();
          try {
             UserProfile updatedProfile = userProfileService.updateCurrentUserProfile(userId, dto);
             return ResponseEntity.ok(mapToProfileDto(updatedProfile));

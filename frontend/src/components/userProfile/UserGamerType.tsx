@@ -24,14 +24,6 @@ function UserGamerType({gameData, onChange}: UserGameDetailsProps) {
     onChange(updated);
   };
 
-  const toggleMultiChoice = (field: "playSchedule" | "mainGoal" | "competitiveness", value: string) => {
-    const current = Array.isArray(localData[field]) ? localData[field] : [];
-    const updated = current.includes(value)
-      ? current.filter(v => v !== value)
-      : [...current, value];
-    handleInputChange(field, updated);
-  };
-
   return (
     <div>
     <h3>Please tell us more about your playstyle</h3>
@@ -43,44 +35,38 @@ function UserGamerType({gameData, onChange}: UserGameDetailsProps) {
             {voiceChatOptions.map(voice => <option value={voice} key={voice}> {voice}</option>)}
         </select>
 
-    <label>Competitiveness (multi-select)</label>
-      <div className="optionsmap">
+    <label>Competitiveness</label>
+      <select
+        value={localData.competitiveness || ""}
+        onChange={(e) => handleInputChange("competitiveness", e.target.value)}
+      >
+        <option value="">Select...</option>
         {competitivenessOptions.map(option => (
-          <p
-            key={option}
-            className={`options ${localData.competitiveness.includes(option) ? "selected" : ""}`}
-            onClick={() => toggleMultiChoice("competitiveness", option)}
-          >
-            {option}
-          </p>
+          <option value={option} key={option}>{option}</option>
         ))}
-      </div>
+      </select>
 
-      <label>Play Schedule (multi-select)</label>
-      <div className="optionsmap">
+    <label>Play Schedule</label>
+      <select
+        value={localData.playSchedule || ""}
+        onChange={(e) => handleInputChange("playSchedule", e.target.value)}
+      >
+        <option value="">Select...</option>
         {playScheduleOptions.map(option => (
-          <p
-            key={option}
-            className={`options ${localData.playSchedule.includes(option) ? "selected" : ""}`}
-            onClick={() => toggleMultiChoice("playSchedule", option)}
-          >
-            {option}
-          </p>
+          <option value={option} key={option}>{option}</option>
         ))}
-      </div>
+      </select>
 
-      <label>Main Goal (multi-select)</label>
-      <div className="optionsmap">
+    <label>Main Goal</label>
+      <select
+        value={localData.mainGoal || ""}
+        onChange={(e) => handleInputChange("mainGoal", e.target.value)}
+      >
+        <option value="">Select...</option>
         {mainGoalOptions.map(option => (
-          <p
-            key={option}
-            className={`options ${localData.mainGoal.includes(option) ? "selected" : ""}`}
-            onClick={() => toggleMultiChoice("mainGoal", option)}
-          >
-            {option}
-          </p>
+          <option value={option} key={option}>{option}</option>
         ))}
-      </div>
+      </select>
     </div>
   )
 }
