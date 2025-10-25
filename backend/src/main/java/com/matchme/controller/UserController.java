@@ -1,5 +1,6 @@
 package com.matchme.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
 import com.matchme.entity.Connection;
@@ -123,24 +124,25 @@ public class UserController {
     }
 
     @PutMapping("/me/profile")
-    public ResponseEntity<?> updateCurrentUserProfile( @Valid @RequestBody UserProfileDto dto ) {
 
-    String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public ResponseEntity<?> updateCurrentUserProfile(@RequestBody JsonNode json) {
+        String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Optional<User> userOpt = userService.findByEmail(userEmail);
         if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
 
         Long userId = userOpt.get().getId();
-         try {
-            UserProfile updatedProfile = userProfileService.updateCurrentUserProfile(userId, dto);
-            return ResponseEntity.ok(mapToProfileDto(updatedProfile));
+        try {
+            userProfileService.updateProfile(userId, json);
+            return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error "));
         }
-
     }
 
+
     private boolean canViewProfile(String currentUserEmail, User targetUser) {
-        // Can always view own profile
         if (targetUser.getEmail().equals(currentUserEmail)) {
             return true;
         }

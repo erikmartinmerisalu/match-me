@@ -18,10 +18,6 @@ function UserGameComponent ( ) {
         delete updatedGames[game];
     }else {
         updatedGames[game] = { 
-        expLvl: null,
-        gamingHours: null,
-        preferredServers: null,
-        currentRank: null
       }
     }
     console.log(loggedInUserData)
