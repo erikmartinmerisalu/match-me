@@ -13,7 +13,7 @@ import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -36,16 +36,16 @@ public class UserController {
     @Autowired
     private ConnectionRepository connectionRepository;
 
+    // All GET methods can now use currentUser.getProfile() directly
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
+    public ResponseEntity<?> getUser(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         Optional<User> userOpt = userService.findById(id);
         if (userOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         User user = userOpt.get();
-
-        if (!canViewProfile(userEmail, user)) {
+        if (!canViewProfile(currentUser, user)) {
             return ResponseEntity.notFound().build();
         }
 
@@ -57,11 +57,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}/profile")
-    public ResponseEntity<?> getUserProfile(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
-
+    public ResponseEntity<?> getUserProfile(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         UserProfile profile = userProfileService.findByUserId(id);
-
-        if (!canViewProfile(userEmail, profile.getUser())) {
+        if (!canViewProfile(currentUser, profile.getUser())) {
             return ResponseEntity.notFound().build();
         }
 
@@ -70,11 +68,9 @@ public class UserController {
     }
 
     @GetMapping("/{id}/bio")
-    public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal String userEmail) {
-
+    public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         UserProfile profile = userProfileService.findByUserId(id);
-
-        if (!canViewProfile(userEmail, profile.getUser())) {
+        if (!canViewProfile(currentUser, profile.getUser())) {
             return ResponseEntity.notFound().build();
         }
 
@@ -83,44 +79,27 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal String userEmail) {
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
+    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User currentUser) {
+        // Now we can safely use currentUser.getProfile()
         UserProfileDto dto = new UserProfileDto();
-        dto.setId(user.getId());
-        dto.setDisplayName(user.getProfile().getDisplayName());
-
+        dto.setId(currentUser.getId());
+        dto.setDisplayName(currentUser.getProfile().getDisplayName());
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/me/profile")
-    public ResponseEntity<?> getCurrentUserProfile(@AuthenticationPrincipal String userEmail) {
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOpt.get();
-        UserProfileDto dto = mapToProfileDto(user.getProfile());
+    public ResponseEntity<?> getCurrentUserProfile(@AuthenticationPrincipal User currentUser) {
+        // Now we can safely use currentUser.getProfile()
+        UserProfileDto dto = mapToProfileDto(currentUser.getProfile());
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/me/bio")
-    public ResponseEntity<?> getCurrentUserBio(@AuthenticationPrincipal String userEmail) {
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        UserProfile profile = userOpt.get().getProfile();
-
+    public ResponseEntity<?> getCurrentUserBio(@AuthenticationPrincipal User currentUser) {
+        // Now we can safely use currentUser.getProfile()
+        UserProfile profile = currentUser.getProfile();
         UserProfileDto dto = mapToProfileDto(profile);
         return ResponseEntity.ok(dto);
-
     }
 
     @PutMapping("/me/profile")
@@ -141,20 +120,14 @@ public class UserController {
         }
     }
 
-
-    private boolean canViewProfile(String currentUserEmail, User targetUser) {
-        if (targetUser.getEmail().equals(currentUserEmail)) {
+    private boolean canViewProfile(User currentUser, User targetUser) {
+        if (targetUser.getEmail().equals(currentUser.getEmail())) {
             return true;
         }
         
-        // Check if users are connected (for chat feature)
-        Optional<User> currentUserOpt = userService.findByEmail(currentUserEmail);
-        if (currentUserOpt.isPresent()) {
-            Long currentUserId = currentUserOpt.get().getId();
-            Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(currentUserId, targetUser.getId());
-            if (connection.isPresent() && connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED) {
-                return true;
-            }
+        Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(currentUser.getId(), targetUser.getId());
+        if (connection.isPresent() && connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED) {
+            return true;
         }
         
         return false;

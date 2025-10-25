@@ -54,6 +54,19 @@ mvn clean install
 mvn spring-boot:run
 
 
+# Testing the admin endpoints available to the developer/tester
+    Clone the repository
+
+    Create a .env file in the project root with:
+
+properties
+
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+CREATE_DEFAULT_ADMIN=true
+
+That's it! The admin user will be automatically created when they run the application.
+
 Security Implementation
 Authentication & Authorization
 
@@ -70,78 +83,6 @@ Security Flow
     JwtAuthenticationFilter validates token on each request
     If valid, access granted to protected endpoints
 
-Current Functionalities
-✅ Fully Implemented
-1. User Authentication
-    User registration with email/password validation
-    Secure login with JWT token generation
-    Password hashing using BCrypt
-    Logout functionality
-
-2. User Profile Management
-    Complete gaming profile with 5 main matching criteria:
-        Preferred Servers - Game servers user plays on
-        Games - Games the user plays
-        Gaming Hours - When they typically play
-        Rank - Skill level (Bronze to Grandmaster)
-        Age - Calculated from birth date (±3 year matching)
-    Profile completion validation (requires 5+ data points)
-    Public/private profile visibility controls
-
-3. Smart Recommendation System
-    Weighted matching algorithm with factors:
-        25% Server compatibility
-        25% Game overlap
-        20% Gaming hour alignment
-        15% Rank proximity (±1-2 tiers)
-        15% Age compatibility (±3 years)
-    Returns top 10 compatible matches
-
-    Only suggests users with completed profiles
-
-4. Data Persistence
-    PostgreSQL database integration
-    JPA entities with proper relationships
-    Automatic schema generation
-    Test data loader with sample gamers
-
-⚠️ Partially Implemented
-Connection Management
-    Basic connection endpoints defined
-    Connection status tracking (PENDING, ACCEPTED, REJECTED)
-    Connection-based profile visibility
-
-❌ Not Yet Implemented
-    Real-time chat functionality
-    File upload for profile pictures
-    Online status indicators
-    Chat notifications
-    Typing indicators
-
-Project Structure
-text
-
-src/main/java/com/matchme/
-├── config/
-│   ├── SecurityConfig.java
-│   └── DataLoader.java
-├── controller/
-│   ├── AuthController.java
-│   ├── UserController.java
-│   ├── RecommendationsController.java
-│   └── ConnectionsController.java
-├── service/
-│   ├── UserService.java
-│   ├── UserProfileService.java
-│   ├── RecommendationService.java
-│   └── ConnectionService.java
-├── repository/
-├── entity/
-├── dto/
-├── security/
-│   └── JwtAuthenticationFilter.java
-└── util/
-    └── JwtUtil.java
 
 API Endpoints
 Authentication
