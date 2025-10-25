@@ -47,7 +47,8 @@ public class UserProfile {
     private String competitiveness;      
     private String voiceChatPreference;  
     private String playSchedule;         
-    private String mainGoal;    
+    private String mainGoal;
+    // private Integer cardStep;
 
     private boolean profileCompleted = false;
 
@@ -125,4 +126,7 @@ public class UserProfile {
 
     public String getMainGoal() { return mainGoal; }
     public void setMainGoal(String mainGoal) { this.mainGoal = mainGoal; }
+
+    // public Integer getCardStep() {return cardStep;}
+    // public void setCardStep(Integer cardStep) { this.cardStep = cardStep; }
 }
