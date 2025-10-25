@@ -2,6 +2,7 @@ package com.matchme.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +23,14 @@ public class UserProfile {
     @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<GameProfile> games = new ArrayList<>();
 
-    @Column(nullable = true)
     private LocalDate birthDate;
 
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
     @Lob
+    @Basic(fetch = FetchType.EAGER)
     @Column(name = "profile_pic", columnDefinition = "TEXT")
     private String profilePic;
 
@@ -39,6 +44,12 @@ public class UserProfile {
     private Double latitude;
     private Double longitude;
     private String location;
+
+    private String competitiveness;      
+    private String voiceChatPreference;  
+    private String playSchedule;         
+    private String mainGoal;
+    // private Integer cardStep;
 
     private boolean profileCompleted = false;
 
@@ -98,4 +109,25 @@ public class UserProfile {
         }
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getCompetitiveness() { return competitiveness; }
+    public void setCompetitiveness(String competitiveness) { this.competitiveness = competitiveness; }
+
+    public String getVoiceChatPreference() { return voiceChatPreference; }
+    public void setVoiceChatPreference(String voiceChatPreference) { this.voiceChatPreference = voiceChatPreference; }
+
+    public String getPlaySchedule() { return playSchedule; }
+    public void setPlaySchedule(String playSchedule) { this.playSchedule = playSchedule; }
+
+    public String getMainGoal() { return mainGoal; }
+    public void setMainGoal(String mainGoal) { this.mainGoal = mainGoal; }
+
+    // public Integer getCardStep() {return cardStep;}
+    // public void setCardStep(Integer cardStep) { this.cardStep = cardStep; }
 }

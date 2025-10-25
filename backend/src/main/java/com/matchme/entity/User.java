@@ -54,6 +54,7 @@ public class User implements UserDetails {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+    
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> roles = new HashSet<>();
