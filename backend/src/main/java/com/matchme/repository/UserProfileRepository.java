@@ -13,6 +13,7 @@ import java.util.Optional;
 @Repository
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
     Optional<UserProfile> findByUserId(Long userId);
+    Optional<UserProfile> findByUserEmail(String email);
     
     @Query("SELECT up FROM UserProfile up WHERE up.profileCompleted = true AND up.user.id != :userId")
     List<UserProfile> findCompletedProfilesExcludingUser(@Param("userId") Long userId);

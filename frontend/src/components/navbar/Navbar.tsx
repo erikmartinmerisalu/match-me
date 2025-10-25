@@ -6,7 +6,7 @@ import ProfilePicShow from '../profilepic/ProfilePicShow';
 
 function Navbar() {
   const navigate = useNavigate();
-  const { loggedIn, signOut, userName, profilePictureBase64 } = useAuth();
+  const { loggedIn, signOut , loggedInUserData} = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -50,8 +50,8 @@ function Navbar() {
         ) : (
           <div className="user-dropdown" ref={dropdownRef}>
             <div className="user-info" >
-              {profilePictureBase64 !== null ? <ProfilePicShow src={profilePictureBase64} width={30} height={30} /> : ""}
-              <span style={{ marginLeft: '8px' }}>{userName}</span>
+              {loggedInUserData?.profilePic? <ProfilePicShow src={loggedInUserData.profilePic } width={30} height={30} /> : null}
+              <span style={{ marginLeft: '8px' }}>{loggedInUserData?.displayName? loggedInUserData.displayName : null}</span>
             </div>
             
             <img src="/down-arrow.png" className="icon" onClick={toggleDropdown} />

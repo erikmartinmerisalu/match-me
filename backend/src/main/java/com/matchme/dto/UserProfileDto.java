@@ -9,19 +9,19 @@ public class UserProfileDto {
 
     private Long id;
 
-    @NotBlank
+    // @NotBlank
     private String displayName;
 
     private String aboutMe;
 
-    @NotNull
+    // @NotNull
     private Map<String, GameProfileDto> games;
 
-    @NotNull
+    // @NotNull
     private Integer preferredAgeMin;
-    @NotNull
+    // @NotNull
     private Integer preferredAgeMax;
-    @NotNull
+    // @NotNull
     private Integer maxPreferredDistance;
 
     private LocalDate birthDate;
@@ -35,6 +35,10 @@ public class UserProfileDto {
     private Double longitude;
     private String location;
 
+    private String competitiveness;
+    private String voiceChatPreference;
+    private String playSchedule;
+    private String mainGoal;
     // --- Getters & Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -83,4 +87,16 @@ public class UserProfileDto {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public String getCompetitiveness() { return competitiveness; }
+    public void setCompetitiveness(String competitiveness) { this.competitiveness = competitiveness; }
+
+    public String getVoiceChatPreference() { return voiceChatPreference; }
+    public void setVoiceChatPreference(String voiceChatPreference) { this.voiceChatPreference = voiceChatPreference; }
+
+    public String getPlaySchedule() { return playSchedule; }
+    public void setPlaySchedule(String playSchedule) { this.playSchedule = playSchedule; }
+
+    public String getMainGoal() { return mainGoal; }
+    public void setMainGoal(String mainGoal) { this.mainGoal = mainGoal; }
 }

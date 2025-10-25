@@ -1,5 +1,6 @@
 package com.matchme.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
 import com.matchme.entity.Connection;
@@ -102,53 +103,21 @@ public class UserController {
     }
 
     @PutMapping("/me/profile")
-    @Transactional
-    public ResponseEntity<?> updateCurrentUserProfile(
-            @AuthenticationPrincipal User currentUser,
-            @Valid @RequestBody UserProfileDto profileDto) {
 
-        // Get a fresh profile to ensure it's managed by Hibernate
-        UserProfile profile = userProfileService.findByUserId(currentUser.getId());
+    public ResponseEntity<?> updateCurrentUserProfile(@RequestBody JsonNode json) {
+        String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<User> userOpt = userService.findByEmail(userEmail);
+        if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
 
-        profile.setDisplayName(profileDto.getDisplayName());
-        profile.setAboutMe(profileDto.getAboutMe());
-        profile.setBirthDate(profileDto.getBirthDate());
-        profile.setTimezone(profileDto.getTimezone());
-        profile.setLookingFor(profileDto.getLookingFor());
-        profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
-        profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
-        profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
-        profile.setProfilePic(profileDto.getProfilePic());
-        profile.setLatitude(profileDto.getLatitude());
-        profile.setLongitude(profileDto.getLongitude());
-        profile.setLocation(profileDto.getLocation());
-
-        // Clear and recreate games - this will work now with EAGER fetching
-        profile.getGames().clear();
-        if (profileDto.getGames() != null) {
-            profileDto.getGames().forEach((gameName, gameDto) -> {
-                GameProfile game = new GameProfile();
-                game.setGameName(gameName);
-                game.setExpLvl(gameDto.getExpLvl()); 
-                game.setGamingHours(gameDto.getGamingHours());
-                game.setPreferredServersSet(gameDto.getPreferredServers());
-                
-                // NEW FIELDS
-                game.setCompetitiveness(gameDto.getCompetitiveness());
-                game.setVoiceChatPreference(gameDto.getVoiceChatPreference());
-                game.setPlaySchedule(gameDto.getPlaySchedule());
-                game.setMainGoal(gameDto.getMainGoal());
-                game.setCurrentRank(gameDto.getCurrentRank());
-                
-                game.setUserProfile(profile);
-                profile.getGames().add(game);
-            });
+        Long userId = userOpt.get().getId();
+        try {
+            userProfileService.updateProfile(userId, json);
+            return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error "));
         }
-
-        UserProfile savedProfile = userProfileService.saveProfile(profile);
-        UserProfileDto responseDto = mapToProfileDto(savedProfile);
-
-        return ResponseEntity.ok(responseDto);
     }
 
     private boolean canViewProfile(User currentUser, User targetUser) {
@@ -170,24 +139,6 @@ public class UserController {
         dto.setId(profile.getUser().getId());
         dto.setDisplayName(profile.getDisplayName());
         dto.setAboutMe(profile.getAboutMe());
-
-        Map<String, GameProfileDto> gamesMap = new HashMap<>();
-        profile.getGames().forEach(game -> {
-            GameProfileDto g = new GameProfileDto();
-            g.setExpLvl(game.getExpLvl()); 
-            g.setPreferredServers(game.getPreferredServersSet());
-            g.setGamingHours(game.getGamingHours());
-            
-            // NEW FIELDS
-            g.setCompetitiveness(game.getCompetitiveness());
-            g.setVoiceChatPreference(game.getVoiceChatPreference());
-            g.setPlaySchedule(game.getPlaySchedule());
-            g.setMainGoal(game.getMainGoal());
-            g.setCurrentRank(game.getCurrentRank());
-            
-            gamesMap.put(game.getGameName(), g);
-        });
-        dto.setGames(gamesMap);
         dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
         dto.setTimezone(profile.getTimezone());
@@ -199,6 +150,23 @@ public class UserController {
         dto.setLatitude(profile.getLatitude());
         dto.setLongitude(profile.getLongitude());
         dto.setLocation(profile.getLocation());
+        dto.setCompetitiveness(profile.getCompetitiveness());
+        dto.setVoiceChatPreference(profile.getVoiceChatPreference());
+        dto.setPlaySchedule(profile.getPlaySchedule());
+        dto.setMainGoal(profile.getMainGoal());
+
+
+        dto.setGames(new HashMap<>());
+        if (profile.getGames() != null) {
+            profile.getGames().forEach(game -> {
+                dto.getGames().put(game.getGameName(), new GameProfileDto(
+                        game.getPreferredServersSet(),
+                        game.getExpLvl(),
+                        game.getGamingHours(),
+                        game.getCurrentRank()
+                ));
+            });
+        }
 
         return dto;
     }

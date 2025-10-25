@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 interface Coordinates {
   latitude: number | null;
@@ -7,6 +8,7 @@ interface Coordinates {
 }
 
 export const useGeolocation = () => {
+  
   const [coords, setCoords] = useState<Coordinates>({
     latitude: null,
     longitude: null,
