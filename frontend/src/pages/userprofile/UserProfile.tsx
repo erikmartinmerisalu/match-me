@@ -7,7 +7,6 @@ import ProfilePicChange from '../../components/profilepic/ProfilePicChange';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import UserGameDetails from '../../components/userProfile/UserGameDetails';
-import type { UserBioData } from '../../types/UserBioComponentTypes';
 import UserPreferencesComponent from '../../components/userProfile/UserPreferencesComponent';
 import UserGamerType from '../../components/userProfile/UserGamerType';
 import { useNavigate } from 'react-router-dom';
@@ -15,50 +14,44 @@ import { useNavigate } from 'react-router-dom';
   function UserProfile() {
     const [cardState, setCardState] = useState<number>(0);
     const {loggedInUserData, setLoggedInUserData} = useAuth();
-    const [bioData, setBioData] = useState<UserBioData | null>(null);
     const [gameIndex, setGameIndex] = useState(0);
     const gamesList = loggedInUserData?.games ? Object.entries(loggedInUserData.games) : [];
     const currentGame = gamesList[gameIndex] || null;
     const navigate = useNavigate();
 
-    const handleBioChange = (data: UserBioData) => {
-      setBioData(data);
-  };
 
     async function nextCardState(){
-      console.log(loggedInUserData)
       if(cardState === 0){
         const payload = {
           profilePic : loggedInUserData?.profilePic? loggedInUserData.profilePic : null,
-          aboutMe : bioData?.aboutMe? bioData.aboutMe : null,
-          displayName : bioData?.displayName? bioData.displayName : null,
-          lookingFor : bioData?.lookingFor? bioData.lookingFor : null,
-          birthDate : bioData?.birthDate? bioData.birthDate : null
+          aboutMe : loggedInUserData?.aboutMe? loggedInUserData.aboutMe : null,
+          displayName : loggedInUserData?.displayName? loggedInUserData.displayName : null,
+          lookingFor : loggedInUserData?.lookingFor? loggedInUserData.lookingFor : null,
+          birthDate : loggedInUserData?.birthDate? loggedInUserData.birthDate : null
         }
         const res = await userService.updateProfile(payload);
-
-        if(!res){
-          toast.error("Something went wrong")
+        if(res.error){
+          toast.error(res.error);
           return;
         }
         toast.success("Profile saved");
-        setLoggedInUserData((prev : any) => ({ ...prev, ...bioData }));
         setCardState(cardState +1);
         return;
       }
       if(cardState === 1){
-        if(loggedInUserData?.games == null){
-          toast.error("Please choose at least one game");
-          return;
-        }else{
           const payload = {
-            games : loggedInUserData.games
+            games : loggedInUserData?.games
           }
-          const res = await userService.updateProfile(payload)
-          toast.success("Games saved");
-          setCardState(cardState+1);
+        const res = await userService.updateProfile(payload);
+        if(res.error){
+          toast.error(res.error);
           return;
         }
+        console.log( "this is api response: " , res)
+          
+        toast.success("Games saved");
+        setCardState(cardState+1);
+        return;
       }
       if(cardState === 2){
         if(gameIndex < gamesList.length - 1){
@@ -66,10 +59,16 @@ import { useNavigate } from 'react-router-dom';
           return;
         }else{
           const payload = {
+            cardStep: 2,
             games: loggedInUserData?.games
           }
           const res = await userService.updateProfile(payload);
-          console.log(res);
+          if(res.error){
+            toast.error(res.error);
+            return;
+          }
+        console.log( "this is api response: " , res)
+          toast.success("Game Details saved!")
           setCardState(cardState+1)
           return;
         }
@@ -82,9 +81,13 @@ import { useNavigate } from 'react-router-dom';
           mainGoal: loggedInUserData?.mainGoal,
         }
         const res = await userService.updateProfile(payload);
-
+        if(res.error){
+          toast.error(res.error);
+          return;
+        }
         toast.success("Game saved!")
         setCardState(cardState+1)
+        return;
       }
       if(cardState === 4){
         const payload = {
@@ -97,9 +100,11 @@ import { useNavigate } from 'react-router-dom';
           timezone : loggedInUserData?.timezone? loggedInUserData.timezone : Intl.DateTimeFormat().resolvedOptions().timeZone
         }
         const res = await userService.updateProfile(payload);
-
+        if(res.error){
+          toast.error(res.error);
+          return;
+        }
         toast.success("Profile completed!")
-        
         return;
       }
     }
@@ -107,7 +112,7 @@ import { useNavigate } from 'react-router-dom';
     useEffect(() => {
     if (!loggedInUserData) return;
 
-    if (!loggedInUserData.profilePic || !loggedInUserData.aboutMe || !loggedInUserData.displayName) {
+    if (!loggedInUserData.aboutMe || !loggedInUserData.lookingFor || !loggedInUserData.birthDate) {
       setCardState(0);
       return;
     }
@@ -146,9 +151,7 @@ import { useNavigate } from 'react-router-dom';
                 width={150}
                 height={150}
               />  
-              <UserBioComponent
-                onDataChange={handleBioChange}
-              />
+              <UserBioComponent/>
             </>
             }
             { cardState === 1 &&

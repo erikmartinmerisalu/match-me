@@ -27,7 +27,7 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
     id: null,
     displayName: "",
     aboutMe: "",
-    birthdate: "",
+    birthDate: "",
     lookingfor: "",
     games: {},
     maxPreferredDistance: 0,

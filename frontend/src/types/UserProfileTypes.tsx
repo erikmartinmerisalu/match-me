@@ -13,7 +13,7 @@ export type UserFormData = {
   id : number | null | undefined,
   displayName: string;
   aboutMe: string;
-  birthdate: string;
+  birthDate: string;
   lookingfor: string;
   games: Games;
   maxPreferredDistance: number;

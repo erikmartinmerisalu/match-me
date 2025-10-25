@@ -18,11 +18,11 @@ export const userService = {
 
       if (!res.ok) {
         console.log("failed")
-        return "Failed to save profile";
+        const errorData = await res.json();
+        return errorData;
       }
 
       const data = await res.json();
-      console.log(data)
       return data;
     } catch (err) {
       console.error("UpdateProfile failed:", err);

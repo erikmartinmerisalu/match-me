@@ -14,19 +14,29 @@ function UserBioComponent ({onDataChange} : UserBioProps ) {
       displayName : loggedInUserData?.displayName || null,
       aboutMe : loggedInUserData?.aboutMe || null,
       lookingFor : loggedInUserData?.lookingFor || null,
-      birthDate : loggedInUserData?.birthdate || null
+      birthDate : loggedInUserData?.birthDate || null
     });    
 
     useEffect(() => {
-    if (onDataChange) {
-      onDataChange(userData);
-    }
-  }, [userData, onDataChange]);
+      if (loggedInUserData) {
+        setUserData({
+          displayName: loggedInUserData.displayName || "",
+          aboutMe: loggedInUserData.aboutMe || "",
+          lookingFor: loggedInUserData.lookingFor || "",
+          birthDate: loggedInUserData.birthDate || default18,
+        });
+      }
+    }, [loggedInUserData]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setUserData(prev => ({ ...prev, [name]: value }));
-  };
+    const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      setUserData((prev) => ({ ...prev, [name]: value }));
+
+      setLoggedInUserData((prev: any) => ({
+        ...prev,
+        [name]: value,
+      }));
+    };
 
   return (
     <div>
@@ -67,7 +77,7 @@ function UserBioComponent ({onDataChange} : UserBioProps ) {
 
         <div>
           <div className="sector">Age</div>
-          <input type="date" name="birthDate" min="1900-01-01" max={default18} value={userData.birthDate ?? loggedInUserData?.birthdate ?? default18} onChange={handleChange}/>
+          <input type="date" name="birthDate" min="1900-01-01" max={default18} value={loggedInUserData?.birthDate? loggedInUserData.birthDate : ""}  onChange={handleChange}/>
         </div>
     </div>
   )

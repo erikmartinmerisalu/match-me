@@ -1,4 +1,5 @@
 package com.matchme.service;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.matchme.dto.UserProfileDto;
 import com.matchme.entity.GameProfile;
 import com.matchme.entity.UserProfile;
@@ -6,8 +7,13 @@ import com.matchme.repository.UserProfileRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.management.RuntimeErrorException;
@@ -48,124 +54,330 @@ import javax.management.RuntimeErrorException;
             ); 
             private static final Set<String> VALID_RANK = Set.of(
             "Unranked", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Grandmaster", "N/A"
-            );    
-
+            );
+            
             @Transactional
-            public UserProfile updateCurrentUserProfile(Long userId, UserProfileDto profileDto) {
-            UserProfile profile = userProfileRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("Profile not found"));
+            public void updateProfile(Long userId, JsonNode json) {
+                UserProfile profile = userProfileRepository.findById(userId)
+                        .orElseThrow(() -> new RuntimeException("Profile not found"));
 
+                    System.out.println("Received JSON: " + json.toPrettyString());
 
-            if (profileDto.getDisplayName() != null) {
-                if (profileDto.getDisplayName().isBlank()) {
-                    throw new IllegalArgumentException("Display name must not be blank");
-                }
-                else profile.setDisplayName(profileDto.getDisplayName());
-            }
-
-            if (profileDto.getAboutMe() != null){
-                if(profileDto.getLookingFor().length() > 500){
-                    throw new IllegalArgumentException("About me must be 500 characters long");
-                }
-                profile.setAboutMe(profileDto.getAboutMe().trim());
-            }
-            if (profileDto.getLookingFor() != null){
-                if(profileDto.getLookingFor().trim().length() > 500){
-                    throw new IllegalArgumentException("About me must be 500 characters long");
-                }
-            profile.setLookingFor(profileDto.getLookingFor().trim()); 
-            } 
-            if (profileDto.getBirthDate() != null){
-                profile.setBirthDate(profileDto.getBirthDate());
-            }
-            if (profileDto.getPreferredAgeMin() != null) {
-                if (profileDto.getPreferredAgeMin() < 0 || profileDto.getPreferredAgeMin() > 100){ 
-                    throw new IllegalArgumentException("Minimum preferred age must be greater than 0 and lower than 100");
-                }if(profileDto.getPreferredAgeMin() > profileDto.getPreferredAgeMin() ){
-                    throw new IllegalArgumentException("Minimum preferred age can't be greater than maximum preferred age");
-                }else{
-                    profile.setPreferredAgeMin(profileDto.getPreferredAgeMin());
-                }
-            }
-            if (profileDto.getPreferredAgeMax() != null) {
-                if (profileDto.getPreferredAgeMax() < 0 || profileDto.getPreferredAgeMax() > 100)
-                    throw new IllegalArgumentException("Maximum preferred age must be lower than 100");
-                if(profileDto.getPreferredAgeMin() > profileDto.getPreferredAgeMin() ){
-                    throw new IllegalArgumentException("Minimum preferred age can't be greater than maximum preferred age");
-                }else{
-                    profile.setPreferredAgeMax(profileDto.getPreferredAgeMax());
-                }
-            }
-            if (profileDto.getMaxPreferredDistance() != null){
-                if(profileDto.getMaxPreferredDistance() <5 || profileDto.getMaxPreferredDistance() > 200){
-                    throw new IllegalArgumentException("Preferred distance must be over 5 km and less than 200km");
-                }
-                profile.setMaxPreferredDistance(profileDto.getMaxPreferredDistance());
-            }
-            if (profileDto.getTimezone() != null) profile.setTimezone(profileDto.getTimezone());
-            if (profileDto.getProfilePic() != null) profile.setProfilePic(profileDto.getProfilePic());
-            if (profileDto.getLatitude() != null) profile.setLatitude(profileDto.getLatitude());
-            if (profileDto.getLongitude() != null) profile.setLongitude(profileDto.getLongitude());
-            if (profileDto.getLocation() != null) profile.setLocation(profileDto.getLocation());
-
-
-            if (profileDto.getCompetitiveness() != null) profile.setCompetitiveness(profileDto.getCompetitiveness());
-            if (profileDto.getVoiceChatPreference() != null) profile.setVoiceChatPreference(profileDto.getVoiceChatPreference());
-            if (profileDto.getPlaySchedule() != null) profile.setPlaySchedule(profileDto.getPlaySchedule());
-            if (profileDto.getMainGoal() != null) profile.setMainGoal(profileDto.getMainGoal());
-
-            if (profileDto.getGames() != null) {
-                profile.getGames().clear();
-
-                profileDto.getGames().forEach((gameName, gameDto) -> {
-                    if (!VALID_GAMES.contains(gameName)) {
-                        throw new IllegalArgumentException("We ran into error: Invalid game");
+                if(json.has("displayName")) {
+                    JsonNode nameNode = json.get("displayName");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("Username is missing!");
                     }
-                    GameProfile game = new GameProfile();
-                    game.setUserProfile(profile);
-                    game.setGameName(gameName);
 
-                    if (gameDto.getExpLvl() != null) {
-                        if (!VALID_EXP_LVL.contains(gameDto.getExpLvl().trim())) {
-                            throw new IllegalArgumentException("We ran into error: Invalid experience for: " + gameName);
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("Username is missing!");
+                    }
+
+                    if(value.length() < 3){
+                        throw new IllegalArgumentException("Username must be at least 3 characthers long");
+                    }
+
+                    if(value.length() > 25){
+                        throw new IllegalArgumentException("Username must be less than 25 characthers long");
+                    }
+
+                    profile.setDisplayName(value);
+                }
+
+                if(json.has("aboutMe")){
+                    JsonNode nameNode = json.get("aboutMe");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("About me field missing!");
+                    }
+
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("About me name must not be blank");
+                    }
+
+                    if(value.length() > 250){
+                        throw new IllegalArgumentException("About me must be less than 250 characthers");
+                    }
+
+                    profile.setAboutMe(value);
+                }
+                if(json.has("lookingFor")){
+                    JsonNode nameNode = json.get("lookingFor");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("Looking for field missing!");
+                    }
+
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("Looking for field must not be blank");
+                    }
+
+                    if(value.length() > 250){
+                        throw new IllegalArgumentException("Looking for field field must be less than 250 characthers");
+                    }
+                    profile.setLookingFor(value);
+
+                }
+
+                if(json.has("birthDate")){
+                    JsonNode nameNode = json.get("birthDate");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("Birthdate missing!");
+                    }
+
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("Birthdate missing!");
+                    }
+
+                    LocalDate birthDate;
+                    try {
+                        birthDate = LocalDate.parse(value);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Invalid birthdate format");
+                    }
+
+                    if (birthDate.isAfter(LocalDate.now())) {
+                        throw new IllegalArgumentException("Birthdate cannot be in the future");
+                    }
+                    System.out.print(birthDate);
+                    profile.setBirthDate(birthDate);
+
+                }
+
+                if(json.has("games")) {
+                    JsonNode nameNode = json.get("games");
+
+                    if(!nameNode.isObject()){
+                        throw new IllegalArgumentException("Server error");
+                    }
+                    if(nameNode == null || nameNode.isNull() || nameNode.size() == 0) {
+                        throw new IllegalArgumentException("Choose at least one game!");
+                    }
+
+                    Map<String, GameProfile> existingGames = new HashMap<>();
+                    for (GameProfile g : profile.getGames()) {
+                        existingGames.put(g.getGameName(), g);
+                    }
+
+                    Iterator<String> gameKeys = nameNode.fieldNames();
+                    while (gameKeys.hasNext()) {
+                        String gameKey = gameKeys.next();
+                        JsonNode gameDetails = nameNode.get(gameKey);
+
+                        if (!VALID_GAMES.contains(gameKey)) {
+                            throw new IllegalArgumentException("Invalid game key: " + gameKey);
                         }
-                        game.setExpLvl(gameDto.getExpLvl().trim());
-                    }
-                    if (gameDto.getGamingHours() != null) {
-                        if (!VALID_GAMING_HOURS.contains(gameDto.getGamingHours().trim())) {
-                            throw new IllegalArgumentException("We ran into error: Invalid gaming hour level for: " + gameName );
-                        }
-                        game.setGamingHours(gameDto.getGamingHours().trim());
 
-                    }
-                    if (gameDto.getPreferredServers() != null && !gameDto.getPreferredServers().isEmpty() ) {
-                            for (String server : gameDto.getPreferredServers()) {
-                                if (server == null || server.isBlank()) {
-                                    throw new IllegalArgumentException("We ran into error: Preferred serves must not be empty for game: " + gameName);
+                        GameProfile gameProfile;
+                        if (existingGames.containsKey(gameKey)) {
+                            gameProfile = existingGames.get(gameKey);
+                        } else {
+                            gameProfile = new GameProfile();
+                            gameProfile.setGameName(gameKey);
+                            gameProfile.setUserProfile(profile);
+                            profile.getGames().add(gameProfile);
+                        }
+
+                        if (gameDetails != null && !gameDetails.isNull() ) {
+                            if(gameDetails.has("expLvl")) {
+                                String expLvl = gameDetails.get("expLvl").asText();
+                                if (!VALID_EXP_LVL.contains(expLvl)) {
+                                    throw new IllegalArgumentException("Invalid Experience level for " + gameKey + ": " + expLvl);
                                 }
-                                if (!VALID_SERVERS.contains(server)) {
-                                    throw new IllegalArgumentException("We ran into error: Incorrect server for game: " + gameName);
-                                }
+                                gameProfile.setExpLvl(expLvl);
                             }
-                        game.setPreferredServersSet(gameDto.getPreferredServers());
-                    }else {
-                        game.setPreferredServersSet(new HashSet<>());
-                    }
 
-                    if(gameDto.getCurrentRank() != null){
-                        if(!VALID_RANK.contains(gameDto.getCurrentRank().trim())){
-                            throw new IllegalArgumentException("We ran into error: Invalid argument for game rank: " + gameName);
+                            if(gameDetails.has("gamingHours")) {
+                                String hours = gameDetails.get("gamingHours").asText();
+                                if (!VALID_GAMING_HOURS.contains(hours)) {
+                                    throw new IllegalArgumentException("Server error: Invalid Gaming Hours for " + gameKey + ": " + hours);
+                                }
+                                gameProfile.setGamingHours(hours);
+                            }
+
+                            if(gameDetails.has("preferredServers")) {
+                                JsonNode serversNode = gameDetails.get("preferredServers");
+                                Set<String> servers = new HashSet<>();
+                                for (JsonNode serverNode : serversNode) {
+                                    String server = serverNode.asText();
+                                    if(!VALID_SERVERS.contains(server)) {
+                                        throw new IllegalArgumentException("Server error: Invalid server in " + gameKey + ": " + server);
+                                    }
+                                    servers.add(server);
+                                }
+                                gameProfile.setPreferredServersSet(servers);
+                            }
+
+                            if(gameDetails.has("currentRank")) {
+                                String rank = gameDetails.get("currentRank").asText();
+                                if(!VALID_RANK.contains(rank)) {
+                                    throw new IllegalArgumentException("Server error: Invalid rank for " + gameKey + ": " + rank);
+                                }
+                                gameProfile.setCurrentRank(rank);
+                            }
                         }
-                        game.setCurrentRank(gameDto.getCurrentRank().trim());
                     }
-                    profile.getGames().add(game);
+                }
 
-                });
+                if(json.has("competitiveness")){
+                    JsonNode nameNode = json.get("competitiveness");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("Competitiveness missing!");
+                    }
+
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("Competitiveness missing!");
+                    }
+
+                    if(!VALID_COMPETITIVENESS.contains(value)){
+                        throw new IllegalArgumentException("Server error: Invalid rank competitiveness");
+                    }
+                    profile.setCompetitiveness(value);
+
+                }
+
+                if(json.has("voiceChatPreference")){
+                    JsonNode nameNode = json.get("voiceChatPreference");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("Voice Chat Preference missing!");
+                    }
+
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("Voice Chat Preference missing!");
+                    }
+
+                    if(!VALID_VOICE_CHAT_PREFERENCES.contains(value)){
+                        throw new IllegalArgumentException("Server error: Invalid Voice Chat Preference");
+                    }
+                    profile.setVoiceChatPreference(value);
+                }
+
+                if(json.has("playSchedule")){
+                    JsonNode nameNode = json.get("playSchedule");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("Play Schedule missing!");
+                    }
+
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("Play Schedule missing!");
+                    }
+
+                    if(!VALID_PLAY_SCHEDULE.contains(value)){
+                        throw new IllegalArgumentException("Server error: Invalid Play Schedule");
+                    }
+                    profile.setPlaySchedule(value);
+
+                }
+
+                if(json.has("mainGoal")){
+                    JsonNode nameNode = json.get("mainGoal");
+                    if(nameNode.isNull()) {
+                        throw new IllegalArgumentException("Main Goal missing!");
+                    }
+
+                    String value = nameNode.asText().trim();
+                    if(value.isBlank()) {
+                        throw new IllegalArgumentException("Main Goal missing!");
+                    }
+
+                    if(!VALID_MAIN_GOAL.contains(value)){
+                        throw new IllegalArgumentException("Server error: Invalid Main Goal");
+                    }
+                    profile.setMainGoal(value);
+                }
+
+                Integer preferredAgeMin = profile.getPreferredAgeMin();
+                Integer preferredAgeMax = profile.getPreferredAgeMax();
+
+                if(json.has("preferredAgeMin")){
+                    JsonNode node = json.get("preferredAgeMin");
+                    if(node.isNull()){
+                        throw new IllegalArgumentException("Preferred Minimum Age  missing!");
+                    }
+                    int value = node.asInt(-1);
+                    if(value < 0){
+                        throw new IllegalArgumentException("Preferred Minimum Age must be >= 0");
+                    }
+                    profile.setPreferredAgeMin(value);
+                    preferredAgeMin = value;
+                }
+
+                if(json.has("preferredAgeMax")){
+                    JsonNode node = json.get("preferredAgeMax");
+                    if(node.isNull()){
+                        throw new IllegalArgumentException("Preferred Maximum Age missing!");
+                    }
+                    int value = node.asInt(-1);
+                    if(value < 0){
+                        throw new IllegalArgumentException("Preferred Maximum Age must be >= 0");
+                    }
+                    profile.setPreferredAgeMax(value);
+                    preferredAgeMax = value;
+                }
+
+                if(preferredAgeMin != null && preferredAgeMax != null && preferredAgeMin > preferredAgeMax){
+                    throw new IllegalArgumentException("Preferred Minimum Age cannot be greater than Preferred Maximum Age");
+                }
+
+                if(json.has("location")){
+                    JsonNode node = json.get("location");
+                    if(node.isNull()){
+                        throw new IllegalArgumentException("Location missing!");
+                    }
+                    String value = node.asText().trim();
+                    if(value.isBlank()){
+                        throw new IllegalArgumentException("Location must not be blank");
+                    }
+                    profile.setLocation(value);
+                }
+
+                if(json.has("latitude")){
+                    JsonNode node = json.get("latitude");
+                    if(node.isNull()){
+                        throw new IllegalArgumentException("Latitude missing!");
+                    }
+                    double value = node.asDouble(Double.NaN);
+                    if(Double.isNaN(value)){
+                        throw new IllegalArgumentException("Invalid latitude");
+                    }
+                    profile.setLatitude(value);
+                }
+
+                if(json.has("longitude")){
+                    JsonNode node = json.get("longitude");
+                    if(node.isNull()){
+                        throw new IllegalArgumentException("Longitude missing!");
+                    }
+                    double value = node.asDouble(Double.NaN);
+                    if(Double.isNaN(value)){
+                        throw new IllegalArgumentException("Invalid longitude");
+                    }
+                    profile.setLongitude(value);
+                }
+
+                if(json.has("timezone")){
+                    JsonNode node = json.get("timezone");
+                    if(node.isNull()){
+                        throw new IllegalArgumentException("Server error: Timezone missing! Try again!");
+                    }
+                    String value = node.asText().trim();
+                    if(value.isBlank()){
+                        throw new IllegalArgumentException("Server error: Timezone must not be blank");
+                    }
+                    profile.setTimezone(value);
+                }
                 
+
+                userProfileRepository.save(profile);
             }
 
-                return userProfileRepository.save(profile);
-            }
+
+
 
             @Transactional
             public UserProfile findByUserId(Long userId) {
