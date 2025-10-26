@@ -23,7 +23,7 @@ public class LocationService {
                 ))) {
 
             locations.addAll(reader.lines()
-                    .map(line -> line.replace("\"", "")) // eemalda jutumärgid
+                    .map(line -> line.replace("\"", ""))
                     .map(line -> line.split(";"))
                     .filter(parts -> parts.length >= 6)
                     .map(parts -> new Location(
@@ -36,9 +36,9 @@ public class LocationService {
                     ))
                     .collect(Collectors.toList()));
 
-            System.out.println("✅ Loaded " + locations.size() + " locations from CSV");
+            System.out.println("Location CSV Loaded " + locations.size() + " locations from CSV");
         } catch (Exception e) {
-            throw new RuntimeException("❌ Failed to load locations.csv", e);
+            throw new RuntimeException("Failed to load locations csv file", e);
         }
     }
 

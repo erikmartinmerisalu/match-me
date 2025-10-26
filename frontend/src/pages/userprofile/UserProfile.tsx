@@ -105,6 +105,10 @@ import { useNavigate } from 'react-router-dom';
           return;
         }
         toast.success("Profile completed!")
+
+        setTimeout(() => {
+          navigate("/home");
+        }, 1500);   
         return;
       }
     }
