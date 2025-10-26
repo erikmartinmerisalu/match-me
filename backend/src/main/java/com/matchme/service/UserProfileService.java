@@ -385,5 +385,10 @@ import javax.management.RuntimeErrorException;
                         .orElseThrow(() -> new RuntimeException("Profile not found"));
             }
             
+            @Transactional
+            public UserProfile saveProfile(UserProfile profile) {
+                return userProfileRepository.save(profile);
+            }
+
         }
 
