@@ -14,3 +14,33 @@
   padding: 1%;
   cursor: pointer;
 }
+
+.results-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  color: black;
+  width: 100%;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 0px 8px rgba(0,0,0,0.2);
+  border-radius: 10px;
+  margin-top: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.results-list div {
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.results-list div:hover {
+  background-color: #f0f0f0;
+}
+.autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}

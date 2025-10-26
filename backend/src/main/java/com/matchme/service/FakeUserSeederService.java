@@ -61,6 +61,10 @@ public class FakeUserSeederService {
             profile.setLatitude(-90 + random.nextDouble() * 180);
             profile.setLongitude(-180 + random.nextDouble() * 360);
             profile.setLocation("Somewhere #" + i);
+            profile.setCompetitiveness(competitivenessOptions[random.nextInt(competitivenessOptions.length)]);
+            profile.setVoiceChatPreference(voiceChatOptions[random.nextInt(voiceChatOptions.length)]);
+            profile.setPlaySchedule(playScheduleOptions[random.nextInt(playScheduleOptions.length)]);
+            profile.setMainGoal(mainGoalOptions[random.nextInt(mainGoalOptions.length)]);
 
             int gameCount = 1 + random.nextInt(3);
             Set<GameProfile> games = new HashSet<>();
@@ -74,10 +78,7 @@ public class FakeUserSeederService {
                 game.setExpLvl(gameExpLvl[random.nextInt(gameExpLvl.length)]);
                 game.setGamingHours(gamingHours[random.nextInt(gamingHours.length)]);
                 game.setPreferredServersSet(Set.of(serverOptions[random.nextInt(serverOptions.length)]));
-                game.setCompetitiveness(competitivenessOptions[random.nextInt(competitivenessOptions.length)]);
-                game.setVoiceChatPreference(voiceChatOptions[random.nextInt(voiceChatOptions.length)]);
-                game.setPlaySchedule(playScheduleOptions[random.nextInt(playScheduleOptions.length)]);
-                game.setMainGoal(mainGoalOptions[random.nextInt(mainGoalOptions.length)]);
+
                 game.setCurrentRank(rankOptions[random.nextInt(rankOptions.length)]);
                 game.setUserProfile(profile);
                 games.add(game);

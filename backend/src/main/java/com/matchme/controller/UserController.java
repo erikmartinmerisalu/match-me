@@ -105,12 +105,12 @@ public class UserController {
 
     @PutMapping("/me/profile")
 
-    public ResponseEntity<?> updateCurrentUserProfile(@RequestBody JsonNode json) {
-        String userEmail = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Optional<User> userOpt = userService.findByEmail(userEmail);
-        if (userOpt.isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<?> updateCurrentUserProfile(
+        @AuthenticationPrincipal User currentUser,
+        @RequestBody JsonNode json) {
 
-        Long userId = userOpt.get().getId();
+    Long userId = currentUser.getId();
+
         try {
             userProfileService.updateProfile(userId, json);
             return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
