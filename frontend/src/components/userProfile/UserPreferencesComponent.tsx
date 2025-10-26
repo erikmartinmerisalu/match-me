@@ -15,10 +15,24 @@ interface LocationAndPreferencesProps {
   onDataChange?: (data: LocationAndPreferencesData) => void;
 }
 
+interface LocationSuggestion {
+  id: number;
+  country: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  elevation: number;
+}
+
+interface LocationAndPreferencesProps {
+  onDataChange?: (data: LocationAndPreferencesData) => void;
+}
+
 const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataChange }) => {
   const { loggedInUserData, setLoggedInUserData } = useAuth();
-  const [locationOption, setLocationOption] = useState("")
   const { latitude, longitude } = useGeolocation();
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
 
   const [userPrefs, setUserPrefs] = useState<LocationAndPreferencesData>({
@@ -50,17 +64,54 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
     if (onDataChange) onDataChange(userPrefs);
   }, [userPrefs, onDataChange]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  
+  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    const newValue =
-      e.target.type === "number" ? Number(value) : value;
 
-    setUserPrefs((prev) => ({ ...prev, [name]: newValue }));
+    setUserPrefs((prev) => ({ ...prev, [name]: value }));
+    setLoggedInUserData((prev: any) => ({ ...prev, [name]: value }));
 
+    if (name === "location") {
+      if (value.length >= 3) {
+        setIsLoading(true);
+        try {
+           const res = await fetch(
+            `http://localhost:8080/api/search?query=${encodeURIComponent(value)}`,
+            {
+              method: "GET",
+              credentials: "include", // <--- see tagab, et cookie kaasa läheb
+            }
+          );    
+          console.log(res)
+          const data: LocationSuggestion[] = await res.json();
+          setSuggestions(data.slice(0, 5));
+          console.log(data)
+        } catch (err) {
+          console.error("Error fetching locations:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setSuggestions([]);
+      }
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion: LocationSuggestion) => {
+    const locationString = `${suggestion.city}, ${suggestion.country}`;
+    setUserPrefs((prev) => ({
+      ...prev,
+      location: locationString,
+      latitude: suggestion.latitude,
+      longitude: suggestion.longitude,
+    }));
     setLoggedInUserData((prev: any) => ({
       ...prev,
-      [name]: newValue,
+      location: locationString,
+      latitude: suggestion.latitude,
+      longitude: suggestion.longitude,
     }));
+    setSuggestions([]);
   };
 
   return (
@@ -68,21 +119,29 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
       <div>
         <div className="sector">Location</div>
         <br />
-        <input
-          name="location"
-          type="text"
-          value={userPrefs.location ?? ""}
-          placeholder="Tallinn, Estonia"
-          onChange={handleChange}
-        />
-        <br />
-        <br />
-        <div>
-          <button>Get location from browser</button>
-          <br />
-          <br />
-          <button>Choose my location</button>
-        </div>
+        <div className="autocomplete-wrapper">
+    <input
+      name="location"
+      type="text"
+      value={userPrefs.location ?? ""}
+      placeholder="Type to search..."
+      onChange={handleChange}
+      autoComplete="off"
+    />
+
+    {isLoading && <div className="absolute mt-1 bg-white p-1 rounded shadow">Loading...</div>}
+
+    {suggestions.length > 0 && (
+      <>
+      <div className="results-list">
+        {suggestions.map(suggestion => <div key={suggestion.city} onClick={() => handleSelectSuggestion(suggestion)}>{suggestion.country + "," + suggestion.city}</div>)}
+      </div>
+
+      </>
+
+    )}
+    </div>
+        
         <br />
       </div>
 
@@ -110,6 +169,7 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
               type="number"
               name="preferredAgeMax"
               value={userPrefs.preferredAgeMax ?? 100}
+              defaultValue={userPrefs.preferredAgeMax ?? 100}
               onChange={handleChange}
             />
           </div>
@@ -124,7 +184,8 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
           name="maxPreferredDistance"
           min={5}
           max={200}
-          value={userPrefs.maxPreferredDistance ?? 50}
+          defaultValue={userPrefs.maxPreferredDistance ?? 100}
+          value={userPrefs.maxPreferredDistance ?? 100}
           onChange={handleChange}
         />
       </div>

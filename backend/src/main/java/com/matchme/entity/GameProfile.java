@@ -22,7 +22,7 @@ public class GameProfile {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "profile_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserProfile userProfile;
 
     private String gameName;
