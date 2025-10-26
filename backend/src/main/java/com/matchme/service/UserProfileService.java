@@ -58,7 +58,7 @@ import javax.management.RuntimeErrorException;
             
             @Transactional
             public void updateProfile(Long userId, JsonNode json) {
-                UserProfile profile = userProfileRepository.findById(userId)
+                UserProfile profile = userProfileRepository.findByUserId(userId)
                         .orElseThrow(() -> new RuntimeException("Profile not found"));
 
                     System.out.println("Received JSON: " + json.toPrettyString());
@@ -381,8 +381,10 @@ import javax.management.RuntimeErrorException;
 
             @Transactional
             public UserProfile findByUserId(Long userId) {
-                return userProfileRepository.findByUserId(userId)
+                UserProfile profile = userProfileRepository.findByUserId(userId)
                         .orElseThrow(() -> new RuntimeException("Profile not found"));
+                profile.getGames().size();
+                return profile;
             }
             
             @Transactional
