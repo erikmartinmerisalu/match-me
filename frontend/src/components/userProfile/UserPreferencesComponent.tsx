@@ -1,6 +1,8 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useGeolocation } from "../../hooks/GeoLocation";
+import { locationSearchService } from "../../services/locationSearch";
+import { toast } from "react-toastify";
 
 interface LocationAndPreferencesData {
   location: string | null;
@@ -75,17 +77,11 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
       if (value.length >= 3) {
         setIsLoading(true);
         try {
-           const res = await fetch(
-            `http://localhost:8080/api/search?query=${encodeURIComponent(value)}`,
-            {
-              method: "GET",
-              credentials: "include", // <--- see tagab, et cookie kaasa läheb
-            }
-          );    
-          console.log(res)
-          const data: LocationSuggestion[] = await res.json();
-          setSuggestions(data.slice(0, 5));
-          console.log(data)
+           const res = await locationSearchService.searchLOcation(encodeURIComponent(value))
+           if(res.err){
+            toast.error("Location not found!")
+           }
+          setSuggestions(res.slice(0, 5));
         } catch (err) {
           console.error("Error fetching locations:", err);
         } finally {
