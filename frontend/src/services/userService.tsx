@@ -1,13 +1,13 @@
 import type { UserFormData } from "../types/UserProfileTypes";
 
 // src/services/userService.ts
-const API_BASE_URL = "http://localhost:8080/api/users";
+const API_BASE_URL = "http://localhost:8080";
 
 export const userService = {
   async updateProfile(payload: any) {
     console.log("it started", payload)
     try {
-      const res = await fetch(`${API_BASE_URL}/me/profile`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/me/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +32,7 @@ export const userService = {
 
   async getUserProfile() : Promise <UserFormData | null> {
     try{
-      const res = await fetch(`${API_BASE_URL}/me/profile`, {
+      const res = await fetch(`${API_BASE_URL}/api/users/me/profile`, {
         method : "GET",
         credentials : "include",
       })
