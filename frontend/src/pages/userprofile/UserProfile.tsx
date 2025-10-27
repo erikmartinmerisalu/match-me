@@ -1,6 +1,5 @@
 import React, { useEffect, useState, type ChangeEvent } from 'react'
 import "./userprofile.css"
-import { Bounce, toast, ToastContainer } from 'react-toastify';
 import UserGamesComponent from '../../components/userProfile/UserGamesComponent';
 import UserBioComponent  from '../../components/userProfile/UserBioComponent';
 import ProfilePicChange from '../../components/profilepic/ProfilePicChange';
@@ -10,6 +9,7 @@ import UserGameDetails from '../../components/userProfile/UserGameDetails';
 import UserPreferencesComponent from '../../components/userProfile/UserPreferencesComponent';
 import UserGamerType from '../../components/userProfile/UserGamerType';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 
   function UserProfile() {
     const [cardState, setCardState] = useState<number>(0);
@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
     const gamesList = loggedInUserData?.games ? Object.entries(loggedInUserData.games) : [];
     const currentGame = gamesList[gameIndex] || null;
     const navigate = useNavigate();
+    const toast = useToast()
 
 
     async function nextCardState(){
@@ -192,21 +193,6 @@ import { useNavigate } from 'react-router-dom';
           </form>
         </div>
         <button onClick={() => nextCardState()}>Next</button>
-
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={false}
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-          transition={Bounce}
-          />
-
       </div>
     )
   }

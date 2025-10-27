@@ -33,9 +33,50 @@ export type UserFormData = {
   mainGoal: string;
 } | null;
 
+  export interface UserBioData {
+  displayName: string | null;
+  aboutMe: string | null;
+  lookingFor: string | null;
+  birthDate: string | null;
+}
 
+export interface UserBioProps {
+  onDataChange?: (data: UserBioData) => void;
+}
 
-// export interface UserGameProps {
-//   games: string[];
-//   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-// }
+export interface UserGameDetailsProps {
+  gameName: string;
+  gameData: any;
+  onChange: (updatedGame: any) => void;
+}
+
+export interface UserGamerTypeDetailsProps {
+  gameData: any;
+  onChange: (updatedGame: any) => void;
+}
+
+export interface LocationAndPreferencesData {
+  location: string | null;
+  preferredAgeMin: number | null;
+  preferredAgeMax: number | null;
+  maxPreferredDistance: number | null;
+  latitude : number | null,
+  longitude : number | null
+}
+
+export interface LocationAndPreferencesProps {
+  onDataChange?: (data: LocationAndPreferencesData) => void;
+}
+
+export interface LocationSuggestion {
+  id: number;
+  country: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  elevation: number;
+}
+
+export interface LocationAndPreferencesProps {
+  onDataChange?: (data: LocationAndPreferencesData) => void;
+}
