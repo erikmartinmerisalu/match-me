@@ -7,7 +7,6 @@ function App() {
     <div className='app'>
       <div className='navbar'>
         <Navbar />
-        
       </div>
       <div className='footer'>
       </div>
