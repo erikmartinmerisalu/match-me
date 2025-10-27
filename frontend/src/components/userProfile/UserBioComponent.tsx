@@ -1,6 +1,6 @@
 import { useEffect, useState, type ChangeEvent } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import type { UserBioData, UserBioProps } from '../../types/UserBioComponentTypes';
+import type { UserBioData, UserBioProps } from '../../types/UserProfileTypes';
 
 
 function UserBioComponent ({onDataChange} : UserBioProps ) {

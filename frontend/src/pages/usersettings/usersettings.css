@@ -1,0 +1,46 @@
+.profile-card {
+  width: 310px;
+  margin: 2rem auto;
+  padding: 1rem ;
+  background: #7c857c;
+  color: #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  font-family: Arial, sans-serif;
+}
+.profile-form label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.profile-form input,
+.profile-form select,
+.profile-form textarea {
+  width: 90%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: none;
+  margin-top: 0.3rem;
+}
+
+.profile-card {
+  width: 310px;
+  margin: 2rem auto;
+  padding: 1rem ;
+  background: #7c857c;
+  color: #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  font-family: Arial, sans-serif;
+}
+
+.profile-card h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #9a7dff;
+}
+
+.profile-pic {
+  text-align: center;
+  margin-bottom: 1rem;
+}

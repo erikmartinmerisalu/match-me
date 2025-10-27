@@ -34,7 +34,6 @@ function Navbar() {
       {loggedIn && (
         <div className='navbar-links'>
           
-          <div onClick={() => navigate("/userprofile")}>Profile</div>
           <div onClick={() => navigate("/match")}>Match</div>
           <div onClick={() => navigate("/chat")}>Chat</div>
           <div>Idk</div>
