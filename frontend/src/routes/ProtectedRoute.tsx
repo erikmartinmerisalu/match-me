@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children }: ProfileProtectedRouteProps)
   const { loggedInUserData } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
-  const hasRun = useRef(false); // flag, et toast ja navigate käiksid ainult üks kord
+  const hasRun = useRef(false);
 
   useEffect(() => {
     if (!hasRun.current && loggedInUserData?.profileCompleted === false) {
