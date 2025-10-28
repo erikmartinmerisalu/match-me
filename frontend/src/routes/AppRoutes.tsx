@@ -2,16 +2,22 @@ import { Route, Routes} from 'react-router-dom'
 import LogIn from '../pages/auth/LogIn'
 import SignUp from '../pages/auth/SignUp'
 import {  useAuth } from '../context/AuthContext'
-// import NotFound from '../pages/notfound/NotFound';
-import Match from '../pages/matches/Match';
+import Matches from '../pages/matches/Matches';
 import Home from '../pages/frontpage/Home';
 import ChatPage from '../pages/chat/ChatPage';
-import ViewProfile from '../pages/viewprofile/ViewProfile';  // Add this import
+import ViewProfile from '../pages/viewprofile/ViewProfile';
 import UserProfile from '../pages/userprofile/UserProfile';
+import UserSettings from '../pages/usersettings/UserSettings';
+import Recommendations from '../pages/matches/Recommendations';
+import { useEffect, useRef } from 'react';
+import { useToast } from '../context/ToastContext';
+import ProtectedRoute from './ProtectedRoute';
 
 export default function AppRoutes() {
-  const {loggedIn} = useAuth();
-
+  const {loggedIn, loggedInUserData} = useAuth();
+  //const navigate = useNavigate();
+  const toast = useToast();
+  const hasRun = useRef(false);
   return (
     <div>
         <Routes>
@@ -22,10 +28,13 @@ export default function AppRoutes() {
 
           {loggedIn === true ? <>
             <Route path="/userprofile" element={<UserProfile />} />
-            <Route path="/match" element={<Match />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/chat/:userId" element={<ChatPage />} />
-            <Route path="/viewprofile/:userId" element={<ViewProfile />} />
+            <Route path="/recommendations" element={<ProtectedRoute> <Recommendations /> </ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute> <UserSettings /> </ProtectedRoute>} />
+            <Route path="/matches" element={<ProtectedRoute> <Matches /> </ProtectedRoute> } />
+            <Route path="/chat" element={<ProtectedRoute> <ChatPage /> </ProtectedRoute>} />
+            <Route path="/chat/:userId" element={<ProtectedRoute> <ChatPage /> </ProtectedRoute>} />
+            <Route path="/viewprofile/:userId" element={<ProtectedRoute> <ViewProfile /> </ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute> <UserSettings /> </ProtectedRoute>} />
           </> :
           <Route path="/login" element={<LogIn />} />
           }
