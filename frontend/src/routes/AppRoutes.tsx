@@ -1,4 +1,4 @@
-import { Route, Routes} from 'react-router-dom'
+import { Route, Routes, useNavigate} from 'react-router-dom'
 import LogIn from '../pages/auth/LogIn'
 import SignUp from '../pages/auth/SignUp'
 import {  useAuth } from '../context/AuthContext'
@@ -15,13 +15,15 @@ import ProtectedRoute from './ProtectedRoute';
 
 export default function AppRoutes() {
   const {loggedIn, loggedInUserData} = useAuth();
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
   const toast = useToast();
   const hasRun = useRef(false);
+
+
   return (
     <div>
         <Routes>
-          <Route path="/home" element={<Home />} />
+          <Route path="/home" element={ <Home />} />
           <Route path="/login" element={<LogIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/*" element={<Home />} />

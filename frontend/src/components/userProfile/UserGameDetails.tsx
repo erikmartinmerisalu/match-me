@@ -1,11 +1,6 @@
 import React, { useState } from 'react'
 import "./gamecomponents.css"
-
-interface UserGameDetailsProps {
-  gameName: string;
-  gameData: any;
-  onChange: (updatedGame: any) => void;
-}
+import type { UserGameDetailsProps } from '../../types/UserProfileTypes';
 
 function UserGameDetails({gameName, gameData, onChange}: UserGameDetailsProps) {
   const gameExpLvl = ["Beginner", "Intermediate", "Advanced"];
