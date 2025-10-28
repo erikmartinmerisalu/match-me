@@ -1,9 +1,8 @@
-// Connection.java
 package com.matchme.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
 
 @Entity
 @Table(name = "connections")
@@ -14,10 +13,12 @@ public class Connection {
 
     @ManyToOne
     @JoinColumn(name = "from_user_id", nullable = false)
+    @JsonIgnoreProperties({"profile", "password", "connections", "hibernateLazyInitializer", "handler"})
     private User fromUser;
 
     @ManyToOne
     @JoinColumn(name = "to_user_id", nullable = false)
+    @JsonIgnoreProperties({"profile", "password", "connections", "hibernateLazyInitializer", "handler"})
     private User toUser;
 
     @Enumerated(EnumType.STRING)
@@ -39,10 +40,14 @@ public class Connection {
     }
 
     public enum ConnectionStatus {
-        PENDING, ACCEPTED, REJECTED, BLOCKED
+        PENDING,
+        ACCEPTED,
+        REJECTED,
+        BLOCKED,
+        DISMISSED
     }
 
-    // Constructors
+    // Constructors, Getters, Setters...
     public Connection() {}
 
     public Connection(User fromUser, User toUser, ConnectionStatus status) {
@@ -51,7 +56,6 @@ public class Connection {
         this.status = status;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

@@ -6,7 +6,7 @@ import ProfilePicShow from '../profilepic/ProfilePicShow';
 
 function Navbar() {
   const navigate = useNavigate();
-  const { loggedIn, signOut , loggedInUserData} = useAuth();
+  const { loggedIn, signOut, loggedInUserData } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -33,11 +33,10 @@ function Navbar() {
 
       {loggedIn && (
         <div className='navbar-links'>
-          
           <div onClick={() => navigate("/userprofile")}>Profile</div>
-          <div onClick={() => navigate("/match")}>Match</div>
+          <div onClick={() => navigate("/recommendations")}>Discover</div>
+          <div onClick={() => navigate("/matches")}>Matches</div>
           <div onClick={() => navigate("/chat")}>Chat</div>
-          <div>Idk</div>
         </div>
       )}
 
@@ -49,14 +48,13 @@ function Navbar() {
           </>
         ) : (
           <div className="user-dropdown" ref={dropdownRef}>
-            <div className="user-info" >
-              {loggedInUserData?.profilePic? <ProfilePicShow src={loggedInUserData.profilePic } width={30} height={30} /> : null}
-              <span style={{ marginLeft: '8px' }}>{loggedInUserData?.displayName? loggedInUserData.displayName : null}</span>
+            <div className="user-info">
+              {loggedInUserData?.profilePic ? <ProfilePicShow src={loggedInUserData.profilePic} width={30} height={30} /> : null}
+              <span style={{ marginLeft: '8px' }}>{loggedInUserData?.displayName ? loggedInUserData.displayName : null}</span>
             </div>
             
             <img src="/down-arrow.png" className="icon" onClick={toggleDropdown} />
             {dropdownOpen && (
-              
               <div className="dropdown-menu"> 
                 <div className="dropdown-item" onClick={() => navigate("/settings")}>Settings</div>
                 <div className="dropdown-item" onClick={handleLogOut}>Log Out</div>
