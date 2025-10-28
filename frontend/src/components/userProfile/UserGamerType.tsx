@@ -1,11 +1,7 @@
 import React, { useState } from 'react'
+import type { UserGamerTypeDetailsProps } from '../../types/UserProfileTypes';
 
-interface UserGameDetailsProps {
-  gameData: any;
-  onChange: (updatedGame: any) => void;
-}
-
-function UserGamerType({gameData, onChange}: UserGameDetailsProps) {
+function UserGamerType({gameData, onChange}: UserGamerTypeDetailsProps) {
   const competitivenessOptions = ["Just for fun", "Casual", "Semi-competitive", "Highly competitive"];
   const voiceChatOptions = ["Always", "Sometimes", "Rarely", "Never"];
   const playScheduleOptions = ["Weekday mornings", "Weekday evenings", "Weekend mornings", "Weekend evenings", "Late nights"];
@@ -13,9 +9,9 @@ function UserGamerType({gameData, onChange}: UserGameDetailsProps) {
 
   const [localData, setLocalData] = useState({
     ...gameData,
-    playSchedule: gameData.playSchedule || [],
-    mainGoal: gameData.mainGoal || [],
-    competitiveness : gameData.compecompetitiveness || []
+    playSchedule: gameData.playSchedule || "",
+    mainGoal: gameData.mainGoal || "",
+    competitiveness : gameData.compecompetitiveness || ""
   });
 
   const handleInputChange = (field: string, value: any) => {
