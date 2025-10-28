@@ -5,23 +5,21 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserProfileDto {
 
     private Long id;
 
-    // @NotBlank
     private String displayName;
 
     private String aboutMe;
 
-    // @NotNull
     private Map<String, GameProfileDto> games;
 
-    // @NotNull
     private Integer preferredAgeMin;
-    // @NotNull
     private Integer preferredAgeMax;
-    // @NotNull
     private Integer maxPreferredDistance;
 
     private LocalDate birthDate;

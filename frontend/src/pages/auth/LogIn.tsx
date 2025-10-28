@@ -36,7 +36,7 @@ function LogIn() {
 
       logIn();
       
-      navigate("/userprofile");
+      navigate("/match");
     } catch (err: any) {
       setError(err.message || "Something went wrong!");
     }
