@@ -30,9 +30,47 @@ export const userService = {
     }
   },
 
+  async getUser() : Promise <UserFormData | null> {
+    try{
+      const res = await fetch(`${API_BASE_URL}/api/users/me`, {
+        method : "GET",
+        credentials : "include",
+      })
+        if(!res.ok){
+        return null;
+        }
+        const data : UserFormData= await res.json();
+        console.log("This is userService getUserProfile data:", data)
+        return data;
+      
+      
+    } catch {
+      return null;
+    }
+    
+  },
   async getUserProfile() : Promise <UserFormData | null> {
     try{
       const res = await fetch(`${API_BASE_URL}/api/users/me/profile`, {
+        method : "GET",
+        credentials : "include",
+      })
+        if(!res.ok){
+        return null;
+        }
+        const data : UserFormData= await res.json();
+        console.log("This is userService getUserProfile data:", data)
+        return data;
+      
+      
+    } catch {
+      return null;
+    }
+    
+  },
+  async getUserBio() : Promise <UserFormData | null> {
+    try{
+      const res = await fetch(`${API_BASE_URL}/api/users/me/bio`, {
         method : "GET",
         credentials : "include",
       })

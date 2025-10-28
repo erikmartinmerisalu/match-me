@@ -45,10 +45,8 @@ public class UserController {
             return ResponseEntity.status(403).build();
         }
 
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(user.getId());
-        dto.setDisplayName(user.getProfile().getDisplayName());
-        dto.setProfilePic(user.getProfile().getProfilePic());
+        UserProfileDto dto = mapToProfileDto(user.getProfile());
+
 
         return ResponseEntity.ok(dto);
     }
@@ -63,6 +61,7 @@ public class UserController {
         UserProfileDto dto = mapToProfileDto(profile);
         return ResponseEntity.ok(dto);
     }
+    
 
     @GetMapping("/{id}/bio")
     public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
@@ -71,15 +70,14 @@ public class UserController {
             return ResponseEntity.status(403).build();
         }
 
-        UserProfileDto dto = mapToProfileDto(profile);
+        UserProfileDto dto = mapToBioDto(profile);
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User currentUser) {
-        UserProfileDto dto = new UserProfileDto();
-        dto.setId(currentUser.getId());
-        dto.setDisplayName(currentUser.getProfile().getDisplayName());
+        UserProfileDto dto = mapToUserDto(currentUser.getProfile());
+
         return ResponseEntity.ok(dto);
     }
 
@@ -92,7 +90,7 @@ public class UserController {
     @GetMapping("/me/bio")
     public ResponseEntity<?> getCurrentUserBio(@AuthenticationPrincipal User currentUser) {
         UserProfile profile = currentUser.getProfile();
-        UserProfileDto dto = mapToProfileDto(profile);
+        UserProfileDto dto = mapToBioDto(profile);
         return ResponseEntity.ok(dto);
     }
 
@@ -149,16 +147,20 @@ public class UserController {
         UserProfileDto dto = new UserProfileDto();
 
         dto.setId(profile.getUser().getId());
-        dto.setDisplayName(profile.getDisplayName());
         dto.setAboutMe(profile.getAboutMe());
+        dto.setLookingFor(profile.getLookingFor());
+
+        return dto;
+    }
+
+    private UserProfileDto mapToBioDto(UserProfile profile) {
+        UserProfileDto dto = new UserProfileDto();
+
+        dto.setId(profile.getUser().getId());
         dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
         dto.setBirthDate(profile.getBirthDate());
-        dto.setTimezone(profile.getTimezone());
-        dto.setLookingFor(profile.getLookingFor());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
         dto.setPreferredAgeMax(profile.getPreferredAgeMax());
-        dto.setProfileCompleted(profile.isProfileCompleted());
-        dto.setProfilePic(profile.getProfilePic());
         dto.setLatitude(profile.getLatitude());
         dto.setLongitude(profile.getLongitude());
         dto.setLocation(profile.getLocation());
@@ -178,6 +180,17 @@ public class UserController {
                 ));
             });
         }
+
+        return dto;
+    }
+
+        private UserProfileDto mapToUserDto(UserProfile profile) {
+        UserProfileDto dto = new UserProfileDto();
+
+        dto.setId(profile.getUser().getId());
+        dto.setDisplayName(profile.getDisplayName());
+        dto.setProfileCompleted(profile.isProfileCompleted());
+        dto.setProfilePic(profile.getProfilePic());
 
         return dto;
     }
