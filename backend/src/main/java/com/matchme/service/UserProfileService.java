@@ -1,5 +1,6 @@
 package com.matchme.service;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
 import com.matchme.entity.GameProfile;
 import com.matchme.entity.UserProfile;
@@ -371,12 +372,23 @@ import javax.management.RuntimeErrorException;
                     }
                     profile.setTimezone(value);
                 }
-                
+                if(json.has("maxPreferredDistance")) {
+                    JsonNode node = json.get("maxPreferredDistance");
+                    if(node.isNull()){
+                        throw new IllegalArgumentException("Server error: Preferred Distance missing! Try again!");
+                    }
+                    int value = node.asInt(-1);
+                    if(value < 5 || value > 200){
+                        throw new IllegalArgumentException("Server error: Preferred Distance must be between 5 and 200");
+                    }
+                    profile.setMaxPreferredDistance(value);
+                }
 
+                UserProfileDto dto = mapToProfileDto(profile);
+                profile.setProfileCompleted(isProfileCompleted(dto));
                 userProfileRepository.save(profile);
+
             }
-
-
 
 
             @Transactional
@@ -391,6 +403,84 @@ import javax.management.RuntimeErrorException;
             public UserProfile saveProfile(UserProfile profile) {
                 return userProfileRepository.save(profile);
             }
+
+
+            private boolean isProfileCompleted(UserProfileDto profile) {
+                if (profile == null) return false;
+
+                if (profile.getDisplayName() == null || profile.getDisplayName().isBlank() ||
+                    profile.getAboutMe() == null || profile.getAboutMe().isBlank() ||
+                    profile.getBirthDate() == null ||
+                    profile.getPreferredAgeMin() == null ||
+                    profile.getPreferredAgeMax() == null ||
+                    profile.getMaxPreferredDistance() == null ||
+                    profile.getLocation() == null || profile.getLocation().isBlank() ||
+                    profile.getTimezone() == null || profile.getTimezone().isBlank() ||
+                    profile.getLookingFor() == null || profile.getLookingFor().isBlank() ||
+                    profile.getCompetitiveness() == null || profile.getCompetitiveness().isBlank() ||
+                    profile.getVoiceChatPreference() == null || profile.getVoiceChatPreference().isBlank() ||
+                    profile.getPlaySchedule() == null || profile.getPlaySchedule().isBlank() ||
+                    profile.getMainGoal() == null || profile.getMainGoal().isBlank() ||
+                    profile.getLatitude() == null ||
+                    profile.getLongitude() == null) {
+                    return false;
+                }
+
+                Map<String, GameProfileDto> games = profile.getGames();
+                if (games == null || games.isEmpty()) return false;
+
+                for (GameProfileDto game : games.values()) {
+                    if (game == null ||
+                        game.getPreferredServers() == null || game.getPreferredServers().isEmpty() ||
+                        game.getExpLvl() == null || game.getExpLvl().isBlank() ||
+                        game.getGamingHours() == null || game.getGamingHours().isBlank() ||
+                        game.getCurrentRank() == null || game.getCurrentRank().isBlank()) {
+                        return false;
+                    }
+                }
+                
+
+                return true;
+            }
+
+
+            private UserProfileDto mapToProfileDto(UserProfile profile) {
+                    UserProfileDto dto = new UserProfileDto();
+
+                    dto.setId(profile.getUser().getId());
+                    dto.setDisplayName(profile.getDisplayName());
+                    dto.setAboutMe(profile.getAboutMe());
+                    dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
+                    dto.setBirthDate(profile.getBirthDate());
+                    dto.setTimezone(profile.getTimezone());
+                    dto.setLookingFor(profile.getLookingFor());
+                    dto.setPreferredAgeMin(profile.getPreferredAgeMin());
+                    dto.setPreferredAgeMax(profile.getPreferredAgeMax());
+                    dto.setProfileCompleted(profile.isProfileCompleted());
+                    dto.setProfilePic(profile.getProfilePic());
+                    dto.setLatitude(profile.getLatitude());
+                    dto.setLongitude(profile.getLongitude());
+                    dto.setLocation(profile.getLocation());
+                    dto.setCompetitiveness(profile.getCompetitiveness());
+                    dto.setVoiceChatPreference(profile.getVoiceChatPreference());
+                    dto.setPlaySchedule(profile.getPlaySchedule());
+                    dto.setMainGoal(profile.getMainGoal());
+
+
+                    dto.setGames(new HashMap<>());
+                    if (profile.getGames() != null) {
+                        profile.getGames().forEach(game -> {
+                            dto.getGames().put(game.getGameName(), new GameProfileDto(
+                                    game.getPreferredServersSet(),
+                                    game.getExpLvl(),
+                                    game.getGamingHours(),
+                                    game.getCurrentRank()
+                            ));
+                        });
+                    }
+
+                    return dto;
+                }
 
         }
 

@@ -18,7 +18,7 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
     location: loggedInUserData?.location ?? "",
     preferredAgeMin: loggedInUserData?.preferredAgeMin ?? 18,
     preferredAgeMax: loggedInUserData?.preferredAgeMax ?? 100,
-    maxPreferredDistance: loggedInUserData?.maxPreferredDistance ?? 50,
+    maxPreferredDistance:  loggedInUserData?.maxPreferredDistance? loggedInUserData.maxPreferredDistance : 50,
     latitude : loggedInUserData?.latitude? loggedInUserData.latitude :  null,
     longitude : loggedInUserData?.longitude? loggedInUserData.longitude :  null
   });
@@ -142,7 +142,6 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
               type="number"
               name="preferredAgeMax"
               value={userPrefs.preferredAgeMax ?? 100}
-              defaultValue={userPrefs.preferredAgeMax ?? 100}
               onChange={handleChange}
             />
           </div>
@@ -157,7 +156,6 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
           name="maxPreferredDistance"
           min={5}
           max={200}
-          defaultValue={userPrefs.maxPreferredDistance ?? 100}
           value={userPrefs.maxPreferredDistance ?? 100}
           onChange={handleChange}
         />

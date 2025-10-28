@@ -105,6 +105,10 @@ import { useToast } from '../../context/ToastContext';
           toast.error(res.error);
           return;
         }
+         setLoggedInUserData((prev : any) => ({
+                  ...prev,
+                  profileCompleted : true, 
+                }));
         toast.success("Profile completed!")
 
         setTimeout(() => {
