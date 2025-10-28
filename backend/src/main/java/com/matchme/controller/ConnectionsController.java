@@ -1,66 +1,213 @@
 package com.matchme.controller;
 
+import com.matchme.entity.Connection;
 import com.matchme.entity.User;
-import com.matchme.repository.UserRepository;
+import com.matchme.repository.ConnectionRepository;
+import com.matchme.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/connections")
+@RequestMapping("/api/connections")
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"}, allowCredentials = "true")
 public class ConnectionsController {
 
-    private final UserRepository userRepo;
+    @Autowired
+    private ConnectionRepository connectionRepository;
 
-    // In-memory maps just for demo. Replace with proper entity (Connection) + JPA repo.
-    private final Map<Long, Set<Long>> pendingRequests = new HashMap<>();
-    private final Map<Long, Set<Long>> acceptedConnections = new HashMap<>();
+    @Autowired
+    private UserService userService;
 
-    public ConnectionsController(UserRepository userRepo) {
-        this.userRepo = userRepo;
-    }
-
-    // Request connection
-    @PostMapping("/{id}")
-    public ResponseEntity<?> requestConnection(@PathVariable Long id, @RequestHeader("X-User-Id") Long meId) {
-        if (!userRepo.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        if (Objects.equals(meId, id)) {
-            return ResponseEntity.badRequest().body("Cannot connect to yourself");
-        }
-        pendingRequests.computeIfAbsent(id, k -> new HashSet<>()).add(meId);
-        return ResponseEntity.ok("Connection request sent to user " + id);
-    }
-
-    // Accept connection
-    @PostMapping("/{id}/accept")
-    public ResponseEntity<?> acceptConnection(@PathVariable Long id, @RequestHeader("X-User-Id") Long meId) {
-        var requests = pendingRequests.getOrDefault(meId, Set.of());
-        if (!requests.contains(id)) {
-            return ResponseEntity.badRequest().body("No pending request from user " + id);
-        }
-        // remove from pending
-        pendingRequests.get(meId).remove(id);
-        // add to accepted for both sides
-        acceptedConnections.computeIfAbsent(meId, k -> new HashSet<>()).add(id);
-        acceptedConnections.computeIfAbsent(id, k -> new HashSet<>()).add(meId);
-        return ResponseEntity.ok("Connection accepted with user " + id);
-    }
-
-    // List connections
+    // Get all accepted connections
     @GetMapping
-    public ResponseEntity<?> listConnections(@RequestHeader("X-User-Id") Long meId) {
-        var connections = acceptedConnections.getOrDefault(meId, Set.of());
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getConnections(@AuthenticationPrincipal User currentUser) {
+        var connections = connectionRepository.findAcceptedConnectionsForUser(currentUser.getId());
         return ResponseEntity.ok(connections);
     }
 
-    // Disconnect
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> disconnect(@PathVariable Long id, @RequestHeader("X-User-Id") Long meId) {
-        acceptedConnections.getOrDefault(meId, new HashSet<>()).remove(id);
-        acceptedConnections.getOrDefault(id, new HashSet<>()).remove(meId);
-        return ResponseEntity.ok("Disconnected from user " + id);
+    // Get pending requests received
+    @GetMapping("/received")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getPendingRequestsReceived(@AuthenticationPrincipal User currentUser) {
+        var connections = connectionRepository.findPendingConnectionsForUser(currentUser.getId());
+        return ResponseEntity.ok(connections);
+    }
+
+    // Get pending requests sent
+    @GetMapping("/sent")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getPendingRequestsSent(@AuthenticationPrincipal User currentUser) {
+        var connections = connectionRepository.findByFromUserIdAndStatus(
+            currentUser.getId(), 
+            Connection.ConnectionStatus.PENDING
+        );
+        return ResponseEntity.ok(connections);
+    }
+
+    // Send match request
+    @PostMapping("/{userId}")
+    @Transactional
+    public ResponseEntity<?> sendMatchRequest(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal User currentUser) {
+        
+        if (currentUser.getId().equals(userId)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Cannot connect to yourself"));
+        }
+
+        Optional<User> targetUserOpt = userService.findById(userId);
+        if (targetUserOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        User targetUser = targetUserOpt.get();
+
+        Optional<Connection> existingConnection = connectionRepository
+                .findConnectionBetweenUsers(currentUser.getId(), userId);
+        
+        if (existingConnection.isPresent()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Connection already exists"));
+        }
+
+        Connection connection = new Connection(
+                currentUser,
+                targetUser,
+                Connection.ConnectionStatus.PENDING
+        );
+
+        connectionRepository.save(connection);
+
+        return ResponseEntity.ok(Map.of("message", "Match request sent successfully"));
+    }
+
+    // Dismiss user
+    @PostMapping("/{userId}/dismiss")
+    @Transactional  // ADD THIS
+    public ResponseEntity<?> dismissUser(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal User currentUser) {
+        
+        if (currentUser.getId().equals(userId)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Cannot dismiss yourself"));
+        }
+
+        Optional<User> targetUserOpt = userService.findById(userId);
+        if (targetUserOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        User targetUser = targetUserOpt.get();
+
+        Optional<Connection> existingConnection = connectionRepository
+                .findConnectionBetweenUsers(currentUser.getId(), userId);
+        
+        if (existingConnection.isPresent()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Connection already exists"));
+        }
+
+        Connection connection = new Connection(
+                currentUser,
+                targetUser,
+                Connection.ConnectionStatus.DISMISSED
+        );
+
+        connectionRepository.save(connection);
+
+        return ResponseEntity.ok(Map.of("message", "User dismissed successfully"));
+    }
+
+    // Accept match request
+    @PostMapping("/{connectionId}/accept")
+    @Transactional 
+    public ResponseEntity<?> acceptMatchRequest(
+            @PathVariable Long connectionId,
+            @AuthenticationPrincipal User currentUser) {
+        
+        Optional<Connection> connectionOpt = connectionRepository.findById(connectionId);
+        if (connectionOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Connection connection = connectionOpt.get();
+
+        if (!connection.getToUser().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(403)
+                    .body(Map.of("error", "Not authorized"));
+        }
+
+        if (connection.getStatus() != Connection.ConnectionStatus.PENDING) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Connection is not pending"));
+        }
+
+        connection.setStatus(Connection.ConnectionStatus.ACCEPTED);
+        connectionRepository.save(connection);
+
+        return ResponseEntity.ok(Map.of("message", "Match request accepted"));
+    }
+
+    // Reject match request
+    @PostMapping("/{connectionId}/reject")
+    @Transactional 
+    public ResponseEntity<?> rejectMatchRequest(
+            @PathVariable Long connectionId,
+            @AuthenticationPrincipal User currentUser) {
+        
+        Optional<Connection> connectionOpt = connectionRepository.findById(connectionId);
+        if (connectionOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Connection connection = connectionOpt.get();
+
+        if (!connection.getToUser().getId().equals(currentUser.getId())) {
+            return ResponseEntity.status(403)
+                    .body(Map.of("error", "Not authorized"));
+        }
+
+        if (connection.getStatus() != Connection.ConnectionStatus.PENDING) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Connection is not pending"));
+        }
+
+        connection.setStatus(Connection.ConnectionStatus.REJECTED);
+        connectionRepository.save(connection);
+
+        return ResponseEntity.ok(Map.of("message", "Match request rejected"));
+    }
+
+    // Unmatch
+    @DeleteMapping("/{userId}")
+    @Transactional 
+    public ResponseEntity<?> unmatch(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal User currentUser) {
+        
+        Optional<Connection> connectionOpt = connectionRepository
+                .findConnectionBetweenUsers(currentUser.getId(), userId);
+        
+        if (connectionOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Connection connection = connectionOpt.get();
+
+        if (connection.getStatus() != Connection.ConnectionStatus.ACCEPTED) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Can only unmatch accepted connections"));
+        }
+
+        connectionRepository.delete(connection);
+
+        return ResponseEntity.ok(Map.of("message", "Unmatched successfully"));
     }
 }

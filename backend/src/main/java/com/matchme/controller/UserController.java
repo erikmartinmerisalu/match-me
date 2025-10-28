@@ -13,11 +13,7 @@ import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +33,6 @@ public class UserController {
     @Autowired
     private ConnectionRepository connectionRepository;
 
-    // All GET methods can now use currentUser.getProfile() directly
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         Optional<User> userOpt = userService.findById(id);
@@ -47,12 +42,13 @@ public class UserController {
 
         User user = userOpt.get();
         if (!canViewProfile(currentUser, user)) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(403).build();
         }
 
         UserProfileDto dto = new UserProfileDto();
         dto.setId(user.getId());
         dto.setDisplayName(user.getProfile().getDisplayName());
+        dto.setProfilePic(user.getProfile().getProfilePic());
 
         return ResponseEntity.ok(dto);
     }
@@ -61,7 +57,7 @@ public class UserController {
     public ResponseEntity<?> getUserProfile(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         UserProfile profile = userProfileService.findByUserId(id);
         if (!canViewProfile(currentUser, profile.getUser())) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(403).build();
         }
 
         UserProfileDto dto = mapToProfileDto(profile);
@@ -72,7 +68,7 @@ public class UserController {
     public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         UserProfile profile = userProfileService.findByUserId(id);
         if (!canViewProfile(currentUser, profile.getUser())) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(403).build();
         }
 
         UserProfileDto dto = mapToProfileDto(profile);
@@ -81,7 +77,6 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal User currentUser) {
-        // Now we can safely use currentUser.getProfile()
         UserProfileDto dto = new UserProfileDto();
         dto.setId(currentUser.getId());
         dto.setDisplayName(currentUser.getProfile().getDisplayName());
@@ -90,26 +85,23 @@ public class UserController {
 
     @GetMapping("/me/profile")
     public ResponseEntity<?> getCurrentUserProfile(@AuthenticationPrincipal User currentUser) {
-        // Now we can safely use currentUser.getProfile()
         UserProfileDto dto = mapToProfileDto(currentUser.getProfile());
         return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/me/bio")
     public ResponseEntity<?> getCurrentUserBio(@AuthenticationPrincipal User currentUser) {
-        // Now we can safely use currentUser.getProfile()
         UserProfile profile = currentUser.getProfile();
         UserProfileDto dto = mapToProfileDto(profile);
         return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/me/profile")
-
     public ResponseEntity<?> updateCurrentUserProfile(
         @AuthenticationPrincipal User currentUser,
         @RequestBody JsonNode json) {
 
-    Long userId = currentUser.getId();
+        Long userId = currentUser.getId();
 
         try {
             userProfileService.updateProfile(userId, json);
@@ -117,21 +109,40 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error "));
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
         }
     }
 
     private boolean canViewProfile(User currentUser, User targetUser) {
-        if (targetUser.getEmail().equals(currentUser.getEmail())) {
+        // 1. Own profile
+        if (targetUser.getId().equals(currentUser.getId())) {
             return true;
         }
         
-        Optional<Connection> connection = connectionRepository.findConnectionBetweenUsers(currentUser.getId(), targetUser.getId());
-        if (connection.isPresent() && connection.get().getStatus() == Connection.ConnectionStatus.ACCEPTED) {
-            return true;
+        // Check for existing connection
+        Optional<Connection> connectionOpt = connectionRepository
+                .findConnectionBetweenUsers(currentUser.getId(), targetUser.getId());
+        
+        if (connectionOpt.isPresent()) {
+            Connection connection = connectionOpt.get();
+            Connection.ConnectionStatus status = connection.getStatus();
+            
+            // 2. Connected (ACCEPTED)
+            if (status == Connection.ConnectionStatus.ACCEPTED) {
+                return true;
+            }
+            
+            // 3. Outstanding connection request (PENDING)
+            if (status == Connection.ConnectionStatus.PENDING) {
+                return true;
+            }
+            
+            // REJECTED, DISMISSED, BLOCKED = cannot view
+            return false;
         }
         
-        return false;
+        
+        return true;
     }
 
     private UserProfileDto mapToProfileDto(UserProfile profile) {
@@ -155,7 +166,6 @@ public class UserController {
         dto.setVoiceChatPreference(profile.getVoiceChatPreference());
         dto.setPlaySchedule(profile.getPlaySchedule());
         dto.setMainGoal(profile.getMainGoal());
-
 
         dto.setGames(new HashMap<>());
         if (profile.getGames() != null) {

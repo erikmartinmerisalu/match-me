@@ -1,13 +1,18 @@
 package com.matchme.service;
 
+import com.matchme.dto.RecommendationDto;
+import com.matchme.entity.GameProfile;
 import com.matchme.entity.User;
+import com.matchme.repository.ConnectionRepository;
+import com.matchme.entity.Connection;
 import com.matchme.entity.UserProfile;
 import com.matchme.repository.UserProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-
-
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,120 +24,395 @@ public class RecommendationService {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private ConnectionRepository connectionRepository;
 
-    public List<Long> getRecommendations(Long userId, int maxResults) {
+    // 40% baseline for passing deal-breakers + 60% from compatibility factors
+    private static final double BASELINE_SCORE = 40.0;
+
+    @Transactional(readOnly = true)
+    public List<RecommendationDto> getRecommendations(Long userId) {
         Optional<User> currentUserOpt = userService.findById(userId);
 
-        if (currentUserOpt.isEmpty() || currentUserOpt.get().getProfile() == null) return Collections.emptyList();
+        if (currentUserOpt.isEmpty() || currentUserOpt.get().getProfile() == null) {
+            return Collections.emptyList();
+        }
 
         User currentUser = currentUserOpt.get();
         UserProfile currentProfile = currentUser.getProfile();
-        if (!currentProfile.isProfileCompleted()) return Collections.emptyList();
+        
+        if (!currentProfile.isProfileCompleted()) {
+            return Collections.emptyList();
+        }
 
         List<UserProfile> allProfiles = userProfileRepository.findCompletedProfilesExcludingUser(userId);
 
-        List<ScoredProfile> scoredProfiles = allProfiles.stream()
-                .map(profile -> new ScoredProfile(profile, calculateCompatibilityScore(currentProfile, profile)))
-                .filter(scored -> scored.score > 0.3)
-                .sorted((a, b) -> Double.compare(b.score, a.score))
+        
+        Map<UserProfile, CompatibilityResult> compatibilityMap = new HashMap<>();
 
-                .limit(maxResults)
+        for (UserProfile candidateProfile : allProfiles) {
+            Long candidateUserId = candidateProfile.getUser().getId();
+            
+            
+            Optional<Connection> existingConnection = connectionRepository
+                    .findConnectionBetweenUsers(userId, candidateUserId);
+            
+            if (existingConnection.isPresent()) {
+                continue; 
+            }
+
+            if (!passesDealbreakers(currentProfile, candidateProfile)) {
+                continue;
+            }
+
+            CompatibilityResult result = findCompatibleGamesWithScores(currentProfile, candidateProfile, 75.0);
+            
+            if (!result.compatibleGames.isEmpty()) {
+                compatibilityMap.put(candidateProfile, result);
+            }
+        }
+
+        
+        if (compatibilityMap.size() < 3) {
+            compatibilityMap.clear();
+            
+            for (UserProfile candidateProfile : allProfiles) {
+                Long candidateUserId = candidateProfile.getUser().getId();
+                
+            
+                Optional<Connection> existingConnection = connectionRepository
+                        .findConnectionBetweenUsers(userId, candidateUserId);
+                
+                if (existingConnection.isPresent()) {
+                    continue;
+                }
+
+                if (!passesDealbreakers(currentProfile, candidateProfile)) {
+                    continue;
+                }
+
+                CompatibilityResult result = findCompatibleGamesWithScores(currentProfile, candidateProfile, 50.0);
+                
+                if (!result.compatibleGames.isEmpty()) {
+                    compatibilityMap.put(candidateProfile, result);
+                }
+            }
+        }
+
+        // Sort by average compatibility score (highest first) and limit to 10
+        List<RecommendationDto> recommendations = compatibilityMap.entrySet().stream()
+                .sorted((e1, e2) -> Double.compare(e2.getValue().averageScore, e1.getValue().averageScore))
+                .limit(10)
+                .map(entry -> new RecommendationDto(
+                        entry.getKey().getUser().getId(),
+                        entry.getKey().getDisplayName(),
+                        entry.getValue().compatibleGames
+                ))
                 .collect(Collectors.toList());
 
-        return scoredProfiles.stream()
-                .map(scored -> scored.profile.getUser().getId())
-                .collect(Collectors.toList());
+        return recommendations;
     }
 
-    private double calculateCompatibilityScore(UserProfile profile1, UserProfile profile2) {
+    
+    @Transactional(readOnly = true)
+    public List<RecommendationDto> getRecommendationsByEmail(String email) {
+        Optional<User> userOpt = userService.findByEmail(email);
 
-        double score = 0.0, maxScore = 0.0;
+        if (userOpt.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-        // // 1. Server matching (25%)
-        // if (profile1.getPreferredServers() != null && profile2.getPreferredServers() != null) {
-        //     Set<String> commonServers = new HashSet<>(profile1.getPreferredServers());
-        //     commonServers.retainAll(profile2.getPreferredServers());
-        //     score += commonServers.isEmpty() ? 0 : 0.25;
-        // }
-        // maxScore += 0.25;
-
-        // // 2. Game matching (25%)
-        // if (profile1.getGames() != null && profile2.getGames() != null) {
-        //     Set<String> commonGames = new HashSet<>(profile1.getGames());
-        //     commonGames.retainAll(profile2.getGames());
-        //     score += commonGames.isEmpty() ? 0 : ((double) commonGames.size() / Math.max(profile1.getGames().size(), profile2.getGames().size())) * 0.25;
-        // }
-        // maxScore += 0.25;
-
-        // // 3. Gaming hours (20%) — now single string
-        // if (profile1.getGamingHours() != null && profile2.getGamingHours() != null) {
-        //     score += profile1.getGamingHours().equals(profile2.getGamingHours()) ? 0.2 : 0;
-        // }
-        // maxScore += 0.2;
-
-        // // 4. Experience level (15%)
-        // if (profile1.getExpLvl() != null && profile2.getExpLvl() != null) {
-        //     score += calculateExpLvlScore(profile1.getExpLvl(), profile2.getExpLvl()) * 0.15;
-        // }
-        // maxScore += 0.15;
-
-        // // 5. Rank (optional, 5%)
-        // if (profile1.getRank() != null && profile2.getRank() != null) {
-        //     score += calculateRankCompatibility(profile1.getRank(), profile2.getRank()) * 0.05;
-        // }
-        // maxScore += 0.05;
-
-        // 6. Age (15%)
-        // if (profile1.getAge() != null && profile2.getAge() != null) {
-        //     int diff = Math.abs(profile1.getAge() - profile2.getAge());
-        //     double ageScore = diff <= 3 ? 0.15 : Math.max(0, 0.15 - (diff - 3) * 0.03);
-
-        //     score += ageScore;
-        // }
-        // maxScore += 0.15;
-
-        // Region bonus
-
-        // if (profile1.getRegion() != null && profile1.getRegion().equals(profile2.getRegion())) {
-
-        //     score += 0.1;
-        //     maxScore += 0.1;
-        // }
-
-        return maxScore > 0 ? score / maxScore : 0;
+        return getRecommendations(userOpt.get().getId());
     }
 
+    @Transactional(readOnly = true)
+    public List<Long> getTopRecommendationIds(String email, int limit) {
+        Optional<User> userOpt = userService.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return Collections.emptyList();
+        }
+    
+        List<RecommendationDto> recommendations = getRecommendations(userOpt.get().getId());
+    
+        return recommendations.stream()
+            .limit(limit)
+            .map(RecommendationDto::getUserId)
+            .collect(Collectors.toList());
+    }
 
-    private double calculateRankCompatibility(String rank1, String rank2) {
-        Map<String, Integer> rankTiers = Map.of(
-            "Bronze", 1, "Silver", 2, "Gold", 3,
-            "Platinum", 4, "Diamond", 5, "Master", 6, "Grandmaster", 7
+    
+    private static class CompatibilityResult {
+        List<String> compatibleGames;
+        double averageScore;
+
+        CompatibilityResult(List<String> games, double avgScore) {
+            this.compatibleGames = games;
+            this.averageScore = avgScore;
+        }
+    }
+
+    private boolean passesDealbreakers(UserProfile profile1, UserProfile profile2) {
+        if (!hasCommonGameWithCommonServer(profile1, profile2)) {
+            return false;
+        }
+
+        if (!withinPreferredDistance(profile1, profile2)) {
+            return false;
+        }
+
+        if (!ageCompatible(profile1, profile2)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean hasCommonGameWithCommonServer(UserProfile profile1, UserProfile profile2) {
+        if (profile1.getGames() == null || profile1.getGames().isEmpty() ||
+            profile2.getGames() == null || profile2.getGames().isEmpty()) {
+            return false;
+        }
+
+        Map<String, GameProfile> games1 = profile1.getGames().stream()
+                .collect(Collectors.toMap(GameProfile::getGameName, gp -> gp));
+        
+        Map<String, GameProfile> games2 = profile2.getGames().stream()
+                .collect(Collectors.toMap(GameProfile::getGameName, gp -> gp));
+
+        Set<String> commonGames = new HashSet<>(games1.keySet());
+        commonGames.retainAll(games2.keySet());
+
+        if (commonGames.isEmpty()) {
+            return false;
+        }
+
+        for (String game : commonGames) {
+            Set<String> servers1 = games1.get(game).getPreferredServersSet();
+            Set<String> servers2 = games2.get(game).getPreferredServersSet();
+
+            if (servers1 == null || servers2 == null || servers1.isEmpty() || servers2.isEmpty()) {
+                continue;
+            }
+
+            Set<String> commonServers = new HashSet<>(servers1);
+            commonServers.retainAll(servers2);
+
+            if (!commonServers.isEmpty()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean withinPreferredDistance(UserProfile profile1, UserProfile profile2) {
+        if (profile1.getLatitude() == null || profile1.getLongitude() == null ||
+            profile2.getLatitude() == null || profile2.getLongitude() == null) {
+            return false;
+        }
+
+        double distance = calculateHaversineDistance(
+            profile1.getLatitude(), profile1.getLongitude(),
+            profile2.getLatitude(), profile2.getLongitude()
         );
-        Integer t1 = rankTiers.get(rank1), t2 = rankTiers.get(rank2);
-        if (t1 == null || t2 == null) return 0.5;
-        int diff = Math.abs(t1 - t2);
-        if (diff <= 1) return 1.0;
-        if (diff <= 2) return 0.7;
-        if (diff <= 3) return 0.4;
-        return 0.1;
+
+        Integer maxDist1 = profile1.getMaxPreferredDistance();
+        Integer maxDist2 = profile2.getMaxPreferredDistance();
+
+        return distance <= (maxDist1 != null ? maxDist1 : 200) &&
+               distance <= (maxDist2 != null ? maxDist2 : 200);
     }
 
-    private double calculateExpLvlScore(String lvl1, String lvl2) {
-        Map<String, Integer> map = Map.of("Beginner",1,"Intermediate",2,"Advanced",3);
-        Integer e1 = map.get(lvl1), e2 = map.get(lvl2);
-        if (e1==null || e2==null) return 0.5;
+    private double calculateHaversineDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int EARTH_RADIUS = 6371;
+
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        
+        return EARTH_RADIUS * c;
+    }
+
+    private boolean ageCompatible(UserProfile profile1, UserProfile profile2) {
+        Integer age1 = calculateAge(profile1.getBirthDate());
+        Integer age2 = calculateAge(profile2.getBirthDate());
+
+        if (age1 == null || age2 == null) {
+            return false;
+        }
+
+        boolean user1AcceptsUser2 = isAgeInRange(age2, 
+            profile1.getPreferredAgeMin(), profile1.getPreferredAgeMax());
+
+        boolean user2AcceptsUser1 = isAgeInRange(age1,
+            profile2.getPreferredAgeMin(), profile2.getPreferredAgeMax());
+
+        return user1AcceptsUser2 && user2AcceptsUser1;
+    }
+
+    private Integer calculateAge(LocalDate birthDate) {
+        if (birthDate == null) return null;
+        return Period.between(birthDate, LocalDate.now()).getYears();
+    }
+
+    private boolean isAgeInRange(int age, Integer minAge, Integer maxAge) {
+        int min = minAge != null ? minAge : 18;
+        int max = maxAge != null ? maxAge : 100;
+        return age >= min && age <= max;
+    }
+
+    private CompatibilityResult findCompatibleGamesWithScores(UserProfile profile1, UserProfile profile2, double threshold) {
+        Map<String, GameProfile> games1 = profile1.getGames().stream()
+                .collect(Collectors.toMap(GameProfile::getGameName, gp -> gp));
+        
+        Map<String, GameProfile> games2 = profile2.getGames().stream()
+                .collect(Collectors.toMap(GameProfile::getGameName, gp -> gp));
+
+        Set<String> commonGames = new HashSet<>(games1.keySet());
+        commonGames.retainAll(games2.keySet());
+
+        List<String> compatibleGames = new ArrayList<>();
+        List<Double> scores = new ArrayList<>();
+
+        for (String game : commonGames) {
+            GameProfile g1 = games1.get(game);
+            GameProfile g2 = games2.get(game);
+
+            Set<String> servers1 = g1.getPreferredServersSet();
+            Set<String> servers2 = g2.getPreferredServersSet();
+            
+            if (servers1 == null || servers2 == null || servers1.isEmpty() || servers2.isEmpty()) {
+                continue;
+            }
+
+            Set<String> commonServers = new HashSet<>(servers1);
+            commonServers.retainAll(servers2);
+
+            if (commonServers.isEmpty()) {
+                continue;
+            }
+
+            // Calculate total score: 40% baseline + up to 60% from compatibility
+            double score = BASELINE_SCORE + calculateGameCompatibility(g1, g2, profile1, profile2);
+
+            if (score >= threshold) {
+                compatibleGames.add(game);
+                scores.add(score);
+            }
+        }
+
+        // Calculate average score across all compatible games
+        double averageScore = scores.isEmpty() ? 0.0 : 
+            scores.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+
+        return new CompatibilityResult(compatibleGames, averageScore);
+    }
+
+    /**
+     * Calculate compatibility score from factors (0-60%)
+     * This gets added to the 40% baseline
+     */
+    private double calculateGameCompatibility(GameProfile game1, GameProfile game2, UserProfile profile1, UserProfile profile2) {
+        double totalScore = 0.0;
+
+        // Game-specific factors (from GameProfile) - 12% + 9% = 21%
+        totalScore += calculateExpLevelScore(game1.getExpLvl(), game2.getExpLvl());  // 12%
+        totalScore += calculateGamingHoursScore(game1.getGamingHours(), game2.getGamingHours());  // 9%
+
+        // User-wide factors (from UserProfile) - 15% + 3% + 9% + 12% = 39%
+        totalScore += calculateCompetitivenessRankScore(
+            profile1.getCompetitiveness(), game1.getCurrentRank(),
+            profile2.getCompetitiveness(), game2.getCurrentRank()
+        );  // 15%
+        totalScore += calculateVoiceChatScore(profile1.getVoiceChatPreference(), profile2.getVoiceChatPreference());  // 3%
+        totalScore += calculatePlayScheduleScore(profile1.getPlaySchedule(), profile2.getPlaySchedule());  // 9%
+        totalScore += calculateMainGoalScore(profile1.getMainGoal(), profile2.getMainGoal());  // 12%
+
+        return totalScore;
+    }
+
+    private double calculateExpLevelScore(String exp1, String exp2) {
+        if (exp1 == null || exp2 == null) return 0.0;
+
+        Map<String, Integer> expMap = Map.of(
+            "Beginner", 1,
+            "Intermediate", 2,
+            "Advanced", 3
+        );
+
+        Integer e1 = expMap.get(exp1);
+        Integer e2 = expMap.get(exp2);
+
+        if (e1 == null || e2 == null) return 0.0;
+
         int diff = Math.abs(e1 - e2);
-        if (diff==0) return 1.0;
-        if (diff==1) return 0.7;
-        return 0.3;
 
+        if (diff == 0) return 12.0;
+        if (diff == 1) return 6.0;
+        return 0.0;
     }
 
-    private static class ScoredProfile {
-        UserProfile profile;
-        double score;
+    private double calculateGamingHoursScore(String hours1, String hours2) {
+        if (hours1 == null || hours2 == null) return 0.0;
+        return hours1.equals(hours2) ? 9.0 : 0.0;
+    }
 
-        ScoredProfile(UserProfile profile, double score) { this.profile = profile; this.score = score; }
+    private double calculateCompetitivenessRankScore(String comp1, String rank1, String comp2, String rank2) {
+        if (comp1 == null || comp2 == null) return 0.0;
+
+        if (!comp1.equals(comp2)) return 0.0;
+
+        boolean bothCompetitive = (comp1.equals("Semi-competitive") || comp1.equals("Highly competitive"));
+
+        if (!bothCompetitive) {
+            return 15.0;
+        }
+
+        if (rank1 == null || rank2 == null || rank1.equals("N/A") || rank2.equals("N/A")) {
+            return 0.0;
+        }
+
+        Map<String, Integer> rankMap = Map.of(
+            "Unranked", 0,
+            "Bronze", 1,
+            "Silver", 2,
+            "Gold", 3,
+            "Platinum", 4,
+            "Diamond", 5,
+            "Master", 6,
+            "Grandmaster", 7
+        );
+
+        Integer r1 = rankMap.get(rank1);
+        Integer r2 = rankMap.get(rank2);
+
+        if (r1 == null || r2 == null) return 0.0;
+
+        int diff = Math.abs(r1 - r2);
+
+        if (diff == 0) return 15.0;
+        if (diff == 1) return 12.0;
+        return 0.0;
+    }
+
+    private double calculateVoiceChatScore(String voice1, String voice2) {
+        if (voice1 == null || voice2 == null) return 0.0;
+        return voice1.equals(voice2) ? 3.0 : 0.0;
+    }
+
+    private double calculatePlayScheduleScore(String schedule1, String schedule2) {
+        if (schedule1 == null || schedule2 == null) return 0.0;
+        return schedule1.equals(schedule2) ? 9.0 : 0.0;
+    }
+
+    private double calculateMainGoalScore(String goal1, String goal2) {
+        if (goal1 == null || goal2 == null) return 0.0;
+        return goal1.equals(goal2) ? 12.0 : 0.0;
     }
 }
-
