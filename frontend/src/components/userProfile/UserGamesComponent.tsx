@@ -34,7 +34,7 @@ function UserGameComponent ( ) {
           <div className="optionsmap">
           {gameOptions.map(game => <div key={game} 
               className={`options ${
-              loggedInUserData?.games[game] ? "selected" : ""
+              loggedInUserData?.games?.[game] ? "selected" : ""
             }`} > <p onClick={() =>  handleGameToggle(game)}>{game} </p> </div>)}
         </div>
     </div>

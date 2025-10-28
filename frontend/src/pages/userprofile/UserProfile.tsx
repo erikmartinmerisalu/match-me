@@ -20,7 +20,39 @@ import { useToast } from '../../context/ToastContext';
     const navigate = useNavigate();
     const toast = useToast()
 
+    useEffect(() => {
+      const fetchProfile = async () => {
+      const bio = await userService.getUserProfile();
+      if(bio !== null){
+          setLoggedInUserData((prev : any) => ({
+            ...prev,
+            aboutMe : bio.aboutMe ?? null,
+            lookingFor : bio.lookingFor ?? null,
+          }));
+      }
+      const profile = await userService.getUserProfile();
+      if(profile !== null){
+          setLoggedInUserData((prev : any) => ({
+            ...prev,
+            maxPreferredDistance : profile.maxPreferredDistance ?? null,
+            birthDate : profile.birthDate ?? null,
+            preferredAgeMin : profile.preferredAgeMin ?? null,
+            preferredAgeMax : profile.preferredAgeMax ?? null,
+            latitude : profile.latitude ?? null,
+            longitude : profile.longitude ?? null,
+            location : profile.location ?? null,
+            competitiveness : profile.competitiveness ?? null,
+            voiceChatPreference : profile.voiceChatPreference ?? null,
+            playSchedule : profile.playSchedule ?? null,
+            mainGoal : profile.mainGoal ?? null,
+            games : profile.games ?? null
 
+          }));
+      }
+    }
+    fetchProfile();
+    }, [])
+    
     async function nextCardState(){
       if(cardState === 0){
         const payload = {
