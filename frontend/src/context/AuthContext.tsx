@@ -52,11 +52,16 @@ export const AuthContextProvider = ({children } : AuthProviderProps) => {
   useEffect(() => {
     const fetchUser = async ()=> {
       try{
-        const res  = await userService.getUserProfile();
+        const res  = await userService.getUser();
         
         if(res !== null){
           setLoggedIn(true);
-          setLoggedInUserData(res);
+          setLoggedInUserData((prev : any) => ({
+            ...prev,
+            displayName : res.displayName,
+            profilePic : res.profilePic ? res.profilePic : null,
+            profileCompleted : res.profileCompleted
+          }));
         }else{
           setLoggedIn(false);
           setLoggedInUserData(null)
