@@ -99,4 +99,5 @@ public class UserProfileDto {
 
     public String getMainGoal() { return mainGoal; }
     public void setMainGoal(String mainGoal) { this.mainGoal = mainGoal; }
+    
 }

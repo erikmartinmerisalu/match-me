@@ -9,9 +9,9 @@ function UserGamerType({gameData, onChange}: UserGamerTypeDetailsProps) {
 
   const [localData, setLocalData] = useState({
     ...gameData,
-    playSchedule: gameData.playSchedule || [],
-    mainGoal: gameData.mainGoal || [],
-    competitiveness : gameData.compecompetitiveness || []
+    playSchedule: gameData.playSchedule || "",
+    mainGoal: gameData.mainGoal || "",
+    competitiveness : gameData.compecompetitiveness || ""
   });
 
   const handleInputChange = (field: string, value: any) => {
