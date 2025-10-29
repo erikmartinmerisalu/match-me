@@ -13,12 +13,12 @@ public class Connection {
 
     @ManyToOne
     @JoinColumn(name = "from_user_id", nullable = false)
-    @JsonIgnoreProperties({"profile", "password", "connections", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"profile", "password", "hibernateLazyInitializer", "handler"})
     private User fromUser;
 
     @ManyToOne
     @JoinColumn(name = "to_user_id", nullable = false)
-    @JsonIgnoreProperties({"profile", "password", "connections", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"profile", "password", "hibernateLazyInitializer", "handler"})
     private User toUser;
 
     @Enumerated(EnumType.STRING)
@@ -47,7 +47,7 @@ public class Connection {
         DISMISSED
     }
 
-    // Constructors, Getters, Setters...
+    // Constructors
     public Connection() {}
 
     public Connection(User fromUser, User toUser, ConnectionStatus status) {
@@ -56,6 +56,7 @@ public class Connection {
         this.status = status;
     }
 
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     

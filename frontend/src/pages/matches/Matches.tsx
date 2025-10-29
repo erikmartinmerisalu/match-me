@@ -21,102 +21,110 @@ const Matches = () => {
   }, []);
 
   const fetchMatches = async () => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // Fetch accepted matches
-    const acceptedRes = await fetch('http://localhost:8080/api/connections', {
-      credentials: 'include',
-    });
-    const acceptedData = await acceptedRes.json();
+      // Get current user ID
+      const currentUserRes = await fetch('http://localhost:8080/api/users/me', {
+        credentials: 'include',
+      });
+      const currentUser = await currentUserRes.json();
+      const currentUserId = currentUser.id;
 
-    // Fetch sent requests
-    const sentRes = await fetch('http://localhost:8080/api/connections/sent', {
-      credentials: 'include',
-    });
-    const sentData = await sentRes.json();
+      // Fetch accepted matches
+      const acceptedRes = await fetch('http://localhost:8080/api/connections', {
+        credentials: 'include',
+      });
+      const acceptedData = await acceptedRes.json();
 
-    // Fetch received requests
-    const receivedRes = await fetch('http://localhost:8080/api/connections/received', {
-      credentials: 'include',
-    });
-    const receivedData = await receivedRes.json();
+      // Fetch sent requests
+      const sentRes = await fetch('http://localhost:8080/api/connections/pending/sent', {
+        credentials: 'include',
+      });
+      const sentData = await sentRes.json();
 
-    console.log('Accepted:', acceptedData);
-    console.log('Sent:', sentData);
-    console.log('Received:', receivedData);
+      // Fetch received requests
+      const receivedRes = await fetch('http://localhost:8080/api/connections/pending/received', {
+        credentials: 'include',
+      });
+      const receivedData = await receivedRes.json();
 
-    // Process accepted matches
-    const acceptedMatches = await Promise.all(
-      acceptedData.map(async (conn: any) => {
-        // Determine which user is the "other" user (not current user)
-        const otherUserId = conn.fromUser?.id || conn.toUser?.id;
-        
-        if (!otherUserId) {
-          console.error('No user ID found in connection:', conn);
-          return null;
-        }
+      console.log('Accepted:', acceptedData);
+      console.log('Sent:', sentData);
+      console.log('Received:', receivedData);
 
-        const userInfo = await fetchUserInfo(otherUserId);
-        return {
-          id: conn.id,
-          userId: otherUserId,
-          ...userInfo,
-          status: 'accepted'
-        };
-      })
-    );
+      // Process accepted matches
+      const acceptedMatches = await Promise.all(
+        acceptedData.map(async (conn: any) => {
+          const otherUserId = conn.fromUserId === currentUserId 
+            ? conn.toUserId 
+            : conn.fromUserId;
+          
+          if (!otherUserId) {
+            console.error('No user ID found in connection:', conn);
+            return null;
+          }
 
-    // Process sent requests
-    const sentMatches = await Promise.all(
-      sentData.map(async (conn: any) => {
-        const userId = conn.toUser?.id;
-        
-        if (!userId) {
-          console.error('No toUser ID in sent connection:', conn);
-          return null;
-        }
+          const userInfo = await fetchUserInfo(otherUserId);
+          return {
+            id: conn.id,
+            userId: otherUserId,
+            ...userInfo,
+            status: 'accepted'
+          };
+        })
+      );
 
-        const userInfo = await fetchUserInfo(userId);
-        return {
-          id: conn.id,
-          userId: userId,
-          ...userInfo,
-          status: 'pending'
-        };
-      })
-    );
+      // Process sent requests
+      const sentMatches = await Promise.all(
+        sentData.map(async (conn: any) => {
+          const userId = conn.toUserId;
+          
+          if (!userId) {
+            console.error('No toUserId in sent connection:', conn);
+            return null;
+          }
 
-    // Process received requests
-    const receivedMatches = await Promise.all(
-      receivedData.map(async (conn: any) => {
-        const userId = conn.fromUser?.id;
-        
-        if (!userId) {
-          console.error('No fromUser ID in received connection:', conn);
-          return null;
-        }
+          const userInfo = await fetchUserInfo(userId);
+          return {
+            id: conn.id,
+            userId: userId,
+            ...userInfo,
+            status: 'pending'
+          };
+        })
+      );
 
-        const userInfo = await fetchUserInfo(userId);
-        return {
-          id: conn.id,
-          userId: userId,
-          ...userInfo,
-          status: 'pending'
-        };
-      })
-    );
+      // Process received requests
+      const receivedMatches = await Promise.all(
+        receivedData.map(async (conn: any) => {
+          const userId = conn.fromUserId;
+          
+          if (!userId) {
+            console.error('No fromUserId in received connection:', conn);
+            return null;
+          }
 
-    // Filter out null values
-    setAcceptedMatches(acceptedMatches.filter(m => m !== null) as Match[]);
-    setSentRequests(sentMatches.filter(m => m !== null) as Match[]);
-    setReceivedRequests(receivedMatches.filter(m => m !== null) as Match[]);
-    setLoading(false);
-  } catch (err) {
-    console.error('Failed to fetch matches:', err);
-    setLoading(false);
-  }
-};
+          const userInfo = await fetchUserInfo(userId);
+          return {
+            id: conn.id,
+            userId: userId,
+            ...userInfo,
+            status: 'pending'
+          };
+        })
+      );
+
+      // Filter out null values
+      setAcceptedMatches(acceptedMatches.filter(m => m !== null) as Match[]);
+      setSentRequests(sentMatches.filter(m => m !== null) as Match[]);
+      setReceivedRequests(receivedMatches.filter(m => m !== null) as Match[]);
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch matches:', err);
+      setLoading(false);
+    }
+  };
 
   const fetchUserInfo = async (userId: number) => {
     try {
@@ -141,7 +149,7 @@ const Matches = () => {
       });
 
       if (response.ok) {
-        fetchMatches(); // Refresh all matches
+        fetchMatches();
       }
     } catch (err) {
       console.error('Failed to accept request:', err);
@@ -156,7 +164,7 @@ const Matches = () => {
       });
 
       if (response.ok) {
-        fetchMatches(); // Refresh all matches
+        fetchMatches();
       }
     } catch (err) {
       console.error('Failed to reject request:', err);
