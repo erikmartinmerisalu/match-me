@@ -34,6 +34,10 @@ Navigate to front end
 ```bash
 cd .\match-me\frontend\
 ```
+Install the needed Tech Stack components
+```bash
+npm install
+```
 
 Start the development server
 ```bash

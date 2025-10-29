@@ -3,6 +3,7 @@ package com.matchme.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
+import com.matchme.dto.UserProfileSummaryDto;
 import com.matchme.entity.Connection;
 import com.matchme.entity.GameProfile;
 import com.matchme.entity.User;
@@ -45,8 +46,10 @@ public class UserController {
             return ResponseEntity.status(403).build();
         }
 
-        UserProfileDto dto = mapToUserDto(user.getProfile());
-
+        UserProfileSummaryDto dto = new UserProfileSummaryDto();
+        dto.setId(user.getId());
+        dto.setDisplayName(user.getProfile().getDisplayName());
+        dto.setProfilePic(user.getProfile().getProfilePic());
 
         return ResponseEntity.ok(dto);
     }
