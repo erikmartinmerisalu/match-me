@@ -1,5 +1,6 @@
 package com.matchme.controller;
 
+import com.matchme.dto.ConnectionDto;
 import com.matchme.entity.Connection;
 import com.matchme.entity.User;
 import com.matchme.repository.ConnectionRepository;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/connections")
@@ -29,26 +31,35 @@ public class ConnectionsController {
     @Transactional(readOnly = true)
     public ResponseEntity<?> getConnections(@AuthenticationPrincipal User currentUser) {
         var connections = connectionRepository.findAcceptedConnectionsForUser(currentUser.getId());
-        return ResponseEntity.ok(connections);
+        var dtos = connections.stream()
+                .map(ConnectionDto::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     // Get pending requests received
-    @GetMapping("/received")
+    @GetMapping("/pending/received")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingRequestsReceived(@AuthenticationPrincipal User currentUser) {
         var connections = connectionRepository.findPendingConnectionsForUser(currentUser.getId());
-        return ResponseEntity.ok(connections);
+        var dtos = connections.stream()
+                .map(ConnectionDto::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     // Get pending requests sent
-    @GetMapping("/sent")
+    @GetMapping("/pending/sent")
     @Transactional(readOnly = true)
     public ResponseEntity<?> getPendingRequestsSent(@AuthenticationPrincipal User currentUser) {
         var connections = connectionRepository.findByFromUserIdAndStatus(
             currentUser.getId(), 
             Connection.ConnectionStatus.PENDING
         );
-        return ResponseEntity.ok(connections);
+        var dtos = connections.stream()
+                .map(ConnectionDto::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     // Send match request
@@ -90,7 +101,7 @@ public class ConnectionsController {
 
     // Dismiss user
     @PostMapping("/{userId}/dismiss")
-    @Transactional  // ADD THIS
+    @Transactional
     public ResponseEntity<?> dismissUser(
             @PathVariable Long userId,
             @AuthenticationPrincipal User currentUser) {
@@ -127,7 +138,7 @@ public class ConnectionsController {
 
     // Accept match request
     @PostMapping("/{connectionId}/accept")
-    @Transactional 
+    @Transactional
     public ResponseEntity<?> acceptMatchRequest(
             @PathVariable Long connectionId,
             @AuthenticationPrincipal User currentUser) {
@@ -157,7 +168,7 @@ public class ConnectionsController {
 
     // Reject match request
     @PostMapping("/{connectionId}/reject")
-    @Transactional 
+    @Transactional
     public ResponseEntity<?> rejectMatchRequest(
             @PathVariable Long connectionId,
             @AuthenticationPrincipal User currentUser) {
@@ -187,7 +198,7 @@ public class ConnectionsController {
 
     // Unmatch
     @DeleteMapping("/{userId}")
-    @Transactional 
+    @Transactional
     public ResponseEntity<?> unmatch(
             @PathVariable Long userId,
             @AuthenticationPrincipal User currentUser) {

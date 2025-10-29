@@ -60,7 +60,7 @@ const Recommendations = () => {
             userId: id,
             displayName: userData.displayName || 'Unknown',
             aboutMe: bioData.aboutMe || '',
-            profilePic: bioData.profilePic || '',
+            profilePic: userData.profilePic || '',
             // Extract compatible games (games object keys)
             compatibleGames: bioData.games ? Object.keys(bioData.games) : []
           };

@@ -45,7 +45,7 @@ public class UserController {
             return ResponseEntity.status(403).build();
         }
 
-        UserProfileDto dto = mapToProfileDto(user.getProfile());
+        UserProfileDto dto = mapToUserDto(user.getProfile());
 
 
         return ResponseEntity.ok(dto);
