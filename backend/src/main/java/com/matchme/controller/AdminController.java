@@ -22,11 +22,17 @@ public class AdminController {
     }
 
     @PostMapping("/create-fake-users")
-    public ResponseEntity<String> createFakeUsers() {
-        // Call the service that creates FULL profiles, not empty ones
-        String result = fakeUserSeederService.seedFakeUsers(100);
+    public ResponseEntity<String> createFakeUsers(
+        @RequestParam(value = "count", defaultValue = "100") int count) {
+        
+        // Apply constraints to the count parameter
+        if (count < 5) count = 5;
+        if (count > 1000) count = 1000;
+
+        String result = fakeUserSeederService.seedFakeUsers(count);
         return ResponseEntity.ok(result);
     }
+
 
     @DeleteMapping("/delete-fake-users")
     public ResponseEntity<String> deleteFakeUsers() {

@@ -30,14 +30,14 @@ sudo -u postgres psql
 CREATE DATABASE matchme_gaming;
 
 # 7. Set the postgres user password
-ALTER USER postgres PASSWORD 'password';
+ALTER USER postgres PASSWORD 'admin';
 
 # 8. Exit psql
 \q
 
 # 9. Test connection to the new database
 psql -U postgres -d matchme_gaming -h localhost -W
-# Enter password: password
+# Enter password: admin
 service postgresql status should show active (exited)—that means PostgreSQL is running.
 Make sure the password you set matches the one in your application.properties.
 After this, your Spring Boot app should be able to connect to the database.
