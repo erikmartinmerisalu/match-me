@@ -26,8 +26,8 @@ public class AdminController {
         @RequestParam(value = "count", defaultValue = "100") int count) {
         
         // Apply constraints to the count parameter
-        if (count < 5) count = 5;
-        if (count > 1000) count = 1000;
+        if (count < 20) count = 20;
+        if (count > 300) count = 300;
 
         String result = fakeUserSeederService.seedFakeUsers(count);
         return ResponseEntity.ok(result);
