@@ -150,8 +150,36 @@ public class UserController {
         UserProfileDto dto = new UserProfileDto();
 
         dto.setId(profile.getUser().getId());
+        dto.setDisplayName(profile.getDisplayName());
         dto.setAboutMe(profile.getAboutMe());
+        dto.setBirthDate(profile.getBirthDate());
         dto.setLookingFor(profile.getLookingFor());
+        dto.setProfilePic(profile.getProfilePic());
+        dto.setProfileCompleted(profile.isProfileCompleted());
+        dto.setTimezone(profile.getTimezone());
+        dto.setPreferredAgeMin(profile.getPreferredAgeMin());
+        dto.setPreferredAgeMax(profile.getPreferredAgeMax());
+        dto.setMaxPreferredDistance(profile.getMaxPreferredDistance());
+        dto.setLocation(profile.getLocation());
+        dto.setLatitude(profile.getLatitude());
+        dto.setLongitude(profile.getLongitude());
+        dto.setCompetitiveness(profile.getCompetitiveness());
+        dto.setVoiceChatPreference(profile.getVoiceChatPreference());
+        dto.setPlaySchedule(profile.getPlaySchedule());
+        dto.setMainGoal(profile.getMainGoal());
+
+        // Include games data using your clean GameProfileDto structure
+        dto.setGames(new HashMap<>());
+        if (profile.getGames() != null) {
+            profile.getGames().forEach(game -> {
+                dto.getGames().put(game.getGameName(), new GameProfileDto(
+                        game.getPreferredServersSet(),
+                        game.getExpLvl(),
+                        game.getGamingHours(),
+                        game.getCurrentRank()
+                ));
+            });
+        }
 
         return dto;
     }
