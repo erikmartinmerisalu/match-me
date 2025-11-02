@@ -3,37 +3,36 @@ export interface Game {
   gamingHours: string;
   preferredServers: string[];
   currentRank: string;
-}  ;
+}
 
 export interface Games {
   [key: string]: Game | {};
 }
 
-export type UserFormData = {
-  id : number | null | undefined,
+export interface UserFormData {
+  id: number | null | undefined;
   displayName: string;
   aboutMe: string;
   birthDate: string;
-  lookingfor: string;
+  lookingFor: string;
   games: Games;
   maxPreferredDistance: number;
   timezone: string;
-  lookingFor: string;
   preferredAgeMin: number;
   preferredAgeMax: number;
   profilePic: string | null;
   location: string;
   latitude: number | null;
   longitude: number | null;
-  profileCompleted: boolean,
-  age: number,
+  profileCompleted: boolean;
+  age: number;
   competitiveness: string;
   voiceChatPreference: string;
   playSchedule: string;
   mainGoal: string;
-} | null;
+}
 
-  export interface UserBioData {
+export interface UserBioData {
   displayName: string | null;
   aboutMe: string | null;
   lookingFor: string | null;
@@ -46,13 +45,13 @@ export interface UserBioProps {
 
 export interface UserGameDetailsProps {
   gameName: string;
-  gameData: any;
-  onChange: (updatedGame: any) => void;
+  gameData: Game | {};
+  onChange: (updatedGame: Game) => void;
 }
 
 export interface UserGamerTypeDetailsProps {
-  gameData: any;
-  onChange: (updatedGame: any) => void;
+  gameData: Partial<UserFormData> | null;
+  onChange: (updatedData: Partial<UserFormData>) => void;
 }
 
 export interface LocationAndPreferencesData {
@@ -60,12 +59,8 @@ export interface LocationAndPreferencesData {
   preferredAgeMin: number | null;
   preferredAgeMax: number | null;
   maxPreferredDistance: number | null;
-  latitude : number | null,
-  longitude : number | null
-}
-
-export interface LocationAndPreferencesProps {
-  onDataChange?: (data: LocationAndPreferencesData) => void;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface LocationSuggestion {
