@@ -3,81 +3,69 @@ import { useAuth } from "../../context/AuthContext";
 import { useGeolocation } from "../../hooks/GeoLocation";
 import { locationSearchService } from "../../services/locationSearch";
 import { toast } from "react-toastify";
-import type { LocationAndPreferencesData, LocationAndPreferencesProps, LocationSuggestion } from "../../types/UserProfileTypes";
+import type { LocationSuggestion } from "../../types/UserProfileTypes";
 
-
-
-const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataChange }) => {
+const UserPreferencesComponent = () => {
   const { loggedInUserData, setLoggedInUserData } = useAuth();
   const { latitude, longitude } = useGeolocation();
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [hasSetInitialLocation, setHasSetInitialLocation] = useState(false); // NEW: Prevent repeated location setting
 
-  const [userPrefs, setUserPrefs] = useState<LocationAndPreferencesData>({
-    location: loggedInUserData?.location ?? "",
-    preferredAgeMin: loggedInUserData?.preferredAgeMin ?? 18,
-    preferredAgeMax: loggedInUserData?.preferredAgeMax ?? 100,
-    maxPreferredDistance:  loggedInUserData?.maxPreferredDistance? loggedInUserData.maxPreferredDistance : 50,
-    latitude : loggedInUserData?.latitude? loggedInUserData.latitude :  null,
-    longitude : loggedInUserData?.longitude? loggedInUserData.longitude :  null
-  });
-
+  // FIXED: Only set location once when geolocation is available
   useEffect(() => {
-    if (latitude && longitude) {
-      setUserPrefs((prev) => ({
-        ...prev,
-        latitude,
-        longitude,
-      }));
-
-      setLoggedInUserData((prev: any) => ({
-        ...prev,
-        latitude,
-        longitude,
-      }));
+    if (latitude && longitude && !hasSetInitialLocation) {
+      // Check if coordinates are different from current ones to avoid unnecessary updates
+      const currentLat = loggedInUserData?.latitude;
+      const currentLng = loggedInUserData?.longitude;
+      
+      if (currentLat !== latitude || currentLng !== longitude) {
+        setLoggedInUserData((prev: any) => ({
+          ...prev,
+          latitude,
+          longitude,
+        }));
+        setHasSetInitialLocation(true); // Mark as set to prevent repeated updates
+      }
     }
-  }, [latitude, longitude, setLoggedInUserData]);
+  }, [latitude, longitude, setLoggedInUserData, hasSetInitialLocation, loggedInUserData?.latitude, loggedInUserData?.longitude]);
 
-  useEffect(() => {
-    if (onDataChange) onDataChange(userPrefs);
-  }, [userPrefs, onDataChange]);
-
-  
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    setUserPrefs((prev) => ({ ...prev, [name]: value }));
-    setLoggedInUserData((prev: any) => ({ ...prev, [name]: value }));
+    setLoggedInUserData((prev: any) => ({ 
+      ...prev, 
+      [name]: name.includes("Age") || name.includes("Distance") ? Number(value) : value 
+    }));
 
     if (name === "location") {
       if (value.length >= 3) {
         setIsLoading(true);
+        setShowSuggestions(true);
         try {
-           const res = await locationSearchService.searchLOcation(encodeURIComponent(value))
-           if(res.err){
-            toast.error("Location not found!")
-           }
-          setSuggestions(res.slice(0, 5));
+          const res = await locationSearchService.searchLOcation(encodeURIComponent(value));
+          if (res.err) {
+            toast.error("Location not found!");
+            setSuggestions([]);
+          } else {
+            setSuggestions(Array.isArray(res) ? res.slice(0, 5) : []);
+          }
         } catch (err) {
           console.error("Error fetching locations:", err);
+          setSuggestions([]);
         } finally {
           setIsLoading(false);
         }
       } else {
         setSuggestions([]);
+        setShowSuggestions(false);
       }
     }
   };
 
   const handleSelectSuggestion = (suggestion: LocationSuggestion) => {
     const locationString = `${suggestion.city}, ${suggestion.country}`;
-    setUserPrefs((prev) => ({
-      ...prev,
-      location: locationString,
-      latitude: suggestion.latitude,
-      longitude: suggestion.longitude,
-    }));
     setLoggedInUserData((prev: any) => ({
       ...prev,
       location: locationString,
@@ -85,6 +73,20 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
       longitude: suggestion.longitude,
     }));
     setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const handleBlur = () => {
+    // Delay hiding suggestions to allow for click
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
+  };
+
+  const handleFocus = () => {
+    if (suggestions.length > 0) {
+      setShowSuggestions(true);
+    }
   };
 
   return (
@@ -92,29 +94,79 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
       <div>
         <div className="sector">Location</div>
         <br />
-        <div className="autocomplete-wrapper">
-    <input
-      name="location"
-      type="text"
-      value={userPrefs.location ?? ""}
-      placeholder="Type to search..."
-      onChange={handleChange}
-      autoComplete="off"
-    />
+        <div className="autocomplete-wrapper" style={{ position: 'relative' }}>
+          <input
+            name="location"
+            type="text"
+            value={loggedInUserData?.location ?? ""}
+            placeholder="Type to search..."
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            autoComplete="off"
+          />
 
-    {isLoading && <div className="absolute mt-1 bg-white p-1 rounded shadow">Loading...</div>}
+          {isLoading && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              padding: '8px',
+              zIndex: 1000,
+              marginTop: '2px',
+              color: '#333',
+              fontSize: '14px'
+            }}>
+              Loading...
+            </div>
+          )}
 
-    {suggestions.length > 0 && (
-      <>
-      <div className="results-list">
-        {suggestions.map(suggestion => <div key={suggestion.city} onClick={() => handleSelectSuggestion(suggestion)}>{suggestion.country + "," + suggestion.city}</div>)}
-      </div>
-
-      </>
-
-    )}
-    </div>
-        
+          {showSuggestions && suggestions.length > 0 && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              border: '1px solid #666',
+              borderRadius: '4px',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              zIndex: 1000,
+              marginTop: '2px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}>
+              {suggestions.map((suggestion, index) => (
+                <div
+                  key={`${suggestion.city}-${index}`}
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                  style={{
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid #ddd',
+                    fontSize: '14px',
+                    color: '#222',
+                    fontWeight: '500'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f0f0f0';
+                    e.currentTarget.style.color = '#000';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'white';
+                    e.currentTarget.style.color = '#222';
+                  }}
+                >
+                  {suggestion.city}, {suggestion.country}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <br />
       </div>
 
@@ -129,7 +181,7 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
               max={97}
               type="number"
               name="preferredAgeMin"
-              value={userPrefs.preferredAgeMin ?? 18}
+              value={loggedInUserData?.preferredAgeMin ?? 18}
               onChange={handleChange}
             />
           </div>
@@ -141,7 +193,7 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
               max={100}
               type="number"
               name="preferredAgeMax"
-              value={userPrefs.preferredAgeMax ?? 100}
+              value={loggedInUserData?.preferredAgeMax ?? 100}
               onChange={handleChange}
             />
           </div>
@@ -156,7 +208,7 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
           name="maxPreferredDistance"
           min={5}
           max={200}
-          value={userPrefs.maxPreferredDistance ?? 100}
+          value={loggedInUserData?.maxPreferredDistance ?? 50}
           onChange={handleChange}
         />
       </div>
@@ -164,4 +216,4 @@ const LocationAndPreferences: React.FC<LocationAndPreferencesProps> = ({ onDataC
   );
 };
 
-export default LocationAndPreferences;
+export default UserPreferencesComponent;
