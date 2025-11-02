@@ -85,8 +85,14 @@ public class UserController {
     }
 
     @GetMapping("/me/profile")
-    public ResponseEntity<?> getCurrentUserProfile(@AuthenticationPrincipal User currentUser) {
-        UserProfileDto dto = mapToProfileDto(currentUser.getProfile(),false);     
+    public ResponseEntity<?> getCurrentUserProfile(
+        @AuthenticationPrincipal User currentUser,
+        @RequestParam(name = "games", required = false) String gamesParam) {
+        
+        // Default to true if parameter is not provided
+        boolean includeGames = !"false".equalsIgnoreCase(gamesParam);
+        
+        UserProfileDto dto = mapToProfileDto(currentUser.getProfile(), includeGames);
         return ResponseEntity.ok(dto);
     }
 
