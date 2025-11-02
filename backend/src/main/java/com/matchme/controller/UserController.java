@@ -86,7 +86,7 @@ public class UserController {
 
     @GetMapping("/me/profile")
     public ResponseEntity<?> getCurrentUserProfile(@AuthenticationPrincipal User currentUser) {
-        UserProfileDto dto = mapToProfileDto(currentUser.getProfile());
+        UserProfileDto dto = mapToProfileDto(currentUser.getProfile(),false);     
         return ResponseEntity.ok(dto);
     }
 
@@ -146,7 +146,7 @@ public class UserController {
         return true;
     }
 
-    private UserProfileDto mapToProfileDto(UserProfile profile) {
+    private UserProfileDto mapToProfileDto(UserProfile profile, boolean includeGames) {
         UserProfileDto dto = new UserProfileDto();
 
         dto.setId(profile.getUser().getId());
@@ -168,21 +168,29 @@ public class UserController {
         dto.setPlaySchedule(profile.getPlaySchedule());
         dto.setMainGoal(profile.getMainGoal());
 
-        // Include games data using your clean GameProfileDto structure
-        dto.setGames(new HashMap<>());
-        if (profile.getGames() != null) {
-            profile.getGames().forEach(game -> {
-                dto.getGames().put(game.getGameName(), new GameProfileDto(
-                        game.getPreferredServersSet(),
-                        game.getExpLvl(),
-                        game.getGamingHours(),
-                        game.getCurrentRank()
-                ));
-            });
+        // Only include games if the flag is true
+        if (includeGames) {
+            dto.setGames(new HashMap<>());
+            if (profile.getGames() != null) {
+                profile.getGames().forEach(game -> {
+                    dto.getGames().put(game.getGameName(), new GameProfileDto(
+                            game.getPreferredServersSet(),
+                            game.getExpLvl(),
+                            game.getGamingHours(),
+                            game.getCurrentRank()
+                    ));
+                });
+            }
         }
 
         return dto;
     }
+    //overload method: We create a duplicate method with a single parameter, for easier implementation to current project
+    //Any method without (profile, includeGames=false) will be called out with includeGames=true
+    private UserProfileDto mapToProfileDto(UserProfile profile) {
+    return mapToProfileDto(profile, true); // Default: include games
+}
+
 
     private UserProfileDto mapToBioDto(UserProfile profile) {
         UserProfileDto dto = new UserProfileDto();
