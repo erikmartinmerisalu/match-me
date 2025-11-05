@@ -35,8 +35,9 @@ function UserGameComponent() {
                     <div
                         key={game}
                         className={`options ${loggedInUserData?.games?.[game] ? "selected" : ""}`}
+                        onClick={() => handleGameToggle(game)}
                     >
-                        <p onClick={() => handleGameToggle(game)}>{game}</p>
+                        {game}
                     </div>
                 ))}
             </div>

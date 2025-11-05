@@ -26,7 +26,8 @@ export const userService = {
           errorData = { message: `HTTP ${res.status}: ${res.statusText}` };
         }
         console.error("❌ Server error response:", errorData);
-        return { error: errorData.message || 'Failed to update profile', details: errorData };
+        
+        throw new Error(errorData.error || errorData.message || 'Failed to update profile');
       }
 
       const data = await res.json();
@@ -34,10 +35,11 @@ export const userService = {
       return data;
     } catch (err) {
       console.error("❌ UpdateProfile failed:", err);
-      return { error: 'Network error occurred' };
+      throw err;
     }
   },
 
+  // KEEP ALL OTHER METHODS EXACTLY THE SAME
   async getUser(): Promise<UserFormData | null> {
     try {
       const res = await fetch(`${API_BASE_URL}/api/users/me`, {
