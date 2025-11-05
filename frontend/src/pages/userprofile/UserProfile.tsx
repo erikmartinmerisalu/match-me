@@ -29,17 +29,39 @@ const normalizeGamesData = (games: any) => {
   return normalized;
 };
 
-// Function to validate game data has all required fields
-const validateGameData = (games: any) => {
-  if (!games) return false;
+// UPDATED: Enhanced validation function
+const validateGameData = (games: any): { isValid: boolean; errorMessage?: string } => {
+  if (!games || Object.keys(games).length === 0) {
+    return { 
+      isValid: false, 
+      errorMessage: "Please select at least one game" 
+    };
+  }
   
+  const issues = [];
+
   for (const gameKey in games) {
     const game = games[gameKey];
-    if (!game.expLvl || !game.gamingHours || !game.currentRank) {
-      return false;
+    const missingFields = [];
+    
+    if (!game.expLvl || game.expLvl === "") missingFields.push("Game Experience");
+    if (!game.gamingHours || game.gamingHours === "") missingFields.push("Played Hours");
+    if (!Array.isArray(game.preferredServers) || game.preferredServers.length === 0) missingFields.push("Servers");
+    if (!game.currentRank || game.currentRank === "") missingFields.push("Rank");
+    
+    if (missingFields.length > 0) {
+      issues.push(`"${gameKey}" - missing: ${missingFields.join(", ")}`);
     }
   }
-  return true;
+  
+  if (issues.length > 0) {
+    return { 
+      isValid: false, 
+      errorMessage: `Please complete these game details:\n${issues.join('\n')}` 
+    };
+  }
+  
+  return { isValid: true };
 };
 
 function UserProfile() {
@@ -137,6 +159,18 @@ function UserProfile() {
           lookingFor: loggedInUserData?.lookingFor || '',
           birthDate: loggedInUserData?.birthDate || ''
         };
+        
+        // ENHANCED: Validation with specific field names
+        const missingFields = [];
+        
+        if (!payload.displayName?.trim()) missingFields.push("Display Name");
+        if (!payload.birthDate) missingFields.push("Birth Date");
+        
+        if (missingFields.length > 0) {
+          toast.error(`Please fill in these required fields: ${missingFields.join(", ")}`);
+          return;
+        }
+        
         console.log("📤 UserProfile: Saving bio data:", payload);
         const res = await userService.updateProfile(payload);
         if (res.error) {
@@ -149,16 +183,15 @@ function UserProfile() {
       }
 
       if (cardState === 1) {
-        // Don't save game selections yet - just move to next step
-        
-        // If no games selected, skip to gamer type
-        if (Object.keys(loggedInUserData?.games || {}).length === 0) {
-          toast.success("No games selected - moving to next step");
-          setCardState(3); // Skip to gamer type (cardState 3)
-        } else {
-          toast.success("Games selected - now fill in the details");
-          setCardState(cardState + 1);
+        // FIX: Require at least one game selected (remove skip option)
+        const gamesCount = Object.keys(loggedInUserData?.games || {}).length;
+        if (gamesCount === 0) {
+          toast.error("Please select at least one game");
+          return;
         }
+        
+        toast.success("Games selected - now fill in the details");
+        setCardState(cardState + 1);
         return;
       }
 
@@ -167,10 +200,10 @@ function UserProfile() {
           setGameIndex(gameIndex + 1);
           return;
         } else {
-          // Validate that all game details are filled before saving
-          const hasAllGameDetails = validateGameData(loggedInUserData?.games);
-          if (!hasAllGameDetails) {
-            toast.error("Please fill in all details for all selected games");
+          // FIX: Validate that all game details are filled before saving
+          const validation = validateGameData(loggedInUserData?.games);
+          if (!validation.isValid) {
+            toast.error(validation.errorMessage || "Please fill in all game details");
             return;
           }
           
@@ -191,12 +224,16 @@ function UserProfile() {
       }
 
       if (cardState === 3) {
-        // Validate gamer type fields
-        if (!loggedInUserData?.competitiveness || 
-            !loggedInUserData?.voiceChatPreference || 
-            !loggedInUserData?.playSchedule || 
-            !loggedInUserData?.mainGoal) {
-          toast.error("Please fill in all gamer type fields");
+        // ENHANCED: Validation with specific field names
+        const missingFields = [];
+        
+        if (!loggedInUserData?.competitiveness) missingFields.push("Competitiveness");
+        if (!loggedInUserData?.voiceChatPreference) missingFields.push("Voice Chat Preference");
+        if (!loggedInUserData?.playSchedule) missingFields.push("Play Schedule");
+        if (!loggedInUserData?.mainGoal) missingFields.push("Main Goal");
+        
+        if (missingFields.length > 0) {
+          toast.error(`Please fill in these gamer type fields: ${missingFields.join(", ")}`);
           return;
         }
 
@@ -269,17 +306,22 @@ function UserProfile() {
 
         setIsCompleting(true);
 
-        // Basic validation
-        if (!loggedInUserData?.preferredAgeMin || 
-            !loggedInUserData?.preferredAgeMax || 
-            !loggedInUserData?.maxPreferredDistance) {
-          toast.error("Please fill in all preference fields");
+        // ENHANCED: Validation with specific field names
+        const missingFields = [];
+        
+        if (!loggedInUserData?.preferredAgeMin) missingFields.push("Minimum Age");
+        if (!loggedInUserData?.preferredAgeMax) missingFields.push("Maximum Age");
+        if (!loggedInUserData?.maxPreferredDistance) missingFields.push("Maximum Distance");
+        if (!loggedInUserData?.location) missingFields.push("Location");
+        
+        if (missingFields.length > 0) {
+          toast.error(`Please fill in these preference fields: ${missingFields.join(", ")}`);
           setIsCompleting(false);
           return;
         }
 
-        // Ensure all required fields are present before final save
-        const finalValidation = validateGameData(loggedInUserData?.games) &&
+        // Final validation - ensure all steps are completed
+        const finalValidation = validateGameData(loggedInUserData?.games).isValid &&
           loggedInUserData?.competitiveness &&
           loggedInUserData?.voiceChatPreference &&
           loggedInUserData?.playSchedule &&
@@ -347,7 +389,8 @@ function UserProfile() {
       }
     } catch (error) {
       console.error("❌ UserProfile: Error in nextCardState:", error);
-      toast.error("An error occurred while saving");
+      const errorMessage = error instanceof Error ? error.message : "An error occurred while saving";
+      toast.error(errorMessage);
       setIsCompleting(false);
     }
   }
