@@ -114,11 +114,12 @@ public class UserController {
             userProfileService.updateProfile(userId, json);
             return ResponseEntity.ok(Map.of("message", "Profile updated successfully"));
         } catch (IllegalArgumentException e) {
+            // Return specific error message from service
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Internal server error"));
+            return ResponseEntity.status(500).body(Map.of("error", "Server error. Please try again."));
         }
-    }
+    }   
 
     private boolean canViewProfile(User currentUser, User targetUser) {
         // 1. Own profile
