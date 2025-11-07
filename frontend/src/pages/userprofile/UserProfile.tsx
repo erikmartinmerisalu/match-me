@@ -183,17 +183,57 @@ function UserProfile() {
       }
 
       if (cardState === 1) {
-        // FIX: Require at least one game selected (remove skip option)
         const gamesCount = Object.keys(loggedInUserData?.games || {}).length;
         if (gamesCount === 0) {
-          toast.error("Please select at least one game");
-          return;
+            toast.error("Please select at least one game");
+            return;
         }
         
-        toast.success("Games selected - now fill in the details");
+        // Get the ORIGINAL games from backend
+        const originalProfile = await userService.getUserProfile();
+        const originalGames = originalProfile?.games || {};
+        const currentGames = loggedInUserData?.games || {};
+        
+        // Find games that were deselected (in original but not in current)
+        const gamesToRemove = Object.keys(originalGames).filter(
+            game => !currentGames[game]
+        );
+        
+        console.log(" Games to remove:", gamesToRemove);
+        
+        if (gamesToRemove.length > 0) {
+            // Only remove deselected games, keep everything else as-is
+            const cleanedGames = { ...originalGames };
+            gamesToRemove.forEach(game => {
+                delete cleanedGames[game];
+            });
+            
+            console.log("🔍 After removal:", Object.keys(cleanedGames));
+            
+            // Save the cleaned games (preserves data for selected games)
+            const payload = { games: cleanedGames };
+            console.log("📤 Removing deselected games:", gamesToRemove);
+            const res = await userService.updateProfile(payload);
+            if (res.error) {
+                toast.error(res.error);
+                return;
+            }
+            
+            // VERIFY: Fetch again to see if backend actually updated
+            const verifyProfile = await userService.getUserProfile();
+            console.log("🔍 After save, backend has:", Object.keys(verifyProfile?.games || {}));
+            
+            // Update local state to match the cleaned backend
+            setLoggedInUserData((prev: any) => ({
+                ...prev,
+                games: cleanedGames
+            }));
+        }
+        
+        toast.success("Games updated - now fill in the details");
         setCardState(cardState + 1);
         return;
-      }
+    }
 
       if (cardState === 2) {
         if (gameIndex < gamesList.length - 1) {
