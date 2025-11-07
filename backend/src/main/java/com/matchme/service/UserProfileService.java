@@ -162,9 +162,14 @@ import javax.management.RuntimeErrorException;
                         existingGames.put(g.getGameName(), g);
                     }
 
+                    // NEW: Track which games are in the payload
+                    Set<String> gamesInPayload = new HashSet<>();
+
                     Iterator<String> gameKeys = nameNode.fieldNames();
                     while (gameKeys.hasNext()) {
                         String gameKey = gameKeys.next();
+                        gamesInPayload.add(gameKey); // Track this game
+
                         JsonNode gameDetails = nameNode.get(gameKey);
 
                         if (!VALID_GAMES.contains(gameKey)) {
@@ -219,6 +224,19 @@ import javax.management.RuntimeErrorException;
                                 gameProfile.setCurrentRank(rank);
                             }
                         }
+                    }
+
+                    // Remove games that are not in the payload
+                    List<GameProfile> gamesToRemove = new ArrayList<>();
+                    for (GameProfile existingGame : profile.getGames()) {
+                        if (!gamesInPayload.contains(existingGame.getGameName())) {
+                            gamesToRemove.add(existingGame);
+                        }
+                    }
+                    
+                    // Remove from the collection
+                    for (GameProfile gameToRemove : gamesToRemove) {
+                        profile.getGames().remove(gameToRemove);
                     }
                 }
 

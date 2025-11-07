@@ -11,24 +11,82 @@ const UserPreferencesComponent = () => {
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [hasSetInitialLocation, setHasSetInitialLocation] = useState(false); // NEW: Prevent repeated location setting
+  const [hasSetInitialLocation, setHasSetInitialLocation] = useState(false);
+  const [gpsUsed, setGpsUsed] = useState(false);
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false); // NEW: Track reverse geocoding state
 
-  // FIXED: Only set location once when geolocation is available
-  useEffect(() => {
-    if (latitude && longitude && !hasSetInitialLocation) {
-      // Check if coordinates are different from current ones to avoid unnecessary updates
-      const currentLat = loggedInUserData?.latitude;
-      const currentLng = loggedInUserData?.longitude;
+  // NEW: Reverse geocoding function
+  const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
+    try {
+      console.log(`🔄 Reverse geocoding coordinates: ${lat}, ${lng}`);
+      const response = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+      );
       
-      if (currentLat !== latitude || currentLng !== longitude) {
-        setLoggedInUserData((prev: any) => ({
-          ...prev,
-          latitude,
-          longitude,
-        }));
-        setHasSetInitialLocation(true); // Mark as set to prevent repeated updates
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
+      const data = await response.json();
+      console.log("📍 Reverse geocoding result:", data);
+      
+      if (data.city && data.countryName) {
+        return `${data.city}, ${data.countryName}`;
+      } else if (data.locality) {
+        return `${data.locality}, ${data.countryName}`;
+      } else {
+        return "GPS location detected";
+      }
+    } catch (error) {
+      console.error("❌ Reverse geocoding failed:", error);
+      return "GPS location detected";
     }
+  };
+
+  // UPDATED: Enhanced location setting with reverse geocoding
+  useEffect(() => {
+    const setLocationFromGPS = async () => {
+      if (latitude && longitude && !hasSetInitialLocation) {
+        const currentLat = loggedInUserData?.latitude;
+        const currentLng = loggedInUserData?.longitude;
+        
+        // Only update if coordinates are different
+        if (currentLat !== latitude || currentLng !== longitude) {
+          setIsReverseGeocoding(true);
+          setGpsUsed(true);
+          
+          try {
+            // Get actual location name from coordinates
+            const locationName = await reverseGeocode(latitude, longitude);
+            
+            setLoggedInUserData((prev: any) => ({
+              ...prev,
+              latitude,
+              longitude,
+              location: locationName,
+            }));
+            
+            setHasSetInitialLocation(true);
+            console.log("✅ GPS location set:", locationName);
+            toast.info(`Location set to: ${locationName}`);
+          } catch (error) {
+            console.error("Failed to set GPS location:", error);
+            // Fallback to basic GPS message
+            setLoggedInUserData((prev: any) => ({
+              ...prev,
+              latitude,
+              longitude,
+              location: "GPS location detected",
+            }));
+            toast.info("GPS location detected and set");
+          } finally {
+            setIsReverseGeocoding(false);
+          }
+        }
+      }
+    };
+
+    setLocationFromGPS();
   }, [latitude, longitude, setLoggedInUserData, hasSetInitialLocation, loggedInUserData?.latitude, loggedInUserData?.longitude]);
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +96,11 @@ const UserPreferencesComponent = () => {
       ...prev, 
       [name]: name.includes("Age") || name.includes("Distance") ? Number(value) : value 
     }));
+
+    // Clear GPS flag if user manually types in location
+    if (name === "location" && gpsUsed) {
+      setGpsUsed(false);
+    }
 
     if (name === "location") {
       if (value.length >= 3) {
@@ -74,10 +137,10 @@ const UserPreferencesComponent = () => {
     }));
     setSuggestions([]);
     setShowSuggestions(false);
+    setGpsUsed(false); // Clear GPS flag when user manually selects location
   };
 
   const handleBlur = () => {
-    // Delay hiding suggestions to allow for click
     setTimeout(() => {
       setShowSuggestions(false);
     }, 200);
@@ -94,16 +157,55 @@ const UserPreferencesComponent = () => {
       <div>
         <div className="sector">Location</div>
         <br />
+        
+        {/* UPDATED: Enhanced GPS status indicator */}
+        {gpsUsed && (
+          <div style={{
+            padding: '8px',
+            marginBottom: '10px',
+            backgroundColor: '#e8f5e8',
+            border: '1px solid #4caf50',
+            borderRadius: '4px',
+            color: '#2e7d32',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>📍</span>
+            <span>Using GPS coordinates</span>
+          </div>
+        )}
+
+        {isReverseGeocoding && (
+          <div style={{
+            padding: '8px',
+            marginBottom: '10px',
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '4px',
+            color: '#856404',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>🔄</span>
+            <span>Detecting your location...</span>
+          </div>
+        )}
+        
         <div className="autocomplete-wrapper" style={{ position: 'relative' }}>
           <input
             name="location"
             type="text"
             value={loggedInUserData?.location ?? ""}
-            placeholder="Type to search..."
+            placeholder={isReverseGeocoding ? "Detecting your location..." : "Type to search..."}
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
             autoComplete="off"
+            disabled={isReverseGeocoding} // Disable input while reverse geocoding
           />
 
           {isLoading && (
@@ -121,7 +223,7 @@ const UserPreferencesComponent = () => {
               color: '#333',
               fontSize: '14px'
             }}>
-              Loading...
+              Searching locations...
             </div>
           )}
 
