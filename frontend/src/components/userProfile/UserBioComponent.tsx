@@ -62,7 +62,7 @@ function UserBioComponent({ onDataChange }: UserBioProps) {
                     name="birthDate" 
                     min="1900-01-01" 
                     max={default18} 
-                    value={loggedInUserData?.birthDate || default18}  
+                    value={loggedInUserData?.birthDate}  
                     onChange={handleChange}
                 />
             </div>
