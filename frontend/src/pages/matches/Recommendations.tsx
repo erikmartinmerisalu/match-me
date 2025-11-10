@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useToast } from '../../context/ToastContext';; // Adjust the import path
 import './Recommendations.css';
 
 interface Recommendation {
@@ -13,6 +14,7 @@ const Recommendations = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { success, error: toastError } = useToast(); // Add this line
 
   useEffect(() => {
     fetchRecommendations();
@@ -94,13 +96,14 @@ const Recommendations = () => {
 
       if (response.ok) {
         setRecommendations(prev => prev.filter(rec => rec.userId !== userId));
-        alert(`Match request sent to ${displayName}!`);
+        success(`Match request sent to ${displayName}!`); // Changed from alert
       } else {
-        alert('Failed to send match request');
+        const errorData = await response.json();
+        toastError(errorData.error || 'Failed to send match request'); // Changed from alert
       }
     } catch (err) {
       console.error(err);
-      alert('Error sending match request');
+      toastError('Error sending match request'); // Changed from alert
     }
   };
 
@@ -117,11 +120,12 @@ const Recommendations = () => {
       if (response.ok) {
         setRecommendations(prev => prev.filter(rec => rec.userId !== userId));
       } else {
-        alert('Failed to dismiss user');
+        const errorData = await response.json();
+        toastError(errorData.error || 'Failed to dismiss user'); // Changed from alert
       }
     } catch (err) {
       console.error(err);
-      alert('Error dismissing user');
+      toastError('Error dismissing user'); // Changed from alert
     }
   };
 
