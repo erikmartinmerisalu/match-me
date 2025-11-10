@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "connections")
+@Table(name = "connections", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"from_user_id", "to_user_id"})
+})
 public class Connection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

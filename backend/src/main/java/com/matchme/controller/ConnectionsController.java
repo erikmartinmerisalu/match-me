@@ -4,6 +4,7 @@ import com.matchme.dto.ConnectionDto;
 import com.matchme.entity.Connection;
 import com.matchme.entity.User;
 import com.matchme.repository.ConnectionRepository;
+import com.matchme.service.ConnectionService;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,9 @@ public class ConnectionsController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ConnectionService connectionService; // NEW: Inject ConnectionService
 
     // Get all accepted connections
     @GetMapping
@@ -62,8 +66,8 @@ public class ConnectionsController {
         return ResponseEntity.ok(dtos);
     }
 
-    // Send match request
-    @PostMapping("/{userId}")
+    // Send match request - UPDATED: Uses safe service method
+   @PostMapping("/{userId}")
     @Transactional
     public ResponseEntity<?> sendMatchRequest(
             @PathVariable Long userId,
@@ -78,28 +82,24 @@ public class ConnectionsController {
         if (targetUserOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        User targetUser = targetUserOpt.get();
 
-        Optional<Connection> existingConnection = connectionRepository
-                .findConnectionBetweenUsers(currentUser.getId(), userId);
-        
-        if (existingConnection.isPresent()) {
+        // Use safe service method to prevent duplicates
+        ConnectionService.ConnectionCreationResult result = connectionService.findOrCreateConnection(
+            currentUser.getId(), 
+            userId, 
+            Connection.ConnectionStatus.PENDING
+        );
+
+        // If the connection already existed (was found, not created), return error
+        if (!result.isCreated()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Connection already exists"));
         }
 
-        Connection connection = new Connection(
-                currentUser,
-                targetUser,
-                Connection.ConnectionStatus.PENDING
-        );
-
-        connectionRepository.save(connection);
-
         return ResponseEntity.ok(Map.of("message", "Match request sent successfully"));
     }
 
-    // Dismiss user
+    //dismiss user
     @PostMapping("/{userId}/dismiss")
     @Transactional
     public ResponseEntity<?> dismissUser(
@@ -115,27 +115,22 @@ public class ConnectionsController {
         if (targetUserOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        User targetUser = targetUserOpt.get();
 
-        Optional<Connection> existingConnection = connectionRepository
-                .findConnectionBetweenUsers(currentUser.getId(), userId);
-        
-        if (existingConnection.isPresent()) {
+        // Use safe service method to prevent duplicates
+        ConnectionService.ConnectionCreationResult result = connectionService.findOrCreateConnection(
+            currentUser.getId(), 
+            userId, 
+            Connection.ConnectionStatus.DISMISSED
+        );
+
+        // If the connection already existed (was found, not created), return error
+        if (!result.isCreated()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Connection already exists"));
         }
 
-        Connection connection = new Connection(
-                currentUser,
-                targetUser,
-                Connection.ConnectionStatus.DISMISSED
-        );
-
-        connectionRepository.save(connection);
-
         return ResponseEntity.ok(Map.of("message", "User dismissed successfully"));
     }
-
     // Accept match request
     @PostMapping("/{connectionId}/accept")
     @Transactional
@@ -221,4 +216,4 @@ public class ConnectionsController {
 
         return ResponseEntity.ok(Map.of("message", "Unmatched successfully"));
     }
-    }
+}

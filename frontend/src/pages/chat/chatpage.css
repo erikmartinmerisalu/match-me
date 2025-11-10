@@ -234,14 +234,15 @@
 
 .message-status {
   margin-left: 4px;
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 14px; /* Slightly larger */
+  font-weight: 900; /* Bolder */
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Adds subtle background contrast */
 }
 
 .message-status.sent {
-  color: #999;
+  color: #f0f0f0; /* Almost white */
 }
 
 .message-status.read {
-  color: #4CAF50;
+  color: #76ff76; /* Very bright green */
 }

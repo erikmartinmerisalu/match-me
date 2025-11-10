@@ -1,16 +1,13 @@
 package com.matchme.service;
 
+import com.matchme.entity.Connection;
 import com.matchme.entity.User;
 import com.matchme.repository.ConnectionRepository;
 import com.matchme.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class ConnectionService {
@@ -21,15 +18,37 @@ public class ConnectionService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Long> getConnectedUserIds(String userEmail) {
-        Optional<User> userOpt = userRepository.findByEmail(userEmail);
-        if (userOpt.isEmpty()) {
-            return Collections.emptyList();
+    // Add this inner class INSIDE ConnectionService class
+    public static class ConnectionCreationResult {
+        private Connection connection;
+        private boolean created;
+        
+        public ConnectionCreationResult(Connection connection, boolean created) {
+            this.connection = connection;
+            this.created = created;
         }
         
-        User user = userOpt.get();
-        // TODO: Implement actual connection logic
-        // For now return empty list
-        return Collections.emptyList();
+        public Connection getConnection() { return connection; }
+        public boolean isCreated() { return created; }
+    }
+
+    // Updated method that uses the inner class
+    public ConnectionCreationResult findOrCreateConnection(Long fromUserId, Long toUserId, Connection.ConnectionStatus status) {
+        // First, check if connection exists in either direction
+        Optional<Connection> existingConnection = connectionRepository.findConnectionBetweenUsers(fromUserId, toUserId);
+        
+        if (existingConnection.isPresent()) {
+            return new ConnectionCreationResult(existingConnection.get(), false); // was NOT created
+        }
+        
+        // Create new connection
+        User fromUser = userRepository.findById(fromUserId)
+            .orElseThrow(() -> new RuntimeException("From user not found"));
+        User toUser = userRepository.findById(toUserId)
+            .orElseThrow(() -> new RuntimeException("To user not found"));
+            
+        Connection newConnection = new Connection(fromUser, toUser, status);
+        Connection savedConnection = connectionRepository.save(newConnection);
+        return new ConnectionCreationResult(savedConnection, true); // was created
     }
 }
