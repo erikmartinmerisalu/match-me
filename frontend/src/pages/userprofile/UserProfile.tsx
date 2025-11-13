@@ -29,7 +29,7 @@ const normalizeGamesData = (games: any) => {
   return normalized;
 };
 
-// UPDATED: Enhanced validation function
+
 const validateGameData = (games: any): { isValid: boolean; errorMessage?: string } => {
   if (!games || Object.keys(games).length === 0) {
     return { 
@@ -38,32 +38,31 @@ const validateGameData = (games: any): { isValid: boolean; errorMessage?: string
     };
   }
   
-  const issues = [];
+  const incompleteGames = [];
 
   for (const gameKey in games) {
     const game = games[gameKey];
     const missingFields = [];
     
-    if (!game.expLvl || game.expLvl === "") missingFields.push("Game Experience");
-    if (!game.gamingHours || game.gamingHours === "") missingFields.push("Played Hours");
+    if (!game.expLvl || game.expLvl === "") missingFields.push("Experience");
+    if (!game.gamingHours || game.gamingHours === "") missingFields.push("Hours");
     if (!Array.isArray(game.preferredServers) || game.preferredServers.length === 0) missingFields.push("Servers");
     if (!game.currentRank || game.currentRank === "") missingFields.push("Rank");
     
     if (missingFields.length > 0) {
-      issues.push(`"${gameKey}" - missing: ${missingFields.join(", ")}`);
+      incompleteGames.push(`• ${gameKey} - ${missingFields.join(", ")}`);
     }
   }
   
-  if (issues.length > 0) {
+  if (incompleteGames.length > 0) {
     return { 
       isValid: false, 
-      errorMessage: `Please complete these game details:\n${issues.join('\n')}` 
+      errorMessage: `Fill out missing details:\n${incompleteGames.join('\n')}` 
     };
   }
   
   return { isValid: true };
 };
-
 function UserProfile() {
   const [cardState, setCardState] = useState<number>(0);
   const { loggedInUserData, setLoggedInUserData } = useAuth();

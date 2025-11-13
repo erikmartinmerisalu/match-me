@@ -12,6 +12,12 @@ function UserBioComponent({ onDataChange }: UserBioProps) {
 
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+        
+        // Add character limit for displayName
+        if (name === 'displayName' && value.length > 15) {
+            return; // Don't update if exceeds 15 characters
+        }
+        
         setLoggedInUserData((prev: any) => ({
             ...prev,
             [name]: value,
@@ -28,9 +34,13 @@ function UserBioComponent({ onDataChange }: UserBioProps) {
                     value={loggedInUserData?.displayName || ""}
                     onChange={handleChange}
                     required
-                    pattern="^[a-zA-Z0-9_]+$"
-                    title="Username must be 3-20 characters and only letters, numbers, or underscores"
+                    maxLength={15} // Add maxLength attribute
+                    pattern="^[a-zA-Z0-9_]{3,15}$" // Update pattern to match 3-15 chars
+                    title="Username must be 3-15 characters and only letters, numbers, or underscores"
                 />
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                    {loggedInUserData?.displayName?.length || 0}/15 characters
+                </div>
             </div>
 
             <div>
