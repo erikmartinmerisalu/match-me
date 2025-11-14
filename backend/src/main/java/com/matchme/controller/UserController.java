@@ -139,8 +139,16 @@ public class UserController {
             if (status == Connection.ConnectionStatus.ACCEPTED) {
                 return true;
             }
+
+            // 3. Blocked (DENIED)
+            Optional<Connection> blockedConnection = connectionRepository
+                .findBlockedConnectionBetweenUsers(currentUser.getId(), targetUser.getId());
+
+            if (blockedConnection.isPresent()) {
+                return false; // Blocked in either direction
+            }
             
-            // 3. Outstanding connection request (PENDING)
+            // 4. Outstanding connection request (PENDING)
             if (status == Connection.ConnectionStatus.PENDING) {
                 return true;
             }

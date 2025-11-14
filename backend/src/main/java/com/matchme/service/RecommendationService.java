@@ -31,6 +31,30 @@ public class RecommendationService {
     // 40% baseline for passing deal-breakers + 60% from compatibility factors
     private static final double BASELINE_SCORE = 40.0;
 
+    // NEW METHOD to filter out blocked users
+    private List<UserProfile> filterOutBlockedUsers(Long currentUserId, List<UserProfile> allProfiles) {
+        // Get all blocked connections for current user
+        List<Connection> blockedConnections = connectionRepository.findBlockedConnectionsForUser(currentUserId);
+        
+        // Extract user IDs of blocked users (both directions)
+        Set<Long> blockedUserIds = blockedConnections.stream()
+                .map(connection -> {
+                    if (connection.getFromUser().getId().equals(currentUserId)) {
+                        return connection.getToUser().getId(); // Users I blocked
+                    } else {
+                        return connection.getFromUser().getId(); // Users who blocked me
+                    }
+                })
+                .collect(Collectors.toSet());
+        
+        System.out.println("🚫 Filtering out " + blockedUserIds.size() + " blocked users for user " + currentUserId);
+        
+        // Filter out blocked users
+        return allProfiles.stream()
+                .filter(profile -> !blockedUserIds.contains(profile.getUser().getId()))
+                .collect(Collectors.toList());
+    }
+
     @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendations(Long userId) {
         Optional<User> currentUserOpt = userService.findById(userId);
@@ -47,14 +71,19 @@ public class RecommendationService {
         }
 
         List<UserProfile> allProfiles = userProfileRepository.findCompletedProfilesExcludingUser(userId);
-
         
+        // ADD THIS LINE: Filter out blocked users
+        List<UserProfile> filteredProfiles = filterOutBlockedUsers(userId, allProfiles);
+        
+        System.out.println("📊 After filtering: " + filteredProfiles.size() + " potential matches (from " + allProfiles.size() + " total)");
+
         Map<UserProfile, CompatibilityResult> compatibilityMap = new HashMap<>();
 
-        for (UserProfile candidateProfile : allProfiles) {
+        // CHANGE THIS LINE: Use filteredProfiles instead of allProfiles
+        for (UserProfile candidateProfile : filteredProfiles) {
             Long candidateUserId = candidateProfile.getUser().getId();
             
-            
+            // This check might be redundant now with the filtering, but keeping for safety
             Optional<Connection> existingConnection = connectionRepository
                     .findConnectionBetweenUsers(userId, candidateUserId);
             
@@ -73,14 +102,15 @@ public class RecommendationService {
             }
         }
 
-        
+        // If we don't have enough recommendations with 75% threshold, try 50%
         if (compatibilityMap.size() < 3) {
             compatibilityMap.clear();
             
-            for (UserProfile candidateProfile : allProfiles) {
+            // CHANGE THIS LINE: Use filteredProfiles instead of allProfiles
+            for (UserProfile candidateProfile : filteredProfiles) {
                 Long candidateUserId = candidateProfile.getUser().getId();
                 
-            
+                // This check might be redundant now with the filtering, but keeping for safety
                 Optional<Connection> existingConnection = connectionRepository
                         .findConnectionBetweenUsers(userId, candidateUserId);
                 
@@ -111,10 +141,11 @@ public class RecommendationService {
                 ))
                 .collect(Collectors.toList());
 
+        System.out.println("✅ Final recommendations: " + recommendations.size() + " users");
         return recommendations;
     }
 
-    
+    // ... rest of your existing methods remain the same
     @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendationsByEmail(String email) {
         Optional<User> userOpt = userService.findByEmail(email);
@@ -141,7 +172,7 @@ public class RecommendationService {
             .collect(Collectors.toList());
     }
 
-    
+    // ... rest of your existing private methods remain exactly the same
     private static class CompatibilityResult {
         List<String> compatibleGames;
         double averageScore;
@@ -151,6 +182,7 @@ public class RecommendationService {
             this.averageScore = avgScore;
         }
     }
+
 
     private boolean passesDealbreakers(UserProfile profile1, UserProfile profile2) {
         if (!hasCommonGameWithCommonServer(profile1, profile2)) {

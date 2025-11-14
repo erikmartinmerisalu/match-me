@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './Matches.css';
+import { matchWebSocketService } from '../../services/matchWebSocketService';
 
 interface Match {
   id: number;
@@ -13,11 +14,25 @@ const Matches = () => {
   const [acceptedMatches, setAcceptedMatches] = useState<Match[]>([]);
   const [sentRequests, setSentRequests] = useState<Match[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<Match[]>([]);
+  const [blockedUsers, setBlockedUsers] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'accepted' | 'sent' | 'received'>('accepted');
+  const [activeTab, setActiveTab] = useState<'accepted' | 'sent' | 'received' | 'blocked'>('accepted');
 
   useEffect(() => {
     fetchMatches();
+
+    // Set up WebSocket for real-time updates
+    matchWebSocketService.connect();
+    
+    const unsubscribe = matchWebSocketService.onUpdate(() => {
+      console.log('WebSocket triggered refresh');
+      fetchMatches();
+    });
+
+    // Cleanup on unmount
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const fetchMatches = async () => {
@@ -30,6 +45,8 @@ const Matches = () => {
       });
       const currentUser = await currentUserRes.json();
       const currentUserId = currentUser.id;
+
+      console.log('=== FETCHING MATCHES FOR USER:', currentUserId, currentUser.displayName);
 
       // Fetch accepted matches
       const acceptedRes = await fetch('http://localhost:8080/api/connections', {
@@ -49,9 +66,17 @@ const Matches = () => {
       });
       const receivedData = await receivedRes.json();
 
+      // Fetch blocked users - users that CURRENT USER blocked
+      const blockedRes = await fetch('http://localhost:8080/api/connections/blocked', {
+        credentials: 'include',
+      });
+      const blockedData = await blockedRes.json();
+
+      console.log('=== API RESPONSES ===');
       console.log('Accepted:', acceptedData);
       console.log('Sent:', sentData);
       console.log('Received:', receivedData);
+      console.log('Blocked (users I blocked):', blockedData);
 
       // Process accepted matches
       const acceptedMatches = await Promise.all(
@@ -115,10 +140,29 @@ const Matches = () => {
         })
       );
 
+      // Process blocked users - ONLY users that CURRENT USER blocked
+      const blockedMatches = blockedData.map((userInfo: any) => {
+        console.log('Processing blocked user:', userInfo);
+        return {
+          id: userInfo.id, // Connection ID for unblocking
+          userId: userInfo.userId, // User ID of the blocked user
+          displayName: userInfo.displayName,
+          profilePic: userInfo.profilePic,
+          status: 'blocked'
+        };
+      });
+
+      console.log('=== PROCESSED DATA ===');
+      console.log('Accepted matches:', acceptedMatches.filter(m => m !== null).length);
+      console.log('Sent requests:', sentMatches.filter(m => m !== null).length);
+      console.log('Received requests:', receivedMatches.filter(m => m !== null).length);
+      console.log('Blocked users (users I blocked):', blockedMatches.length);
+
       // Filter out null values
       setAcceptedMatches(acceptedMatches.filter(m => m !== null) as Match[]);
       setSentRequests(sentMatches.filter(m => m !== null) as Match[]);
       setReceivedRequests(receivedMatches.filter(m => m !== null) as Match[]);
+      setBlockedUsers(blockedMatches.filter((m: any) => m !== null) as Match[]);
       setLoading(false);
     } catch (err) {
       console.error('Failed to fetch matches:', err);
@@ -137,6 +181,7 @@ const Matches = () => {
         profilePic: data.profilePic || ''
       };
     } catch (err) {
+      console.error('Failed to fetch user info for ID:', userId, err);
       return { displayName: 'Unknown', profilePic: '' };
     }
   };
@@ -150,9 +195,14 @@ const Matches = () => {
 
       if (response.ok) {
         fetchMatches();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to accept request:', errorData);
+        alert(`Failed to accept request: ${errorData.error}`);
       }
     } catch (err) {
       console.error('Failed to accept request:', err);
+      alert('Failed to accept request. Please try again.');
     }
   };
 
@@ -165,9 +215,58 @@ const Matches = () => {
 
       if (response.ok) {
         fetchMatches();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to reject request:', errorData);
+        alert(`Failed to reject request: ${errorData.error}`);
       }
     } catch (err) {
       console.error('Failed to reject request:', err);
+      alert('Failed to reject request. Please try again.');
+    }
+  };
+
+  const handleBlock = async (userId: number) => {
+    try {
+      console.log('Blocking user ID:', userId);
+      const response = await fetch(`http://localhost:8080/api/connections/${userId}/block`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        console.log('Block successful, refreshing matches...');
+        fetchMatches();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to block user:', errorData);
+        alert(`Failed to block user: ${errorData.error}`);
+      }
+    } catch (err) {
+      console.error('Failed to block user:', err);
+      alert('Failed to block user. Please try again.');
+    }
+  };
+
+  const handleUnblock = async (userId: number) => {
+    try {
+      console.log('Unblocking user ID:', userId);
+      const response = await fetch(`http://localhost:8080/api/connections/${userId}/unblock`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        console.log('Unblock successful, refreshing matches...');
+        fetchMatches();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to unblock user:', errorData);
+        alert(`Failed to unblock user: ${errorData.error}`);
+      }
+    } catch (err) {
+      console.error('Failed to unblock user:', err);
+      alert('Failed to unblock user. Please try again.');
     }
   };
 
@@ -177,6 +276,16 @@ const Matches = () => {
 
   const handleChat = (userId: number) => {
     window.location.href = `/chat/${userId}`;
+  };
+
+  // Safe avatar rendering function
+  const renderAvatar = (user: Match) => {
+    if (user.profilePic) {
+      return <img src={user.profilePic} alt={user.displayName} className="avatar-image" />;
+    } else {
+      const initial = user.displayName ? user.displayName.charAt(0).toUpperCase() : '?';
+      return <div className="avatar-initial">{initial}</div>;
+    }
   };
 
   if (loading) {
@@ -210,6 +319,12 @@ const Matches = () => {
         >
           Sent ({sentRequests.length})
         </button>
+        <button 
+          className={`tab ${activeTab === 'blocked' ? 'active' : ''}`}
+          onClick={() => setActiveTab('blocked')}
+        >
+          Blocked ({blockedUsers.length})
+        </button>
       </div>
 
       {activeTab === 'accepted' && (
@@ -220,19 +335,27 @@ const Matches = () => {
             acceptedMatches.map((match) => (
               <div key={match.id} className="match-card">
                 <div className="match-avatar">
-                  {match.profilePic ? (
-                    <img src={match.profilePic} alt={match.displayName} />
-                  ) : (
-                    match.displayName.charAt(0).toUpperCase()
-                  )}
+                  {renderAvatar(match)}
                 </div>
                 <h3>{match.displayName}</h3>
                 <div className="match-actions">
-                  <button onClick={() => handleViewProfile(match.userId)}>
+                  <button 
+                    className="view-profile-btn"
+                    onClick={() => handleViewProfile(match.userId)}
+                  >
                     View Profile
                   </button>
-                  <button className="chat-btn" onClick={() => handleChat(match.userId)}>
+                  <button 
+                    className="chat-btn" 
+                    onClick={() => handleChat(match.userId)}
+                  >
                     Chat
+                  </button>
+                  <button 
+                    className="block-btn" 
+                    onClick={() => handleBlock(match.userId)}
+                  >
+                    Block
                   </button>
                 </div>
               </div>
@@ -249,19 +372,21 @@ const Matches = () => {
             receivedRequests.map((match) => (
               <div key={match.id} className="match-card">
                 <div className="match-avatar">
-                  {match.profilePic ? (
-                    <img src={match.profilePic} alt={match.displayName} />
-                  ) : (
-                    match.displayName.charAt(0).toUpperCase()
-                  )}
+                  {renderAvatar(match)}
                 </div>
                 <h3>{match.displayName}</h3>
                 <p className="request-label">wants to connect</p>
                 <div className="match-actions">
-                  <button className="reject-btn" onClick={() => handleReject(match.id)}>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleReject(match.id)}
+                  >
                     Reject
                   </button>
-                  <button className="accept-btn" onClick={() => handleAccept(match.id)}>
+                  <button 
+                    className="accept-btn" 
+                    onClick={() => handleAccept(match.id)}
+                  >
                     Accept
                   </button>
                 </div>
@@ -279,14 +404,36 @@ const Matches = () => {
             sentRequests.map((match) => (
               <div key={match.id} className="match-card">
                 <div className="match-avatar">
-                  {match.profilePic ? (
-                    <img src={match.profilePic} alt={match.displayName} />
-                  ) : (
-                    match.displayName.charAt(0).toUpperCase()
-                  )}
+                  {renderAvatar(match)}
                 </div>
                 <h3>{match.displayName}</h3>
                 <p className="pending-label">Request pending...</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'blocked' && (
+        <div className="matches-grid">
+          {blockedUsers.length === 0 ? (
+            <p className="empty-message">No blocked users</p>
+          ) : (
+            blockedUsers.map((user) => (
+              <div key={user.id} className="match-card">
+                <div className="match-avatar">
+                  {renderAvatar(user)}
+                </div>
+                <h3>{user.displayName}</h3>
+                <p className="blocked-label">You blocked this user</p>
+                <div className="match-actions">
+                  <button 
+                    className="unblock-btn" 
+                    onClick={() => handleUnblock(user.userId)}
+                  >
+                    Unblock
+                  </button>
+                </div>
               </div>
             ))
           )}

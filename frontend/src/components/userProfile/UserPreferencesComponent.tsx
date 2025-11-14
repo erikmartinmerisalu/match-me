@@ -315,9 +315,9 @@ const UserPreferencesComponent = () => {
           name="maxPreferredDistance"
           min={5}
           max={20000}
-          value={loggedInUserData?.maxPreferredDistance ??''}
+          value={loggedInUserData?.maxPreferredDistance ??''} //use the placeholder instead of forcing a value
           onChange={handleChange}
-          placeholder="50" // ADD: Show placeholder instead of forcing 0
+          placeholder="50" // Placeholder
         />
         <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
           Maximum: 20,000 km (global)
