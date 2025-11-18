@@ -1,5 +1,6 @@
-import { type ChangeEvent } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 
 type ProfilePicProps = {
   width: number;
@@ -8,38 +9,76 @@ type ProfilePicProps = {
 
 const ProfilePicChange: React.FC<ProfilePicProps> = ({ width, height }) => {
   const { loggedInUserData, setLoggedInUserData } = useAuth();
+  const [base64, setBase64] = useState<string>();
+  const toast = useToast();
 
-  const handleProfilePicUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePicUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const formData = new FormData();
+        formData.append("file", file);
       const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target) {
-          const base64 = event.target.result as string;
-          console.log("📸 Uploaded profile pic base64:", base64);
-          setLoggedInUserData((prev: any) => ({
-            ...prev,
-            profilePic: base64,
-          }));
-          console.log("✅ Profile pic updated in state");
-        }
+      reader.onloadend = () => {
+        setBase64(reader.result as string);
       };
-      reader.readAsDataURL(file);
-    }
-    console.log("🔍 Current profilePic in state:", loggedInUserData?.profilePic);
-  };
+    reader.readAsDataURL(file);
 
-  const handleRemovePic = () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/images/upload", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+        });
+        if (!res.ok) {  
+          toast.error ("Failed to upload picture")      
+          return;
+      }
+
+      const data = await res.json(); // { profilePic: "/uploads/1.png" }
+
+      // Lisa cache-busting query string, et brauser ei kuvaks vana pilti
+      const fullUrl = data.profilePic ? `http://localhost:8080${data.profilePic}?t=${Date.now()}` : null;
+
+      setLoggedInUserData((prev: any) => ({
+        ...prev,
+        profilePic: fullUrl,
+      }));
+
+
+    } catch (err) {
+      toast.error ("Failed to upload picture")
+    }
+      }
+    }
+  
+    const handleRemovePic = async () => {
+      setBase64("")
+  try {
+    const res = await fetch("http://localhost:8080/api/images/remove", {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      toast.error ( "Failed to remove picture")
+      return;
+    }
+
     setLoggedInUserData((prev: any) => ({
       ...prev,
-      profilePic: "",
+      profilePic: null,
     }));
-    console.log("🗑️ Profile pic removed");
-  };
+
+  } catch (err) {
+    console.error("Error removing profile picture:", err);
+  }
+};
+
+  
 
   return (
     <div className="profile-pic">
-      {loggedInUserData?.profilePic ? (
+      {loggedInUserData?.profilePic? (
         <img
           src={loggedInUserData.profilePic}
           alt="Profile"

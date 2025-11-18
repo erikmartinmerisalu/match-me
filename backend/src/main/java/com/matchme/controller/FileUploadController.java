@@ -1,75 +1,101 @@
 package com.matchme.controller;
 
-import java.io.IOException;
-import java.util.stream.Collectors;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.matchme.service.storage.StorageFileNotFoundException;
-import com.matchme.service.storage.StorageService;
+import com.matchme.entity.User;
+import com.matchme.entity.UserProfile;
+import com.matchme.service.UserProfileService;
 
-@Controller
+@RestController
+@RequestMapping("/api/images")
 public class FileUploadController {
 
-	private final StorageService storageService;
+    @Autowired
+    private UserProfileService userProfileService;
 
-	@Autowired
-	public FileUploadController(StorageService storageService) {
-		this.storageService = storageService;
-	}
+    private final Path uploadDir = Paths.get("uploads");
 
-	@GetMapping("/")
-	public String listUploadedFiles(Model model) throws IOException {
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadProfilePicture(
+            @AuthenticationPrincipal User currentUser,
+            @RequestParam("file") MultipartFile file) {
 
-		model.addAttribute("files", storageService.loadAll().map(
-				path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
-						"serveFile", path.getFileName().toString()).build().toUri().toString())
-				.collect(Collectors.toList()));
+        try {
+            Long userId = currentUser.getId();
 
-		return "uploadForm";
-	}
+            String projectRoot = System.getProperty("user.dir");
+            String uploadPath = projectRoot + "/uploads/";
 
-	@GetMapping("/files/{filename:.+}")
-	@ResponseBody
-	public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) uploadDir.mkdirs();
 
-		Resource file = storageService.loadAsResource(filename);
+            UserProfile profile = currentUser.getProfile();
+            if (profile.getProfilePic() != null) {
+                String oldFilename = profile.getProfilePic().replace("/uploads/", "");
+                File oldFile = new File(uploadPath + oldFilename);
+                if (oldFile.exists()) oldFile.delete();
+            }
 
-		if (file == null)
-			return ResponseEntity.notFound().build();
+            String original = file.getOriginalFilename();
+            String extension = original.substring(original.lastIndexOf("."));
+            String filename = userId + extension;
 
-		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-				"attachment; filename=\"" + file.getFilename() + "\"").body(file);
-	}
+            File destination = new File(uploadDir, filename);
+            file.transferTo(destination);
 
-	@PostMapping("/")
-	public String handleFileUpload(@RequestParam("file") MultipartFile file,
-			RedirectAttributes redirectAttributes) {
+            profile.setProfilePic("/uploads/" + filename);
+            userProfileService.saveProfile(profile);
 
-		storageService.store(file);
-		redirectAttributes.addFlashAttribute("message",
-				"You successfully uploaded " + file.getOriginalFilename() + "!");
+            return ResponseEntity.ok(Map.of(
+                    "profilePic", "/uploads/" + filename
+            ));
 
-		return "redirect:/";
-	}
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
 
-	@ExceptionHandler(StorageFileNotFoundException.class)
-	public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
-		return ResponseEntity.notFound().build();
-	}
+    @PostMapping("/remove")
+    public ResponseEntity<?> removeProfilePicture(@AuthenticationPrincipal User currentUser) {
+    try {
+        String projectRoot = System.getProperty("user.dir");
+        String uploadPath = projectRoot + "/uploads/";
+
+        UserProfile profile = currentUser.getProfile();
+
+        if (profile.getProfilePic() == null) {
+            return ResponseEntity.ok(Map.of("message", "No profile picture to remove"));
+        }
+
+        String filename = profile.getProfilePic().replace("/uploads/", "");
+        File file = new File(uploadPath + filename);
+
+        if (file.exists()) {
+            file.delete();
+        }
+
+        profile.setProfilePic(null);
+        userProfileService.saveProfile(profile);
+
+        return ResponseEntity.ok(Map.of("message", "Profile picture removed"));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+    }
+}
 
 }

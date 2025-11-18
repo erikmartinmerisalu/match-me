@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -49,7 +50,7 @@ public class UserController {
         UserProfileSummaryDto dto = new UserProfileSummaryDto();
         dto.setId(user.getId());
         dto.setDisplayName(user.getProfile().getDisplayName());
-        dto.setProfilePic(user.getProfile().getProfilePic());
+        dto.setProfilePic(getFullProfilePicUrl(user.getProfile().getProfilePic()));
 
         return ResponseEntity.ok(dto);
     }
@@ -119,7 +120,40 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("error", "Server error. Please try again."));
         }
-    }   
+    }
+
+    @GetMapping("/images/{userId}")
+    public ResponseEntity<?> serveUserProfileImage(
+            @PathVariable Long userId,
+            @AuthenticationPrincipal User currentUser) {
+
+        UserProfile profile = userProfileService.findByUserId(userId);
+        if (profile == null || profile.getProfilePic() == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+
+        if (!currentUser.getId().equals(userId) && !canViewProfile(currentUser, profile.getUser())) {
+            return ResponseEntity.status(403).build();
+        }
+
+        File file = new File(System.getProperty("user.dir") + profile.getProfilePic());
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
+            String contentType = java.nio.file.Files.probeContentType(file.toPath());
+            return ResponseEntity.ok()
+                    .header("Content-Type", contentType)
+                    .body(bytes);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+  
 
     private boolean canViewProfile(User currentUser, User targetUser) {
         // 1. Own profile
@@ -161,7 +195,7 @@ public class UserController {
         dto.setAboutMe(profile.getAboutMe());
         dto.setBirthDate(profile.getBirthDate());
         dto.setLookingFor(profile.getLookingFor());
-        dto.setProfilePic(profile.getProfilePic());
+        dto.setProfilePic(getFullProfilePicUrl(profile.getProfilePic()));
         dto.setProfileCompleted(profile.isProfileCompleted());
         dto.setTimezone(profile.getTimezone());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
@@ -236,8 +270,17 @@ public class UserController {
         dto.setId(profile.getUser().getId());
         dto.setDisplayName(profile.getDisplayName());
         dto.setProfileCompleted(profile.isProfileCompleted());
-        dto.setProfilePic(profile.getProfilePic());
-
+        dto.setProfilePic(getFullProfilePicUrl(profile.getProfilePic()));
         return dto;
+    }
+
+    private String getFullProfilePicUrl(String profilePic) {
+        if (profilePic == null) return null;
+
+        String pic = profilePic;
+        if (!pic.startsWith("/uploads/")) {
+            pic = "/uploads/" + pic;
+        }
+        return "http://localhost:8080" + pic;
     }
 }
