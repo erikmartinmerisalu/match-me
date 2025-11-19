@@ -145,7 +145,6 @@ public class RecommendationService {
         return recommendations;
     }
 
-    // ... rest of your existing methods remain the same
     @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendationsByEmail(String email) {
         Optional<User> userOpt = userService.findByEmail(email);
@@ -172,7 +171,31 @@ public class RecommendationService {
             .collect(Collectors.toList());
     }
 
-    // ... rest of your existing private methods remain exactly the same
+    @Transactional(readOnly = true)
+    public List<String> getCompatibleGamesForUsers(String currentUserEmail, Long otherUserId) {
+        Optional<User> currentUserOpt = userService.findByEmail(currentUserEmail);
+        Optional<User> otherUserOpt = userService.findById(otherUserId);
+        
+        if (currentUserOpt.isEmpty() || otherUserOpt.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        User currentUser = currentUserOpt.get();
+        User otherUser = otherUserOpt.get();
+        
+        if (currentUser.getProfile() == null || otherUser.getProfile() == null) {
+            return Collections.emptyList();
+        }
+        
+        UserProfile currentProfile = currentUser.getProfile();
+        UserProfile otherProfile = otherUser.getProfile();
+        
+        // Use the existing method to find compatible games with 50% threshold
+        CompatibilityResult result = findCompatibleGamesWithScores(currentProfile, otherProfile, 50.0);
+        
+        return result.compatibleGames;
+    }
+
     private static class CompatibilityResult {
         List<String> compatibleGames;
         double averageScore;
@@ -182,7 +205,6 @@ public class RecommendationService {
             this.averageScore = avgScore;
         }
     }
-
 
     private boolean passesDealbreakers(UserProfile profile1, UserProfile profile2) {
         if (!hasCommonGameWithCommonServer(profile1, profile2)) {

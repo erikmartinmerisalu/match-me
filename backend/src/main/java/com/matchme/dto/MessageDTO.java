@@ -2,6 +2,8 @@ package com.matchme.dto;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class MessageDTO {
     private Long id;
     private Long conversationId;
@@ -9,6 +11,8 @@ public class MessageDTO {
     private Long receiverId;
     private String content;
     private LocalDateTime timestamp;
+    
+    @JsonProperty("isRead")
     private boolean isRead;
     
     public MessageDTO() {}

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { userService } from "../services/userService";
 import type { UserFormData } from "../types/UserProfileTypes";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
 
 type AuthContextType = {
   loggedIn: boolean | null;
@@ -38,6 +39,9 @@ const normalizeGamesData = (games: any): { [key: string]: any } => {
 export const AuthContextProvider = ({ children }: AuthProviderProps) => {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(false);
   const [loggedInUserData, setLoggedInUserData] = useState<UserFormData | null>(null);
+
+  // ✅ Send heartbeats when logged in (runs on all pages)
+  useOnlineStatus();
 
   // Enhanced setLoggedInUserData with debug logging
   const setLoggedInUserDataWithLogging = (update: React.SetStateAction<UserFormData | null>) => {

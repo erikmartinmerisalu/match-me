@@ -5,6 +5,7 @@ import com.matchme.entity.Conversation;
 import com.matchme.entity.Message;
 import com.matchme.repository.ConversationRepository;
 import com.matchme.service.ChatService;
+import com.matchme.service.OnlineStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -27,11 +28,15 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private ConversationRepository conversationRepository;
     
+    @Autowired
+    private OnlineStatusService onlineStatusService;
+    
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         Long userId = (Long) session.getAttributes().get("userId");
         if (userId != null) {
             userSessions.put(userId, session);
+            onlineStatusService.updateUserActivity(userId);
             System.out.println("WebSocket connected: User " + userId);
         }
     }
@@ -45,7 +50,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             return;
         }
         
-
+        // Update user activity on every WebSocket message
+        onlineStatusService.updateUserActivity(senderId);
 
         Map<String, Object> payload = objectMapper.readValue(message.getPayload(), Map.class);
         String type = (String) payload.get("type");
@@ -102,29 +108,43 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
         else if ("markAsRead".equals(type)) {
             Long conversationId = ((Number) payload.get("conversationId")).longValue();
-            
+    
             System.out.println("User " + senderId + " marking conversation " + conversationId + " as read");
-            
-            // Mark as read in database (now also marks individual messages)
+    
+            // Mark as read in database
             chatService.markConversationAsRead(conversationId, senderId);
-            
-            // Notify the other person that their messages were read
+    
+            // ✅ Send read receipt to the other user
             Conversation conv = conversationRepository.findById(conversationId).orElse(null);
+
             if (conv != null) {
                 Long otherUserId = conv.getOtherUserId(senderId);
-                WebSocketSession otherSession = userSessions.get(otherUserId);
-                
-                if (otherSession != null && otherSession.isOpen()) {
-                    Map<String, Object> readReceipt = Map.of(
-                        "type", "messagesRead",  // Changed from "messageRead" to "messagesRead"
-                        "conversationId", conversationId,
-                        "readByUserId", senderId,
-                        "timestamp", System.currentTimeMillis()
-                    );
-                    otherSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(readReceipt)));
-                    System.out.println("Sent read receipt to user " + otherUserId);
-                }
+        
+        // Send read receipt notification
+        sendReadReceipt(conversationId, senderId, otherUserId);
+    }
+}
+    }
+    
+    // Public method called by ChatService to send read receipts
+    public void sendReadReceipt(Long conversationId, Long readByUserId, Long notifyUserId) {
+        WebSocketSession session = userSessions.get(notifyUserId);
+        
+        if (session != null && session.isOpen()) {
+            try {
+                Map<String, Object> readReceipt = Map.of(
+                    "type", "messagesRead",
+                    "conversationId", conversationId,
+                    "readByUserId", readByUserId,
+                    "timestamp", System.currentTimeMillis()
+                );
+                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(readReceipt)));
+                System.out.println("Sent read receipt to user " + notifyUserId);
+            } catch (Exception e) {
+                System.err.println("Failed to send read receipt: " + e.getMessage());
             }
+        } else {
+            System.out.println("User " + notifyUserId + " is not connected, cannot send read receipt");
         }
     }
     
@@ -133,6 +153,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         Long userId = (Long) session.getAttributes().get("userId");
         if (userId != null) {
             userSessions.remove(userId);
+            onlineStatusService.removeUser(userId);
             System.out.println("WebSocket disconnected: User " + userId);
         }
     }
