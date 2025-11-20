@@ -29,10 +29,10 @@ public class UserProfile {
 
     private LocalDateTime updatedAt;
 
-    @Lob
-    @Basic(fetch = FetchType.EAGER)
-    @Column(name = "profile_pic", columnDefinition = "TEXT")
+
+    @Column(name = "profile_pic")
     private String profilePic;
+
 
     private String displayName;
     private String timezone;
