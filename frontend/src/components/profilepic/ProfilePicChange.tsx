@@ -13,43 +13,41 @@ const ProfilePicChange: React.FC<ProfilePicProps> = ({ width, height }) => {
   const toast = useToast();
 
   const handleProfilePicUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const formData = new FormData();
-        formData.append("file", file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBase64(reader.result as string);
-      };
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setBase64(reader.result as string);
     reader.readAsDataURL(file);
 
-      try {
-        const res = await fetch("http://localhost:8080/api/images/upload", {
+    try {
+      const res = await fetch("http://localhost:8080/api/images/upload-profile-pic", {
         method: "POST",
         body: formData,
         credentials: "include",
-        });
-        if (!res.ok) {  
-          toast.error ("Failed to upload picture")      
-          return;
+      });
+
+      if (!res.ok) {
+        toast.error("Failed to upload picture");
+        return;
       }
 
-      const data = await res.json(); // { profilePic: "/uploads/1.png" }
-
-      // Lisa cache-busting query string, et brauser ei kuvaks vana pilti
-      const fullUrl = data.profilePic ? `http://localhost:8080${data.profilePic}?t=${Date.now()}` : null;
+      const data = await res.json();
+      const fullUrl = data.url ?? null;
 
       setLoggedInUserData((prev: any) => ({
         ...prev,
         profilePic: fullUrl,
       }));
 
-
     } catch (err) {
-      toast.error ("Failed to upload picture")
+      toast.error("Failed to upload picture");
     }
-      }
-    }
+  }
+};
+
   
     const handleRemovePic = async () => {
       setBase64("")
