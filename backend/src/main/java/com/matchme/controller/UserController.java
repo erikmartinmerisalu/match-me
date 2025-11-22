@@ -122,36 +122,6 @@ public class UserController {
         }
     }
 
-    @GetMapping("/images/{userId}")
-    public ResponseEntity<?> serveUserProfileImage(
-            @PathVariable Long userId,
-            @AuthenticationPrincipal User currentUser) {
-
-        UserProfile profile = userProfileService.findByUserId(userId);
-        if (profile == null || profile.getProfilePic() == null) {
-            return ResponseEntity.notFound().build();
-        }
-        
-
-        if (!currentUser.getId().equals(userId) && !canViewProfile(currentUser, profile.getUser())) {
-            return ResponseEntity.status(403).build();
-        }
-
-        File file = new File(System.getProperty("user.dir") + profile.getProfilePic());
-        if (!file.exists()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        try {
-            byte[] bytes = java.nio.file.Files.readAllBytes(file.toPath());
-            String contentType = java.nio.file.Files.probeContentType(file.toPath());
-            return ResponseEntity.ok()
-                    .header("Content-Type", contentType)
-                    .body(bytes);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
 
   
 
