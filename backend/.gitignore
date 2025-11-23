@@ -1,5 +1,6 @@
 # .gitignore
 # Maven
+uploads/
 target/
 pom.xml.tag
 pom.xml.releaseBackup
