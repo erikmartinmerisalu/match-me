@@ -14,13 +14,9 @@ import java.util.Optional;
 public interface UserProfileRepository extends JpaRepository<UserProfile, Long> {
     Optional<UserProfile> findByUserId(Long userId);
     Optional<UserProfile> findByUserEmail(String email);
+    Optional<UserProfile> findByProfilePic(String profilePic);
     
     @Query("SELECT up FROM UserProfile up WHERE up.profileCompleted = true AND up.user.id != :userId")
     List<UserProfile> findCompletedProfilesExcludingUser(@Param("userId") Long userId);
     
-    // @Query("SELECT up FROM UserProfile up WHERE up.region = :region AND up.profileCompleted = true AND up.user.id != :userId")
-    // List<UserProfile> findByRegionAndNotUser(@Param("region") String region, @Param("userId") Long userId);
-    
-    // @Query("SELECT up FROM UserProfile up WHERE up.profileCompleted = true AND up.user.id != :userId AND up.region IN :regions")
-    // List<UserProfile> findByRegionsAndNotUser(@Param("userId") Long userId, @Param("regions") List<String> regions);
 }

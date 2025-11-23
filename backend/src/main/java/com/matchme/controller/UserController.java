@@ -5,10 +5,11 @@ import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
 import com.matchme.dto.UserProfileSummaryDto;
 import com.matchme.entity.Connection;
-import com.matchme.entity.GameProfile;
+import com.matchme.entity.Recommendation;
 import com.matchme.entity.User;
 import com.matchme.entity.UserProfile;
 import com.matchme.repository.ConnectionRepository;
+import com.matchme.repository.RecommendationRepository;
 import com.matchme.service.UserProfileService;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +34,10 @@ public class UserController {
 
     @Autowired
     private ConnectionRepository connectionRepository;
+
+    @Autowired
+    private RecommendationRepository recommendationRepository;
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
@@ -122,7 +126,6 @@ public class UserController {
         }
     }
 
-
   
 
     private boolean canViewProfile(User currentUser, User targetUser) {
@@ -151,6 +154,14 @@ public class UserController {
             
             // REJECTED, DISMISSED, BLOCKED = cannot view
             return false;
+        }
+
+        Optional<Recommendation> recommendationOpt = recommendationRepository.findByUserId(currentUser.getId());
+        if (recommendationOpt.isPresent()) {
+            Recommendation rec = recommendationOpt.get();
+            if (rec.getRecommendedUserIds().contains(targetUser.getId())) {
+                return true; // User is recommended -> can view
+            }
         }
         
         
