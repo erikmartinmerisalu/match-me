@@ -6,8 +6,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+
 @Entity
 @Table(name = "user_profiles")
 public class UserProfile {

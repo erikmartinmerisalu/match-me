@@ -14,7 +14,7 @@ public class PicConfig implements WebMvcConfigurer {
         String absolutePath = Paths.get("uploads").toAbsolutePath().toString();
 
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + absolutePath + "/")
-                .setCachePeriod(3600);
+                .addResourceLocations("file:" + absolutePath + "/");
+                
     }
 }
