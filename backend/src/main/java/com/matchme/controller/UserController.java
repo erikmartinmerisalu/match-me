@@ -154,7 +154,7 @@ public class UserController {
         }
         
         
-        return true;
+        return false;
     }
 
     private UserProfileDto mapToProfileDto(UserProfile profile, boolean includeGames) {
