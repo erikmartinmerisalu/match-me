@@ -1,16 +1,15 @@
 import './App.css'
-import Navbar from './components/navbar/Navbar'
+import NavbarComponent from './components/navbar/NavbarComponent'
+import AppRoutes from './routes/AppRoutes'
 
 function App() {
 
   return (
-    <div className='app'>
-      <div className='navbar'>
-        <Navbar />
-      </div>
-      <div className='footer'>
-      </div>
-    </div>
+    <>
+        <NavbarComponent />
+        <AppRoutes />
+    </>
+    
   )
 }
 
