@@ -6,21 +6,8 @@
 - Rreact-router-dom -v 7.9.3
 - Vite -v 7.1.7
 - Typescript -v 5.8.3
-
-## Features
-
-# Authentication
-- Users log in with email and password.
-- JWT tokens are stored in cookies and used for authenticated requests.
-- Logout clears session cookie and frontend state.
-
-# User Profile
-- Users must complete their profile to receive recommendations.
-- Profile includes username, preferred servers, games, gaming experience, gaming hours, “About me” section.
-- Users can upload/remove profile pictures.
-- Profile info is editable at any time.
-
-
+- Bootstrap -v 5.3.8
+- React-bootstrap -v 2.10.10
 
 
 ## Running the Frontend

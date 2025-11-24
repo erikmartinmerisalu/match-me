@@ -161,9 +161,9 @@ const Recommendations = () => {
               <div className="card-header">
                 <div className="profile-avatar">
                   {rec.profilePic ? (
-                    <img src={rec.profilePic} alt={rec.displayName} />
+                    <img src={rec.profilePic}  /> 
                   ) : (
-                    rec.displayName.charAt(0).toUpperCase()
+                    "👤" 
                   )}
                 </div>
                 <h3 className="player-name">{rec.displayName}</h3>
