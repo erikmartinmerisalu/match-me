@@ -37,6 +37,7 @@ function Navbar() {
           <div onClick={() => navigate("/recommendations")}>Discover</div>
           <div onClick={() => navigate("/matches")}>Matches</div>
           <div onClick={() => navigate("/chat")}>Chat</div>
+          <div>sdf</div>
         </div>
       )}
 
