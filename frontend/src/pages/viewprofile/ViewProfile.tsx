@@ -82,7 +82,7 @@ const ViewProfile: React.FC = () => {
       <div className="profile-header">
         <div className="profile-pic-view">
           {profile.profilePic ? (
-            <img src={profile.profilePic} alt={profile.displayName} />
+            <img src={profile.profilePic}  />
           ) : (
             <span className="placeholder">👤</span>
           )}

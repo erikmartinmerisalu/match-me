@@ -5,10 +5,11 @@ import com.matchme.dto.GameProfileDto;
 import com.matchme.dto.UserProfileDto;
 import com.matchme.dto.UserProfileSummaryDto;
 import com.matchme.entity.Connection;
-import com.matchme.entity.GameProfile;
+import com.matchme.entity.Recommendation;
 import com.matchme.entity.User;
 import com.matchme.entity.UserProfile;
 import com.matchme.repository.ConnectionRepository;
+import com.matchme.repository.RecommendationRepository;
 import com.matchme.service.UserProfileService;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,10 @@ public class UserController {
     @Autowired
     private ConnectionRepository connectionRepository;
 
+    @Autowired
+    private RecommendationRepository recommendationRepository;
+
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         Optional<User> userOpt = userService.findById(id);
@@ -49,7 +54,7 @@ public class UserController {
         UserProfileSummaryDto dto = new UserProfileSummaryDto();
         dto.setId(user.getId());
         dto.setDisplayName(user.getProfile().getDisplayName());
-        dto.setProfilePic(user.getProfile().getProfilePic());
+        dto.setProfilePic(getFullProfilePicUrl(user.getProfile().getProfilePic()));
 
         return ResponseEntity.ok(dto);
     }
@@ -119,7 +124,9 @@ public class UserController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(500).body(Map.of("error", "Server error. Please try again."));
         }
-    }   
+    }
+
+  
 
     private boolean canViewProfile(User currentUser, User targetUser) {
         // 1. Own profile
@@ -148,9 +155,17 @@ public class UserController {
             // REJECTED, DISMISSED, BLOCKED = cannot view
             return false;
         }
+
+        Optional<Recommendation> recommendationOpt = recommendationRepository.findByUserId(currentUser.getId());
+        if (recommendationOpt.isPresent()) {
+            Recommendation rec = recommendationOpt.get();
+            if (rec.getRecommendedUserIds().contains(targetUser.getId())) {
+                return true; // User is recommended -> can view
+            }
+        }
         
         
-        return true;
+        return false;
     }
 
     private UserProfileDto mapToProfileDto(UserProfile profile, boolean includeGames) {
@@ -161,7 +176,7 @@ public class UserController {
         dto.setAboutMe(profile.getAboutMe());
         dto.setBirthDate(profile.getBirthDate());
         dto.setLookingFor(profile.getLookingFor());
-        dto.setProfilePic(profile.getProfilePic());
+        dto.setProfilePic(getFullProfilePicUrl(profile.getProfilePic()));
         dto.setProfileCompleted(profile.isProfileCompleted());
         dto.setTimezone(profile.getTimezone());
         dto.setPreferredAgeMin(profile.getPreferredAgeMin());
@@ -236,8 +251,17 @@ public class UserController {
         dto.setId(profile.getUser().getId());
         dto.setDisplayName(profile.getDisplayName());
         dto.setProfileCompleted(profile.isProfileCompleted());
-        dto.setProfilePic(profile.getProfilePic());
-
+        dto.setProfilePic(getFullProfilePicUrl(profile.getProfilePic()));
         return dto;
+    }
+
+    private String getFullProfilePicUrl(String profilePic) {
+        if (profilePic == null) return null;
+
+        String pic = profilePic;
+        if (!pic.startsWith("/uploads/")) {
+            pic = "/uploads/" + pic;
+        }
+        return "http://localhost:8080" + pic;
     }
 }
