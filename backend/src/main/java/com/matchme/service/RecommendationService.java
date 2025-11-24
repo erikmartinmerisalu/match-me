@@ -2,14 +2,15 @@ package com.matchme.service;
 
 import com.matchme.dto.RecommendationDto;
 import com.matchme.entity.GameProfile;
+import com.matchme.entity.Recommendation;
 import com.matchme.entity.User;
 import com.matchme.repository.ConnectionRepository;
+import com.matchme.repository.RecommendationRepository;
 import com.matchme.entity.Connection;
 import com.matchme.entity.UserProfile;
 import com.matchme.repository.UserProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -18,6 +19,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class RecommendationService {
+
+    @Autowired
+    private RecommendationRepository recommendationRepository;
 
     @Autowired
     private UserProfileRepository userProfileRepository;
@@ -31,7 +35,6 @@ public class RecommendationService {
     // 40% baseline for passing deal-breakers + 60% from compatibility factors
     private static final double BASELINE_SCORE = 40.0;
 
-    @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendations(Long userId) {
         Optional<User> currentUserOpt = userService.findById(userId);
 
@@ -100,22 +103,34 @@ public class RecommendationService {
             }
         }
 
-        // Sort by average compatibility score (highest first) and limit to 10
         List<RecommendationDto> recommendations = compatibilityMap.entrySet().stream()
-                .sorted((e1, e2) -> Double.compare(e2.getValue().averageScore, e1.getValue().averageScore))
-                .limit(10)
-                .map(entry -> new RecommendationDto(
-                        entry.getKey().getUser().getId(),
-                        entry.getKey().getDisplayName(),
-                        entry.getValue().compatibleGames
-                ))
-                .collect(Collectors.toList());
+            .sorted((e1, e2) -> Double.compare(e2.getValue().averageScore, e1.getValue().averageScore))
+            .limit(10)
+            .map(entry -> new RecommendationDto(
+                    entry.getKey().getUser().getId(),
+                    entry.getKey().getDisplayName(),
+                    entry.getValue().compatibleGames
+            ))
+            .collect(Collectors.toList());
+
+        List<Long> recommendedIds = recommendations.stream()
+            .map(RecommendationDto::getUserId)
+            .toList();
+
+    Recommendation recommendation = recommendationRepository
+        .findByUserId(userId)
+        .orElseGet(() -> new Recommendation(userId, new ArrayList<>()));
+
+        recommendation.setRecommendedUserIds(recommendedIds);
+        recommendationRepository.save(recommendation);
+
+
 
         return recommendations;
     }
 
     
-    @Transactional(readOnly = true)
+    // @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendationsByEmail(String email) {
         Optional<User> userOpt = userService.findByEmail(email);
 
@@ -126,7 +141,7 @@ public class RecommendationService {
         return getRecommendations(userOpt.get().getId());
     }
 
-    @Transactional(readOnly = true)
+    // @Transactional(readOnly = true)
     public List<Long> getTopRecommendationIds(String email, int limit) {
         Optional<User> userOpt = userService.findByEmail(email);
         if (userOpt.isEmpty()) {

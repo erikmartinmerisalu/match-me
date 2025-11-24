@@ -6,8 +6,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+
 @Entity
 @Table(name = "user_profiles")
 public class UserProfile {
@@ -29,10 +28,10 @@ public class UserProfile {
 
     private LocalDateTime updatedAt;
 
-    @Lob
-    @Basic(fetch = FetchType.EAGER)
-    @Column(name = "profile_pic", columnDefinition = "TEXT")
+
+    @Column(name = "profile_pic")
     private String profilePic;
+
 
     private String displayName;
     private String timezone;
