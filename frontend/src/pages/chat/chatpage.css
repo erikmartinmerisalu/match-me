@@ -234,15 +234,48 @@
 
 .message-status {
   margin-left: 4px;
-  font-size: 14px; /* Slightly larger */
-  font-weight: 900; /* Bolder */
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Adds subtle background contrast */
+  font-size: 14px;
+  font-weight: 900;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
 
 .message-status.sent {
-  color: #f0f0f0; /* Almost white */
+  color: #f0f0f0;
 }
 
 .message-status.read {
-  color: #76ff76; /* Very bright green */
+  color: #76ff76;
+}
+
+
+@media (max-width: 768px) {
+
+  .chat-container {
+    flex-direction: column; 
+    height: calc(100vh - 60px);
+  }
+
+  .conversations-panel {
+    width: 100%;
+    height: 40vh;
+    border-right: none;
+    border-bottom: 2px solid #44446a;
+    overflow-y: auto;
+  }
+
+  .chat-panel {
+    flex: none;
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .messages-container {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .message-input-container {
+    padding: 1rem;
+  }
 }
