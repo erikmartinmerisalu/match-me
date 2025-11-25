@@ -1,0 +1,129 @@
+package com.matchme.entity;
+
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "user_profiles")
+public class UserProfile {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @OneToMany(mappedBy = "userProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<GameProfile> games = new ArrayList<>();
+
+    private LocalDate birthDate;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+
+    @Column(name = "profile_pic")
+    private String profilePic;
+
+
+    private String displayName;
+    private String timezone;
+    private String aboutMe;
+    private String lookingFor;
+    private Integer preferredAgeMin;
+    private Integer preferredAgeMax;
+    private Integer maxPreferredDistance;
+    private Double latitude;
+    private Double longitude;
+    private String location;
+
+    private String competitiveness;      
+    private String voiceChatPreference;  
+    private String playSchedule;         
+    private String mainGoal;
+
+    private boolean profileCompleted = false;
+
+    // --- Getters & Setters ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+
+    public LocalDate getBirthDate() { return birthDate; }
+    public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+
+    public String getTimezone() { return timezone; }
+    public void setTimezone(String timezone) { this.timezone = timezone; }
+
+    public String getAboutMe() { return aboutMe; }
+    public void setAboutMe(String aboutMe) { this.aboutMe = aboutMe; }
+
+    public String getLookingFor() { return lookingFor; }
+    public void setLookingFor(String lookingFor) { this.lookingFor = lookingFor; }
+
+    public Integer getPreferredAgeMin() { return preferredAgeMin; }
+    public void setPreferredAgeMin(Integer preferredAgeMin) { this.preferredAgeMin = preferredAgeMin; }
+
+    public Integer getPreferredAgeMax() { return preferredAgeMax; }
+    public void setPreferredAgeMax(Integer preferredAgeMax) { this.preferredAgeMax = preferredAgeMax; }
+
+    public boolean isProfileCompleted() { return profileCompleted; }
+    public void setProfileCompleted(boolean profileCompleted) { this.profileCompleted = profileCompleted; }
+
+    public List<GameProfile> getGames() { return games; }
+    public void setGames(List<GameProfile> games) { this.games = games; }
+
+    public Integer getMaxPreferredDistance() {return maxPreferredDistance; }
+    public void setMaxPreferredDistance( Integer maxPreferredDistanxe) {this.maxPreferredDistance = maxPreferredDistanxe ;}
+
+    public String getProfilePic() {return profilePic; }
+    public void setProfilePic( String profilePic) {this.profilePic = profilePic ;}
+
+    public Double getLatitude() {return latitude; }
+    public void setLatitude( Double latitude) {this.latitude = latitude ;}
+
+    public Double getLongitude() {return longitude; }
+    public void setLongitude( Double longitude) {this.longitude = longitude ;}
+
+    public String getLocation() {return location; }
+    public void setLocation( String location) {this.location = location ;}
+
+    // Calculate age from birthDate
+    public Integer getAge() {
+        if (birthDate == null) {
+            return null;
+        }
+        return Period.between(birthDate, LocalDate.now()).getYears();
+    }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getCompetitiveness() { return competitiveness; }
+    public void setCompetitiveness(String competitiveness) { this.competitiveness = competitiveness; }
+
+    public String getVoiceChatPreference() { return voiceChatPreference; }
+    public void setVoiceChatPreference(String voiceChatPreference) { this.voiceChatPreference = voiceChatPreference; }
+
+    public String getPlaySchedule() { return playSchedule; }
+    public void setPlaySchedule(String playSchedule) { this.playSchedule = playSchedule; }
+
+    public String getMainGoal() { return mainGoal; }
+    public void setMainGoal(String mainGoal) { this.mainGoal = mainGoal; }
+
+}

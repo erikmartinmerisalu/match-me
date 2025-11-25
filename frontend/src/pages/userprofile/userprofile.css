@@ -1,0 +1,221 @@
+.profile-card {
+  width: 310px;
+  margin: 2rem auto;
+  padding: 1rem ;
+  background: #7c857c;
+  color: #f0f0f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  font-family: Arial, sans-serif;
+}
+
+.profile-card h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #9a7dff;
+}
+
+.profile-pic {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.profile-pic img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #9a7dff;
+}
+
+.placeholder {
+  font-size: 5rem;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.pic-actions {
+  margin-top: 0.5rem;
+}
+
+.pic-actions input {
+  margin: 0.5rem 0,5rem 0,5rem 0,5rem;
+  padding-right: 0,5rem;
+}
+
+.pic-actions button {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.profile-form label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.profile-form input,
+.profile-form select,
+.profile-form textarea {
+  width: 90%;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: none;
+  margin-top: 0.3rem;
+}
+
+.profile-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.private-email {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.save-btn {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.7rem;
+  background: #9a7dff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.save-btn:hover {
+  background: #7c5cff;
+}
+
+/* FIXED: Game selection buttons - simplified approach */
+.options{
+  font-size: 12px;
+  border: 1px solid rgb(181, 181, 181); 
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  text-align: center;
+  user-select: none; /* Prevents text selection */
+  -webkit-user-select: none; /* For Safari */
+  -moz-user-select: none; /* For Firefox */
+}
+
+.options:hover{
+  background: #44446a;
+}
+
+.selected{
+  font-size: 12px;
+  border: 1px solid rgb(255, 0, 0); 
+  background: #44446a;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  text-align: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+.games{
+  padding-top: 5%;
+}
+
+.gamename{
+  font-weight: bold;
+  font-size: x-large;
+}
+
+.gamedata{
+  padding-top: 5%;
+}
+
+.gamesector{
+  border-top: 1px   solid white;
+  padding-bottom: 5%;
+}
+
+.optionsmap{
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 300px;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* FIXED: Button sizing in grid */
+.optionsmap > div {
+  flex: 0 0 calc(50% - 10px);
+  box-sizing: border-box;
+}
+
+.preffered{
+  border-top: 1px   solid white;
+  padding-bottom: 5%;
+}
+
+.ageInputs{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5%;
+}
+
+.distance{
+  width: 50%;
+}
+
+.sector{
+  margin-bottom: 3%;
+  margin-top: 9%;
+}
+
+/* Progress indicator styling */
+.progress-indicator {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* Navigation buttons styling */
+.profile-navigation {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.profile-navigation button {
+  padding: 0.5rem 1rem;
+  background: #9a7dff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.profile-navigation button:hover {
+  background: #7c5cff;
+}
+
+.profile-navigation button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
