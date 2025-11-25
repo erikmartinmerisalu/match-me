@@ -23,7 +23,7 @@ function NavbarComponent() {
       <Container>
         <Navbar.Brand as={Link} to=" ">Gamely</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
+        <Navbar.Collapse id="basic-navbar-nav" role="navigation">
           {loggedIn === true ? 
             <Nav className="me-auto">
               <Nav.Link as={Link} to="/userprofile" > Profile </Nav.Link>
