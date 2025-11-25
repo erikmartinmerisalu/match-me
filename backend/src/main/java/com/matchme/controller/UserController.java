@@ -9,14 +9,17 @@ import com.matchme.entity.Recommendation;
 import com.matchme.entity.User;
 import com.matchme.entity.UserProfile;
 import com.matchme.repository.ConnectionRepository;
+import com.matchme.service.OnlineStatusService;
 import com.matchme.repository.RecommendationRepository;
 import com.matchme.service.UserProfileService;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +37,9 @@ public class UserController {
 
     @Autowired
     private ConnectionRepository connectionRepository;
+    
+    @Autowired
+    private OnlineStatusService onlineStatusService;
 
     @Autowired
     private RecommendationRepository recommendationRepository;
@@ -125,8 +131,23 @@ public class UserController {
             return ResponseEntity.status(500).body(Map.of("error", "Server error. Please try again."));
         }
     }
-
-  
+    
+    @PostMapping("/heartbeat")
+    public ResponseEntity<?> heartbeat(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        }
+        
+        String email = principal.getName();
+        Optional<User> user = userService.findByEmail(email);
+        
+        if (user.isPresent()) {
+            onlineStatusService.updateUserActivity(user.get().getId());
+            return ResponseEntity.ok().build();
+        }
+        
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    }
 
     private boolean canViewProfile(User currentUser, User targetUser) {
         // 1. Own profile
@@ -146,8 +167,16 @@ public class UserController {
             if (status == Connection.ConnectionStatus.ACCEPTED) {
                 return true;
             }
+
+            // 3. Blocked (DENIED)
+            Optional<Connection> blockedConnection = connectionRepository
+                .findBlockedConnectionBetweenUsers(currentUser.getId(), targetUser.getId());
+
+            if (blockedConnection.isPresent()) {
+                return false; // Blocked in either direction
+            }
             
-            // 3. Outstanding connection request (PENDING)
+            // 4. Outstanding connection request (PENDING)
             if (status == Connection.ConnectionStatus.PENDING) {
                 return true;
             }
@@ -207,11 +236,12 @@ public class UserController {
 
         return dto;
     }
+    
     //overload method: We create a duplicate method with a single parameter, for easier implementation to current project
     //Any method without (profile, includeGames=false) will be called out with includeGames=true
     private UserProfileDto mapToProfileDto(UserProfile profile) {
-    return mapToProfileDto(profile, true); // Default: include games
-}
+        return mapToProfileDto(profile, true); // Default: include games
+    }
 
 
     private UserProfileDto mapToBioDto(UserProfile profile) {
@@ -245,7 +275,7 @@ public class UserController {
         return dto;
     }
 
-        private UserProfileDto mapToUserDto(UserProfile profile) {
+    private UserProfileDto mapToUserDto(UserProfile profile) {
         UserProfileDto dto = new UserProfileDto();
 
         dto.setId(profile.getUser().getId());

@@ -1,9 +1,11 @@
 package com.matchme.service;
 
+import com.matchme.config.ChatWebSocketHandler;
 import com.matchme.dto.*;
 import com.matchme.entity.*;  
 import com.matchme.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -30,6 +32,10 @@ public class ChatService {
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    @Lazy
+    private ChatWebSocketHandler webSocketHandler;
 
     public boolean areUsersConnected(Long userId1, Long userId2) {
         System.out.println("Checking connection between users: " + userId1 + " and " + userId2);
@@ -148,14 +154,19 @@ public class ChatService {
             readerId, 
             false
         );
-        
-        if (!unreadMessages.isEmpty()) {
-            for (Message msg : unreadMessages) {
-                msg.setRead(true);
-            }
-            messageRepository.saveAll(unreadMessages);
-            System.out.println("Marked " + unreadMessages.size() + " messages as read for user " + readerId);
+    
+        System.out.println("🔍 Found " + unreadMessages.size() + " unread messages for user " + readerId + " in conversation " + conversationId);
+    
+    if (!unreadMessages.isEmpty()) {
+        for (Message msg : unreadMessages) {
+            System.out.println("  📧 Marking message " + msg.getId() + " as read (from user " + msg.getSenderId() + ")");
+            msg.setRead(true);
         }
+        messageRepository.saveAll(unreadMessages);
+        System.out.println("✅ Successfully saved " + unreadMessages.size() + " messages as read to database");
+        } else {
+        System.out.println("⚠️ No unread messages found to mark as read");
+     }
     }
     
     @Transactional
@@ -164,20 +175,32 @@ public class ChatService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
         
         // Mark messages as read
+        long unreadCount = conversation.getUnreadCount(userId);
+            if (unreadCount == 0) {
+                System.out.println("No unread messages for user " + userId + " in conversation " + conversationId + ", skipping");
+                return; // Don't send notification if nothing to mark
+            }
+
+        System.out.println("Marking " + unreadCount + " messages as read for user " + userId + " in conversation " + conversationId);
+    
         markMessagesAsRead(conversationId, userId);
-        
-        // Reset unread count
+
+
         conversation.resetUnreadCount(userId);
         conversationRepository.save(conversation);
+
+        // Send WebSocket notification to the other user
+        Long otherUserId = conversation.getOtherUserId(userId);
+        webSocketHandler.sendReadReceipt(conversationId, userId, otherUserId);
     }
-    
+
     public Long getTotalUnreadCount(Long userId) {
         List<Conversation> conversations = conversationRepository
             .findAllByUserIdOrderByLastMessageAtDesc(userId);
-        
+    
         return conversations.stream()
             .mapToLong(conv -> conv.getUnreadCount(userId))
             .sum();
-    }
-    
+        }
+
 }

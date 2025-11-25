@@ -395,8 +395,8 @@ import java.util.Set;
                         throw new IllegalArgumentException("Server error: Preferred Distance missing! Try again!");
                     }
                     int value = node.asInt(-1);
-                    if(value < 5 || value > 200){
-                        throw new IllegalArgumentException("Server error: Preferred Distance must be between 5 and 200");
+                    if(value < 5 || value > 20000){
+                        throw new IllegalArgumentException("Server error: Preferred Distance must be between 5 and 20000");
                     }
                     profile.setMaxPreferredDistance(value);
                 }

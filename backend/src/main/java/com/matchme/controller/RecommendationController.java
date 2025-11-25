@@ -57,6 +57,40 @@ public class RecommendationController {
         }
     }
 
+    @GetMapping("/compatible-games/{userId}")
+    public ResponseEntity<List<String>> getCompatibleGames(@PathVariable Long userId, HttpServletRequest request) {
+        System.out.println("=== COMPATIBLE GAMES REQUEST ===");
+        
+        String token = extractJwtFromCookie(request);
+        
+        if (token == null) {
+            System.out.println("❌ No JWT token found in cookies");
+            return ResponseEntity.status(401).body(null);
+        }
+
+        try {
+            String currentUserEmail = jwtUtil.extractUsername(token);
+            
+            if (currentUserEmail == null) {
+                System.out.println("❌ Could not extract email from token");
+                return ResponseEntity.status(401).body(null);
+            }
+            
+            System.out.println("✅ Getting compatible games between current user and user " + userId);
+
+            // Get compatible games for this specific pairing
+            List<String> compatibleGames = recommendationService.getCompatibleGamesForUsers(currentUserEmail, userId);
+            
+            System.out.println("✅ Found " + compatibleGames.size() + " compatible games");
+            
+            return ResponseEntity.ok(compatibleGames);
+        } catch (Exception e) {
+            System.out.println("❌ Exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
     // Helper method to extract JWT from cookie
     private String extractJwtFromCookie(HttpServletRequest request) {
         System.out.println("Checking for cookies...");

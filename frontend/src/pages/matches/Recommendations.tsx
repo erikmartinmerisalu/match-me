@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useToast } from '../../context/ToastContext';; // Adjust the import path
+import { useToast } from '../../context/ToastContext';
 import './Recommendations.css';
 
 interface Recommendation {
@@ -14,7 +14,7 @@ const Recommendations = () => {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { success, error: toastError } = useToast(); // Add this line
+  const { success, error: toastError } = useToast();
 
   useEffect(() => {
     fetchRecommendations();
@@ -42,7 +42,7 @@ const Recommendations = () => {
         return;
       }
       
-      // Step 2 & 3: Fetch user info and bio for each ID in parallel
+      // Step 2, 3 & 4: Fetch user info, bio, and compatible games for each ID in parallel
       const userDataPromises = ids.map(async (id) => {
         try {
           // Fetch basic user info
@@ -57,14 +57,19 @@ const Recommendations = () => {
           });
           const bioData = await bioResponse.json();
           
-          // Step 4: Combine the data
+          // ✅ NEW: Fetch compatible games for this specific user pairing
+          const gamesResponse = await fetch(`http://localhost:8080/api/recommendations/compatible-games/${id}`, {
+            credentials: 'include',
+          });
+          const compatibleGames = await gamesResponse.json();
+          
+          // Step 5: Combine the data
           return {
             userId: id,
             displayName: userData.displayName || 'Unknown',
             aboutMe: bioData.aboutMe || '',
             profilePic: userData.profilePic || '',
-            // Extract compatible games (games object keys)
-            compatibleGames: bioData.games ? Object.keys(bioData.games) : []
+            compatibleGames: compatibleGames || [] // ✅ Use compatible games from new endpoint
           };
         } catch (err) {
           console.error(`Failed to fetch data for user ${id}:`, err);
@@ -96,14 +101,14 @@ const Recommendations = () => {
 
       if (response.ok) {
         setRecommendations(prev => prev.filter(rec => rec.userId !== userId));
-        success(`Match request sent to ${displayName}!`); // Changed from alert
+        success(`Match request sent to ${displayName}!`);
       } else {
         const errorData = await response.json();
-        toastError(errorData.error || 'Failed to send match request'); // Changed from alert
+        toastError(errorData.error || 'Failed to send match request');
       }
     } catch (err) {
       console.error(err);
-      toastError('Error sending match request'); // Changed from alert
+      toastError('Error sending match request');
     }
   };
 
@@ -121,11 +126,11 @@ const Recommendations = () => {
         setRecommendations(prev => prev.filter(rec => rec.userId !== userId));
       } else {
         const errorData = await response.json();
-        toastError(errorData.error || 'Failed to dismiss user'); // Changed from alert
+        toastError(errorData.error || 'Failed to dismiss user');
       }
     } catch (err) {
       console.error(err);
-      toastError('Error dismissing user'); // Changed from alert
+      toastError('Error dismissing user');
     }
   };
 

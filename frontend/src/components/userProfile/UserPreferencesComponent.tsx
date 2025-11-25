@@ -13,9 +13,8 @@ const UserPreferencesComponent = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [hasSetInitialLocation, setHasSetInitialLocation] = useState(false);
   const [gpsUsed, setGpsUsed] = useState(false);
-  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false); // NEW: Track reverse geocoding state
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
 
-  // NEW: Reverse geocoding function
   const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
     try {
       console.log(`🔄 Reverse geocoding coordinates: ${lat}, ${lng}`);
@@ -43,20 +42,17 @@ const UserPreferencesComponent = () => {
     }
   };
 
-  // UPDATED: Enhanced location setting with reverse geocoding
   useEffect(() => {
     const setLocationFromGPS = async () => {
       if (latitude && longitude && !hasSetInitialLocation) {
         const currentLat = loggedInUserData?.latitude;
         const currentLng = loggedInUserData?.longitude;
         
-        // Only update if coordinates are different
         if (currentLat !== latitude || currentLng !== longitude) {
           setIsReverseGeocoding(true);
           setGpsUsed(true);
           
           try {
-            // Get actual location name from coordinates
             const locationName = await reverseGeocode(latitude, longitude);
             
             setLoggedInUserData((prev: any) => ({
@@ -71,7 +67,6 @@ const UserPreferencesComponent = () => {
             toast.info(`Location set to: ${locationName}`);
           } catch (error) {
             console.error("Failed to set GPS location:", error);
-            // Fallback to basic GPS message
             setLoggedInUserData((prev: any) => ({
               ...prev,
               latitude,
@@ -89,15 +84,24 @@ const UserPreferencesComponent = () => {
     setLocationFromGPS();
   }, [latitude, longitude, setLoggedInUserData, hasSetInitialLocation, loggedInUserData?.latitude, loggedInUserData?.longitude]);
 
-  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+ const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
 
+  // FIX: Handle empty values for number inputs
+  if (name.includes("Age") || name.includes("Distance")) {
+    // If value is empty, set to undefined instead of converting to 0
+    const numericValue = value === '' ? undefined : Number(value);
     setLoggedInUserData((prev: any) => ({ 
       ...prev, 
-      [name]: name.includes("Age") || name.includes("Distance") ? Number(value) : value 
+      [name]: numericValue
     }));
+  } else {
+    setLoggedInUserData((prev: any) => ({ 
+      ...prev, 
+      [name]: value 
+    }));
+  }
 
-    // Clear GPS flag if user manually types in location
     if (name === "location" && gpsUsed) {
       setGpsUsed(false);
     }
@@ -137,7 +141,7 @@ const UserPreferencesComponent = () => {
     }));
     setSuggestions([]);
     setShowSuggestions(false);
-    setGpsUsed(false); // Clear GPS flag when user manually selects location
+    setGpsUsed(false);
   };
 
   const handleBlur = () => {
@@ -158,7 +162,6 @@ const UserPreferencesComponent = () => {
         <div className="sector">Location</div>
         <br />
         
-        {/* UPDATED: Enhanced GPS status indicator */}
         {gpsUsed && (
           <div style={{
             padding: '8px',
@@ -205,7 +208,7 @@ const UserPreferencesComponent = () => {
             onFocus={handleFocus}
             onBlur={handleBlur}
             autoComplete="off"
-            disabled={isReverseGeocoding} // Disable input while reverse geocoding
+            disabled={isReverseGeocoding}
           />
 
           {isLoading && (
@@ -283,8 +286,9 @@ const UserPreferencesComponent = () => {
               max={97}
               type="number"
               name="preferredAgeMin"
-              value={loggedInUserData?.preferredAgeMin ?? 18}
+              value={loggedInUserData?.preferredAgeMin ??  ''}
               onChange={handleChange}
+               placeholder="18"
             />
           </div>
           <div>
@@ -295,8 +299,9 @@ const UserPreferencesComponent = () => {
               max={100}
               type="number"
               name="preferredAgeMax"
-              value={loggedInUserData?.preferredAgeMax ?? 100}
+              value={loggedInUserData?.preferredAgeMax ??  ''}
               onChange={handleChange}
+              placeholder="100" // ADD
             />
           </div>
         </div>
@@ -309,12 +314,16 @@ const UserPreferencesComponent = () => {
           type="number"
           name="maxPreferredDistance"
           min={5}
-          max={200}
-          value={loggedInUserData?.maxPreferredDistance ?? 50}
+          max={20000}
+          value={loggedInUserData?.maxPreferredDistance ??''} //use the placeholder instead of forcing a value
           onChange={handleChange}
+          placeholder="50" // Placeholder
         />
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+          Maximum: 20,000 km (global)
+        </div>
       </div>
-    </div>
+    </div> 
   );
 };
 

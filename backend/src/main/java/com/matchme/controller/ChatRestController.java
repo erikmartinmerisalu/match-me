@@ -5,15 +5,19 @@ import com.matchme.entity.Conversation;
 import com.matchme.entity.User;
 import com.matchme.repository.ConversationRepository;
 import com.matchme.service.ChatService;
+import com.matchme.service.OnlineStatusService;
 import com.matchme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -28,6 +32,9 @@ public class ChatRestController {
     
     @Autowired
     private ConversationRepository conversationRepository;
+    
+    @Autowired
+    private OnlineStatusService onlineStatusService;
     
     private Long getUserIdFromPrincipal(Principal principal) {
         String email = principal.getName();
@@ -52,35 +59,39 @@ public class ChatRestController {
     
     @GetMapping("/conversations/{conversationId}/messages")
     public ResponseEntity<?> getMessages(
-            @PathVariable Long conversationId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "50") int size,
-            Principal principal) {
-        
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
-        }
-        
-        Long userId = getUserIdFromPrincipal(principal);
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        }
-        
-        chatService.validateUserInConversation(conversationId, userId);
-        
-        // Check if users are still connected
-        Conversation conv = conversationRepository.findById(conversationId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
-        Long otherUserId = conv.getOtherUserId(userId);
-        
-        if (!chatService.areUsersConnected(userId, otherUserId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body("Cannot view messages: users are no longer connected");
-        }
-        
-        List<MessageDTO> messages = chatService.getConversationMessages(conversationId, page, size);
-        return ResponseEntity.ok(messages);
+        @PathVariable Long conversationId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "50") int size,
+        Principal principal) {
+    
+    if (principal == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
     }
+    
+    Long userId = getUserIdFromPrincipal(principal);
+    if (userId == null) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+    }
+    
+    chatService.validateUserInConversation(conversationId, userId);
+    
+    Conversation conv = conversationRepository.findById(conversationId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
+    Long otherUserId = conv.getOtherUserId(userId);
+    
+    if (!chatService.areUsersConnected(userId, otherUserId)) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body("Cannot view messages: users are no longer connected");
+    }
+
+    List<MessageDTO> messages = chatService.getConversationMessages(conversationId, page, size);
+    
+    if (page == 0) {
+        chatService.markConversationAsRead(conversationId, userId);
+    }
+    
+    return ResponseEntity.ok(messages);
+}
     
     @PostMapping("/conversations/with/{otherUserId}")
     public ResponseEntity<?> getOrCreateConversation(
@@ -176,5 +187,18 @@ public class ChatRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error marking as read: " + e.getMessage());
         }
+    }
+    
+    @GetMapping("/users/{userId}/online-status")
+    public ResponseEntity<?> getUserOnlineStatus(
+            @PathVariable Long userId,
+            Principal principal) {
+        
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+        }
+        
+        boolean isOnline = onlineStatusService.isUserOnline(userId);
+        return ResponseEntity.ok(Map.of("userId", userId, "isOnline", isOnline));
     }
 }

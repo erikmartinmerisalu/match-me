@@ -43,9 +43,11 @@
 }
 
 .matches-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 1.5rem;
+  padding: 1rem 0;
 }
 
 .match-card {
@@ -55,6 +57,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
   transition: transform 0.2s;
+  width: 250px;
+  flex-shrink: 0;
 }
 
 .match-card:hover {
@@ -187,4 +191,55 @@
   .match-actions button {
     width: 100%;
   }
+  /* Add to existing Matches.css */
+
+.match-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.block-btn {
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.block-btn:hover {
+  background-color: #ff3742;
+}
+
+.unblock-btn {
+  background-color: #576574;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.unblock-btn:hover {
+  background-color: #485460;
+}
+
+.blocked-label {
+  color: #ff4757;
+  font-style: italic;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* Ensure buttons in match cards are properly spaced */
+.match-card .match-actions button {
+  flex: 1;
+  min-width: 80px;
+}
 }
