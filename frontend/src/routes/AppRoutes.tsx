@@ -3,22 +3,16 @@ import LogIn from '../pages/auth/LogIn'
 import SignUp from '../pages/auth/SignUp'
 import {  useAuth } from '../context/AuthContext'
 import Matches from '../pages/matches/Matches';
-import Home from '../pages/frontpage/Home';
 import ChatPage from '../pages/chat/ChatPage';
 import ViewProfile from '../pages/viewprofile/ViewProfile';
 import UserProfile from '../pages/userprofile/UserProfile';
 import UserSettings from '../pages/usersettings/UserSettings';
 import Recommendations from '../pages/matches/Recommendations';
-import { useEffect, useRef } from 'react';
-import { useToast } from '../context/ToastContext';
 import ProtectedRoute from './ProtectedRoute';
+import Home from '../pages/frontpage/Home';
 
 export default function AppRoutes() {
-  const {loggedIn, loggedInUserData} = useAuth();
-  const navigate = useNavigate();
-  const toast = useToast();
-  const hasRun = useRef(false);
-
+  const {loggedIn} = useAuth();
 
   return (
     <div>
