@@ -59,7 +59,6 @@ public class RecommendationService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendations(Long userId) {
         Optional<User> currentUserOpt = userService.findById(userId);
 
@@ -164,7 +163,6 @@ public class RecommendationService {
     
     // @Transactional(readOnly = true)
 
-    @Transactional(readOnly = true)
     public List<RecommendationDto> getRecommendationsByEmail(String email) {
         Optional<User> userOpt = userService.findByEmail(email);
 
@@ -190,7 +188,6 @@ public class RecommendationService {
             .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     public List<String> getCompatibleGamesForUsers(String currentUserEmail, Long otherUserId) {
         Optional<User> currentUserOpt = userService.findByEmail(currentUserEmail);
         Optional<User> otherUserOpt = userService.findById(otherUserId);
