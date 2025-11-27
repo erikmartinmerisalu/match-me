@@ -153,7 +153,7 @@ const ChatPage = () => {
     };
   }, [loggedIn, loadConversations, loadMessages]);
 
-  // ✅ NEW: Periodically check online status while chat is open
+  // Periodically check online status while chat is open
   useEffect(() => {
     if (!selectedConv) return;
     
@@ -235,7 +235,7 @@ const ChatPage = () => {
     
     await loadMessages(conv.id);
 
-    // ✅ CRITICAL: Mark messages as read when opening conversation
+    // Mark messages as read when opening conversation
     console.log('📨 Marking conversation as read:', conv.id);
     chatService.markAsRead(conv.id);
     
@@ -384,9 +384,11 @@ const ChatPage = () => {
                       <div className="message-content">{msg.content}</div>
                       <div className="message-time">
                         {new Date(msg.timestamp).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
                         {isMyMessage && isLastMessage && (
                           <span className={`message-status ${msg.isRead ? 'read' : 'sent'}`}>
                             {msg.isRead ? ' ✓✓' : ' ✓'}
