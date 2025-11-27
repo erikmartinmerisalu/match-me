@@ -144,9 +144,16 @@
 }
 
 .message-bubble {
-  max-width: 60%;
+  max-width: 70%;
   padding: 0.8rem 1rem;
   border-radius: 12px;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  white-space: pre-wrap;
+  overflow: hidden;
 }
 
 .message.sent .message-bubble {
@@ -162,6 +169,8 @@
 .message-content {
   margin-bottom: 0.3rem;
   word-wrap: break-word;
+  text-align: left;
+  width: 95%;
 }
 
 .message-time {
