@@ -26,7 +26,6 @@ const UserPreferencesComponent = () => {
       }
       
       const data = await response.json();
-      console.log("📍 Reverse geocoding result:", data);
       
       if (data.city && data.countryName) {
         return `${data.city}, ${data.countryName}`;
@@ -36,7 +35,6 @@ const UserPreferencesComponent = () => {
         return "GPS location detected";
       }
     } catch (error) {
-      console.error("❌ Reverse geocoding failed:", error);
       return "GPS location detected";
     }
   };
@@ -62,7 +60,6 @@ const UserPreferencesComponent = () => {
             }));
             
             setHasSetInitialLocation(true);
-            console.log("✅ GPS location set:", locationName);
             toast.info(`Location set to: ${locationName}`);
           } catch (error) {
             console.error("Failed to set GPS location:", error);
@@ -174,7 +171,7 @@ const UserPreferencesComponent = () => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            <span>📍</span>
+            
             <span>Using GPS coordinates</span>
           </div>
         )}
@@ -192,7 +189,7 @@ const UserPreferencesComponent = () => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            <span>🔄</span>
+            
             <span>Detecting your location...</span>
           </div>
         )}

@@ -40,7 +40,7 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(false);
   const [loggedInUserData, setLoggedInUserData] = useState<UserFormData | null>(null);
 
-  // ✅ Send heartbeats when logged in (runs on all pages)
+  //  Send heartbeats when logged in (runs on all pages)
   useOnlineStatus();
 
   // Enhanced setLoggedInUserData with debug logging
@@ -90,15 +90,12 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
             mainGoal: res.mainGoal || '',
           };
           
-          console.log("✅ AuthContext: Setting complete user data:", completeUserData);
           setLoggedInUserData(completeUserData);
         } else {
-          console.log("❌ AuthContext: No user data received");
           setLoggedIn(false);
           setLoggedInUserData(null);
         }
       } catch (err) {
-        console.error("❌ AuthContext: Error fetching user:", err);
         setLoggedIn(false);
         setLoggedInUserData(null);
       }

@@ -41,7 +41,6 @@ class ChatService {
     this.ws = new WebSocket('ws://localhost:8080/ws/chat');
     
     this.ws.onopen = () => {
-      console.log('✅ WebSocket connected successfully');
       this.reconnectAttempts = 0;
     };
     
@@ -52,12 +51,10 @@ class ChatService {
           this.messageCallback(data);
         }
       } catch (error) {
-        console.error('Failed to parse WebSocket message:', error);
       }
     };
     
     this.ws.onerror = (error) => {
-      console.error('❌ WebSocket error:', error);
     };
     
     this.ws.onclose = (event) => {
@@ -71,14 +68,11 @@ class ChatService {
           clearTimeout(this.reconnectTimeout);
         }
         
-        console.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`);
         this.reconnectTimeout = setTimeout(() => {
           if (this.messageCallback && !this.isManualClose) {
             this.connect(this.messageCallback);
           }
         }, delay);
-      } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        console.error('Max reconnection attempts reached. Please refresh the page.');
       }
     };
   }
@@ -142,7 +136,6 @@ class ChatService {
       });
       
       if (!response.ok) {
-        console.error(`Failed to fetch conversations: ${response.status}`);
         if (response.status === 403) {
           throw new Error('403: Access denied - not connected with users');
         }
@@ -152,7 +145,6 @@ class ChatService {
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     } catch (error) {
-      console.error('Error fetching conversations:', error);
       throw error;
     }
   }
@@ -167,7 +159,6 @@ class ChatService {
       );
       
       if (!response.ok) {
-        console.error(`Failed to fetch messages: ${response.status}`);
         if (response.status === 403) {
           const errorText = await response.text();
           throw new Error(`403: ${errorText}`);
@@ -178,7 +169,6 @@ class ChatService {
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     } catch (error) {
-      console.error('Error fetching messages:', error);
       throw error;
     }
   }
@@ -204,7 +194,6 @@ class ChatService {
       
       return response.json();
     } catch (error) {
-      console.error('Error getting/creating conversation:', error);
       throw error;
     }
   }
