@@ -33,7 +33,6 @@ const ChatPage = () => {
       
       // If current conversation is no longer in list (disconnected), clear it
       if (selectedConv && !convos.find(c => c.id === selectedConv.id)) {
-        console.log('Current conversation no longer available (users disconnected)');
         setSelectedConv(null);
         setMessages([]);
       }
@@ -45,7 +44,6 @@ const ChatPage = () => {
   const loadMessages = useCallback(async (conversationId: number) => {
     try {
       const msgs = await chatService.getMessages(conversationId);
-      console.log('📥 Loaded messages:', msgs.map(m => ({ id: m.id, content: m.content.substring(0, 20), isRead: m.isRead })));
       setMessages(msgs);
     } catch (err: any) {
       console.error("Failed to load messages", err);
@@ -61,12 +59,10 @@ const ChatPage = () => {
 
   const checkOnlineStatus = async (userId: number) => {
     try {
-      console.log('Checking online status for user:', userId);
       const response = await fetch(`http://localhost:8080/api/chat/users/${userId}/online-status`, {
         credentials: 'include'
       });
       const data = await response.json();
-      console.log('Online status response:', data);
       setIsOtherUserOnline(data.isOnline);
     } catch (err) {
       console.error('Failed to check online status', err);
@@ -86,27 +82,22 @@ const ChatPage = () => {
     }, 60000);
     
     const handleWebSocketMessage = (data: any) => {
-      console.log('WebSocket notification:', data);
       
       if (data.type === 'newMessage') {
-        console.log('New message received from user', data.senderId);
         loadConversations();
         
         setSelectedConv(current => {
           if (current) {
-            console.log('Reloading messages for conversation:', current.id);
             loadMessages(current.id);
             
             // Auto-mark as read if the conversation is currently open
             if (current.otherUserId === data.senderId) {
-              console.log('Auto-marking messages as read since chat is open');
               chatService.markAsRead(current.id);
             }
           }
           return current;
         });
       } else if (data.type === 'messageConfirmed') {
-        console.log('Message confirmed by server, messageId:', data.messageId);
         
         // Don't reload all messages - just refresh conversations to update last message
         loadConversations();
@@ -120,7 +111,6 @@ const ChatPage = () => {
           }, 3000);
         }
       } else if (data.type === 'messagesRead') {
-        console.log('📬 Messages marked as read in conversation', data.conversationId);
         
         // Update message read status in state without reloading
         setMessages(prevMessages => {
@@ -128,7 +118,6 @@ const ChatPage = () => {
             ...msg,
             isRead: true
           }));
-          console.log('📬 Updated messages to read:', updated.map(m => ({ id: m.id, isRead: m.isRead })));
           return updated;
         });
         
@@ -235,13 +224,12 @@ const ChatPage = () => {
     
     await loadMessages(conv.id);
 
-    // ✅ CRITICAL: Mark messages as read when opening conversation
-    console.log('📨 Marking conversation as read:', conv.id);
+
     chatService.markAsRead(conv.id);
     
     await loadConversations();
     
-    // Check online status - initial check (periodic checks in useEffect above)
+    // Check online status
     checkOnlineStatus(conv.otherUserId);
   };
 
@@ -361,19 +349,10 @@ const ChatPage = () => {
             
             <div className="messages-container">
               {messages.map((msg, index) => {
-                // Only show checkmark on the absolute last message if it's from current user
                 const isLastMessage = index === messages.length - 1;
                 const isMyMessage = msg.senderId === currentUserId;
                 
-                // ✅ Debug logging
-                if (isMyMessage && isLastMessage) {
-                  console.log('🔍 Rendering last message:', {
-                    id: msg.id,
-                    content: msg.content.substring(0, 20),
-                    isRead: msg.isRead,
-                    willShow: msg.isRead ? '✓✓' : '✓'
-                  });
-                }
+              
                 
                 return (
                   <div

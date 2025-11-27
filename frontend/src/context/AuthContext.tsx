@@ -48,11 +48,9 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
     if (typeof update === 'function') {
       setLoggedInUserData(prev => {
         const newData = update(prev);
-        console.log("🔄 Setting loggedInUserData (function update):", newData);
         return newData;
       });
     } else {
-      console.log("🔄 Setting loggedInUserData (direct update):", update);
       setLoggedInUserData(update);
     }
   };
@@ -60,7 +58,6 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log("🔄 AuthContext: Fetching user data...");
         const res = await userService.getUserProfile();
         
         if (res !== null) {
@@ -125,7 +122,6 @@ export const AuthContextProvider = ({ children }: AuthProviderProps) => {
 
   const logIn = async () => {
     try {
-      console.log("🔄 AuthContext: Logging in...");
       const res = await userService.getUserProfile();
       
       if (res !== null) {

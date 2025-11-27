@@ -29,7 +29,6 @@ class ChatService {
   connect(onMessageReceived: (message: any) => void) {
     if (this.ws) {
       if (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING) {
-        console.log('WebSocket already connected or connecting');
         this.messageCallback = onMessageReceived;
         return;
       }
@@ -39,7 +38,6 @@ class ChatService {
     this.messageCallback = onMessageReceived;
     this.isManualClose = false;
     
-    console.log('Creating new WebSocket connection...');
     this.ws = new WebSocket('ws://localhost:8080/ws/chat');
     
     this.ws.onopen = () => {
@@ -48,7 +46,6 @@ class ChatService {
     };
     
     this.ws.onmessage = (event) => {
-      console.log('📨 WebSocket message received:', event.data);
       try {
         const data = JSON.parse(event.data);
         if (this.messageCallback) {
@@ -64,7 +61,6 @@ class ChatService {
     };
     
     this.ws.onclose = (event) => {
-      console.log('🔌 WebSocket closed. Code:', event.code, 'Reason:', event.reason);
       this.ws = null;
       
       if (!this.isManualClose && this.reconnectAttempts < this.maxReconnectAttempts) {
@@ -88,7 +84,6 @@ class ChatService {
   }
 
   disconnect() {
-    console.log('Manually disconnecting WebSocket');
     this.isManualClose = true;
     this.reconnectAttempts = 0;
     
@@ -112,14 +107,11 @@ class ChatService {
           content
         });
         this.ws.send(messagePayload);
-        console.log('📤 Message sent via WebSocket');
         return true;
       } catch (error) {
-        console.error('Failed to send message via WebSocket:', error);
         throw new Error('Failed to send message via WebSocket');
       }
     } else {
-      console.error('❌ WebSocket is not connected, cannot send message');
       throw new Error('WebSocket is not connected');
     }
   }

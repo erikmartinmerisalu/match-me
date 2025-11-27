@@ -25,7 +25,6 @@ const Matches = () => {
     matchWebSocketService.connect();
     
     const unsubscribe = matchWebSocketService.onUpdate(() => {
-      console.log('WebSocket triggered refresh');
       fetchMatches();
     });
 
@@ -46,7 +45,6 @@ const Matches = () => {
       const currentUser = await currentUserRes.json();
       const currentUserId = currentUser.id;
 
-      console.log('=== FETCHING MATCHES FOR USER:', currentUserId, currentUser.displayName);
 
       // Fetch accepted matches
       const acceptedRes = await fetch('http://localhost:8080/api/connections', {
@@ -72,11 +70,6 @@ const Matches = () => {
       });
       const blockedData = await blockedRes.json();
 
-      console.log('=== API RESPONSES ===');
-      console.log('Accepted:', acceptedData);
-      console.log('Sent:', sentData);
-      console.log('Received:', receivedData);
-      console.log('Blocked (users I blocked):', blockedData);
 
       // Process accepted matches
       const acceptedMatches = await Promise.all(
@@ -142,7 +135,6 @@ const Matches = () => {
 
       // Process blocked users - ONLY users that CURRENT USER blocked
       const blockedMatches = blockedData.map((userInfo: any) => {
-        console.log('Processing blocked user:', userInfo);
         return {
           id: userInfo.id, // Connection ID for unblocking
           userId: userInfo.userId, // User ID of the blocked user
@@ -152,11 +144,6 @@ const Matches = () => {
         };
       });
 
-      console.log('=== PROCESSED DATA ===');
-      console.log('Accepted matches:', acceptedMatches.filter(m => m !== null).length);
-      console.log('Sent requests:', sentMatches.filter(m => m !== null).length);
-      console.log('Received requests:', receivedMatches.filter(m => m !== null).length);
-      console.log('Blocked users (users I blocked):', blockedMatches.length);
 
       // Filter out null values
       setAcceptedMatches(acceptedMatches.filter(m => m !== null) as Match[]);
@@ -228,14 +215,12 @@ const Matches = () => {
 
   const handleBlock = async (userId: number) => {
     try {
-      console.log('Blocking user ID:', userId);
       const response = await fetch(`http://localhost:8080/api/connections/${userId}/block`, {
         method: 'POST',
         credentials: 'include',
       });
 
       if (response.ok) {
-        console.log('Block successful, refreshing matches...');
         fetchMatches();
       } else {
         const errorData = await response.json();
@@ -250,14 +235,12 @@ const Matches = () => {
 
   const handleUnblock = async (userId: number) => {
     try {
-      console.log('Unblocking user ID:', userId);
       const response = await fetch(`http://localhost:8080/api/connections/${userId}/unblock`, {
         method: 'POST',
         credentials: 'include',
       });
 
       if (response.ok) {
-        console.log('Unblock successful, refreshing matches...');
         fetchMatches();
       } else {
         const errorData = await response.json();

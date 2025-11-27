@@ -24,7 +24,6 @@ class MatchWebSocketService {
     this.socket.onmessage = (event) => {
       try {
         const message = JSON.parse(event.data);
-        console.log('Match update received:', message);
         
         if (message.type === 'MATCH_UPDATE') {
           this.notifyUpdate();
@@ -35,7 +34,6 @@ class MatchWebSocketService {
     };
 
     this.socket.onclose = (event) => {
-      console.log('Match WebSocket closed:', event.code, event.reason);
       this.attemptReconnect();
     };
 

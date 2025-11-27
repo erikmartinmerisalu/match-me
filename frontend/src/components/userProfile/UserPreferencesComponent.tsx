@@ -17,7 +17,6 @@ const UserPreferencesComponent = () => {
 
   const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
     try {
-      console.log(`🔄 Reverse geocoding coordinates: ${lat}, ${lng}`);
       const response = await fetch(
         `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
       );

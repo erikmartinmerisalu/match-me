@@ -80,12 +80,10 @@ function UserProfile() {
 
     const fetchProfile = async () => {
       try {
-        console.log("🔄 UserProfile: Fetching profile data...");
         const profile = await userService.getUserProfile();
         
         if (!isMounted) return;
         
-        console.log("✅ UserProfile: Raw profile response:", profile);
         
         if (profile) {
           // REMOVED: Automatic redirect for completed profiles
@@ -118,13 +116,10 @@ function UserProfile() {
             mainGoal: profile.mainGoal || '',
           };
 
-          console.log("✅ UserProfile: Setting complete user data:", completeUserData);
           setLoggedInUserData(completeUserData);
         } else {
-          console.log("❌ UserProfile: No profile data received");
         }
       } catch (error) {
-        console.error("❌ UserProfile: Failed to fetch profile:", error);
         toast.error("Failed to load profile data");
       } finally {
         if (isMounted) {
@@ -139,14 +134,6 @@ function UserProfile() {
       isMounted = false;
     };
   }, []);
-
-  // Debug logging - only log when data actually changes
-  useEffect(() => {
-    if (loggedInUserData && Object.keys(loggedInUserData).length > 0) {
-      console.log("📊 UserProfile: Current loggedInUserData:", loggedInUserData);
-      console.log("🎮 UserProfile: Games data:", loggedInUserData.games);
-    }
-  }, [loggedInUserData]);
 
   async function nextCardState() {
     try {
@@ -170,7 +157,6 @@ function UserProfile() {
           return;
         }
         
-        console.log("📤 UserProfile: Saving bio data:", payload);
         const res = await userService.updateProfile(payload);
         if (res.error) {
           toast.error(res.error);
@@ -198,7 +184,6 @@ function UserProfile() {
             game => !currentGames[game]
         );
         
-        console.log(" Games to remove:", gamesToRemove);
         
         if (gamesToRemove.length > 0) {
             // Only remove deselected games, keep everything else as-is
@@ -207,11 +192,9 @@ function UserProfile() {
                 delete cleanedGames[game];
             });
             
-            console.log("🔍 After removal:", Object.keys(cleanedGames));
             
             // Save the cleaned games (preserves data for selected games)
             const payload = { games: cleanedGames };
-            console.log("📤 Removing deselected games:", gamesToRemove);
             const res = await userService.updateProfile(payload);
             if (res.error) {
                 toast.error(res.error);
@@ -220,8 +203,7 @@ function UserProfile() {
             
             // VERIFY: Fetch again to see if backend actually updated
             const verifyProfile = await userService.getUserProfile();
-            console.log("🔍 After save, backend has:", Object.keys(verifyProfile?.games || {}));
-            
+
             // Update local state to match the cleaned backend
             setLoggedInUserData((prev: any) => ({
                 ...prev,
@@ -250,7 +232,6 @@ function UserProfile() {
           const payload = {
             games: loggedInUserData?.games || {}
           };
-          console.log("📤 UserProfile: Saving game details:", payload);
           const res = await userService.updateProfile(payload);
           if (res.error) {
             toast.error(res.error);
@@ -282,7 +263,6 @@ function UserProfile() {
           playSchedule: loggedInUserData?.playSchedule || '',
           mainGoal: loggedInUserData?.mainGoal || '',
         };
-        console.log("📤 UserProfile: Saving gamer type:", payload);
         const res = await userService.updateProfile(payload);
         if (res.error) {
           toast.error(res.error);

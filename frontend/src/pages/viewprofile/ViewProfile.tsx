@@ -49,7 +49,6 @@ const ViewProfile: React.FC = () => {
         throw new Error(`Failed to load profile: ${res.status}`);
       }
       const data = await res.json();
-      console.log('Profile data:', data);
       setProfile(data);
     } catch (err) {
       console.error("Failed to load profile", err);

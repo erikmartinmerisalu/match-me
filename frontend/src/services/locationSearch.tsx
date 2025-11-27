@@ -5,7 +5,6 @@ const API_BASE_URL = "http://localhost:8080";
 
 export const locationSearchService = {
   async searchLOcation(payload: any) {
-    console.log("it started", payload)
     try {
       const res = await fetch(`${API_BASE_URL}/api/search?query=${payload}`, {
         method: "GET",
@@ -13,7 +12,6 @@ export const locationSearchService = {
       });
 
       if (!res.ok) {
-        console.log("failed")
         const errorData = await res.json();
         return errorData;
       }
