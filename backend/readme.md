@@ -55,18 +55,33 @@ mvn spring-boot:run
 
 
 # Testing the admin endpoints available to the developer/tester
-    Clone the repository
+Clone the repository
 
-    Create a .env file in the project root with:
+Create a .env file in the project root with:
 
 properties
-
+```bash
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=admin123
 CREATE_DEFAULT_ADMIN=true
-
+```
 That's it! The admin user will be automatically created when they run the application.
 
+To create fake users use Postman and make a api call to log in as a admin user
+```bash
+http://localhost:8080/api/auth/login
+```
+with credintials:
+```bash
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+```
+and make a API call to create fake users:
+```bash
+http://localhost:8080/api/admin/create-fake-users
+```
 Security Implementation
 Authentication & Authorization
 
