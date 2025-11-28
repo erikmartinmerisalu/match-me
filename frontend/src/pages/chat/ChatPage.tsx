@@ -362,9 +362,12 @@ const ChatPage = () => {
                     <div className="message-bubble">
                       <div className="message-content">{msg.content}</div>
                       <div className="message-time">
-                        {new Date(msg.timestamp).toLocaleTimeString([], { 
+                        {new Date(msg.timestamp).toLocaleString([], {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
                           hour: '2-digit', 
-                          minute: '2-digit' 
+                          minute: '2-digit'
                         })}
                         {isMyMessage && isLastMessage && (
                           <span className={`message-status ${msg.isRead ? 'read' : 'sent'}`}>
