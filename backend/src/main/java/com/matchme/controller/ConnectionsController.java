@@ -169,9 +169,9 @@ public class ConnectionsController {
         Connection connection = connectionOpt.get();
 
         if (!connection.getToUser().getId().equals(currentUser.getId())) {
-            return ResponseEntity.status(403)
-                    .body(Map.of("error", "Not authorized"));
+            return ResponseEntity.notFound().build();
         }
+
 
         if (connection.getStatus() != Connection.ConnectionStatus.PENDING) {
             return ResponseEntity.badRequest()

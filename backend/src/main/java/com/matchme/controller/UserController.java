@@ -69,7 +69,7 @@ public class UserController {
     public ResponseEntity<?> getUserProfile(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         UserProfile profile = userProfileService.findByUserId(id);
         if (!canViewProfile(currentUser, profile.getUser())) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.notFound().build(); 
         }
 
         UserProfileDto dto = mapToProfileDto(profile);
@@ -81,7 +81,7 @@ public class UserController {
     public ResponseEntity<?> getUserBio(@PathVariable Long id, @AuthenticationPrincipal User currentUser) {
         UserProfile profile = userProfileService.findByUserId(id);
         if (!canViewProfile(currentUser, profile.getUser())) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.notFound().build(); 
         }
 
         UserProfileDto dto = mapToBioDto(profile);
