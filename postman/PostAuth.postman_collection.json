@@ -1,242 +1,520 @@
 {
-  "info": {
-    "_postman_id": "30e4886c-4e0c-41de-a6d6-9daea318ae5d",
-    "name": "PostAuth",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "40487498",
-    "_collection_link": "https://koodjhvi.postman.co/workspace/match-me~20fc7d53-ad13-41c4-898b-927cf03f032d/collection/40230584-30e4886c-4e0c-41de-a6d6-9daea318ae5d?action=share&source=collection_link&creator=40487498"
-  },
-  "item": [
-    {
-      "name": "Connections",
-      "item": [
-        {
-          "name": "New connection request",
-          "request": {
-            "method": "POST",
-            "url": "http://localhost:8080/api/connections/"
-          }
-        },
-        {
-          "name": "Accept connection request",
-          "request": {
-            "method": "POST",
-            "url": "http://localhost:8080/connections/24/accept"
-          }
-        },
-        {
-          "name": "Active connections per User",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-User-Id",
-                "value": "24"
-              }
-            ],
-            "url": "http://localhost:8080/connections"
-          }
-        },
-        {
-          "name": "Active connection per User",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              { "key": "X-User-Id", "value": "1" }
-            ],
-            "url": "http://localhost:8080/connections/24"
-          }
-        },
-        {
-          "name": "Pending sent requests",
-          "request": {
-            "method": "GET"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Recommendations",
-      "item": [
-        {
-          "name": "Recommendations by Auth",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/recommendations"
-          }
-        }
-      ]
-    },
-    {
-      "name": "ME",
-      "item": [
-        {
-          "name": "Me (Authenticated User)",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/me"
-          }
-        },
-        {
-          "name": "My Profile",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/me/profile"
-          }
-        },
-        {
-          "name": "My Profile (No Games)",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/me/profile?games=false"
-          }
-        },
-        {
-          "name": "My Bio",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/me/bio"
-          }
-        },
-        {
-          "name": "Update My Profile",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"displayName\": \"GamerPro123\",\n  \"aboutMe\": \"Updated from Postman\"\n}"
-            },
-            "url": "http://localhost:8080/api/me/profile"
-          }
-        }
-      ]
-    },
-    {
-      "name": "User",
-      "item": [
-        {
-          "name": "User by ID",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/{id}"
-          }
-        },
-        {
-          "name": "User by ID shortcut",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/me"
-          }
-        },
-        {
-          "name": "Users profile by ID",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/{id}/profile"
-          }
-        },
-        {
-          "name": "Users profile by ID shortcut",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/me/profile"
-          }
-        },
-        {
-          "name": "Users Bio by ID",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/{id}/bio"
-          }
-        },
-        {
-          "name": "Users Bio by ID shortcut",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/me/bio"
-          }
-        },
-        {
-          "name": "Authenticated User",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/me/profile"
-          }
-        },
-        {
-          "name": "Authenticated Users Profile",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/users/me/profile"
-          }
-        },
-        {
-          "name": "Current users bio",
-          "request": {
-            "method": "GET"
-          }
-        },
-        {
-          "name": "New Profile Information",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"displayName\": \"GamerPro123\"\n}"
-            },
-            "url": "http://localhost:8080/api/users/me/profile"
-          }
-        },
-        {
-          "name": "Location Search",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:8080/api/search?query=Polts"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Admin",
-      "item": [
-        {
-          "name": "Admin login",
-          "request": {
-            "method": "POST",
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"email\": \"admin@example.com\", \"password\": \"admin123\" }"
-            },
-            "url": "http://localhost:8080/api/auth/login"
-          }
-        },
-        {
-          "name": "Fake Users",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": "http://localhost:8080/api/admin/create-fake-users"
-          }
-        },
-        {
-          "name": "All Fake Users",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": "http://localhost:8080/api/admin/delete-fake-users"
-          }
-        }
-      ]
-    }
-  ]
+	"info": {
+		"_postman_id": "8f6134af-931f-4c08-9a56-5f6e6664db3b",
+		"name": "PostAuth",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40230584",
+		"_collection_link": "https://koodjhvi.postman.co/workspace/MatchMeTest~b756330e-5485-4eb2-8677-da24f7c6a50f/collection/40230584-8f6134af-931f-4c08-9a56-5f6e6664db3b?action=share&source=collection_link&creator=40230584"
+	},
+	"item": [
+		{
+			"name": "Connections",
+			"item": [
+				{
+					"name": "New connection request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/connections/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"connections",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept connection request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/connections/24/accept",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"connections",
+								"24",
+								"accept"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Active connections per User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "24"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/connections",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"connections"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Active connection per User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-User-Id",
+								"value": "1"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/connections/24",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"connections",
+								"24"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pending sent requests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Recommendations",
+			"item": [
+				{
+					"name": "Recommendations by Auth",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/recommendations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"recommendations"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ME",
+			"item": [
+				{
+					"name": "Me (Authenticated User)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/me/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Profile (No Games)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/me/profile?games=false",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"me",
+								"profile"
+							],
+							"query": [
+								{
+									"key": "games",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My Bio",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/me/bio",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"me",
+								"bio"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"displayName\": \"GamerPro123\",\n  \"aboutMe\": \"Updated from Postman\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/me/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/{id}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users profile by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/{id}/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"{id}",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users profile by ID shortcut",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/me/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users Bio by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/{id}/bio",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"{id}",
+								"bio"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users Bio by ID shortcut",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/users/me/bio",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"me",
+								"bio"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Profile Information",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"displayName\": \"GamerPro123\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/users/me/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"me",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Location Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/search?query=Polts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "Polts"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Admin login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"email\": \"admin@example.com\", \"password\": \"admin123\" }"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fake Users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/admin/create-fake-users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"create-fake-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "All Fake Users",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/admin/delete-fake-users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"delete-fake-users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
 }
