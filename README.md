@@ -14,6 +14,7 @@ Users can sign up with a unique email and password. Passwords are securely hashe
 
 - Matches are generated using a recommendation algorithm based on a minimum of 5 biographical data points
 - Recommendations are prioritized to show the strongest matches first
+- If there are less than 3 "good" recommendations, algorithm will lower threshold to provide more recommendations.
 - Maximum of 10 recommendations displayed at a time
 - Location-based filtering ensures recommendations are practical
 

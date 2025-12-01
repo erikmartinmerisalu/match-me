@@ -1,11 +1,12 @@
 .profile-card {
   width: 310px;
   margin: 2rem auto;
-  padding: 1rem ;
-  background: #7c857c;
+  padding: 1rem;
+  background: #2a2a3e;
   color: #f0f0f0;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  border: 2px solid #44446a;
   font-family: Arial, sans-serif;
 }
 
@@ -44,17 +45,23 @@
 }
 
 .pic-actions button {
-  background: #ff4d4d;
+  background: #9a7dff;
   color: white;
   border: none;
   padding: 0.4rem 0.8rem;
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pic-actions button:hover {
+  background: #7c5cff;
 }
 
 .profile-form label {
   display: block;
   margin-bottom: 1rem;
+  color: #b0b0b0;
 }
 
 .profile-form input,
@@ -63,8 +70,17 @@
   width: 90%;
   padding: 0.5rem;
   border-radius: 6px;
-  border: none;
+  border: 1px solid #44446a;
   margin-top: 0.3rem;
+  background: #1e1e2f;
+  color: #f0f0f0;
+}
+
+.profile-form input:focus,
+.profile-form select:focus,
+.profile-form textarea:focus {
+  outline: none;
+  border-color: #9a7dff;
 }
 
 .profile-form textarea {
@@ -75,7 +91,7 @@
 .private-email {
   margin-top: 1rem;
   font-size: 0.9rem;
-  color: #ccc;
+  color: #b0b0b0;
 }
 
 .save-btn {
@@ -88,16 +104,18 @@
   color: white;
   font-weight: bold;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .save-btn:hover {
   background: #7c5cff;
 }
 
-/* FIXED: Game selection buttons - simplified approach */
-.options{
+/* Game selection buttons */
+.options {
   font-size: 12px;
-  border: 1px solid rgb(181, 181, 181); 
+  border: 2px solid #44446a;
+  background: #1e1e2f;
   border-radius: 5px;
   padding: 10px 15px;
   cursor: pointer;
@@ -106,18 +124,21 @@
   justify-content: center;
   min-height: 50px;
   text-align: center;
-  user-select: none; /* Prevents text selection */
-  -webkit-user-select: none; /* For Safari */
-  -moz-user-select: none; /* For Firefox */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  transition: all 0.2s;
+  color: #f0f0f0;
 }
 
-.options:hover{
+.options:hover {
   background: #44446a;
+  border-color: #9a7dff;
 }
 
-.selected{
+.selected {
   font-size: 12px;
-  border: 1px solid rgb(255, 0, 0); 
+  border: 2px solid #9a7dff;
   background: #44446a;
   border-radius: 5px;
   padding: 10px 15px;
@@ -130,27 +151,29 @@
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
+  color: #f0f0f0;
 }
 
-.games{
+.games {
   padding-top: 5%;
 }
 
-.gamename{
+.gamename {
   font-weight: bold;
   font-size: x-large;
+  color: #9a7dff;
 }
 
-.gamedata{
+.gamedata {
   padding-top: 5%;
 }
 
-.gamesector{
-  border-top: 1px   solid white;
+.gamesector {
+  border-top: 1px solid #44446a;
   padding-bottom: 5%;
 }
 
-.optionsmap{
+.optionsmap {
   display: flex;
   flex-wrap: wrap;
   max-width: 300px;
@@ -158,29 +181,28 @@
   justify-content: center;
 }
 
-/* FIXED: Button sizing in grid */
 .optionsmap > div {
   flex: 0 0 calc(50% - 10px);
   box-sizing: border-box;
 }
 
-.preffered{
-  border-top: 1px   solid white;
+.preffered {
+  border-top: 1px solid #44446a;
   padding-bottom: 5%;
 }
 
-.ageInputs{
+.ageInputs {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5%;
 }
 
-.distance{
+.distance {
   width: 50%;
 }
 
-.sector{
+.sector {
   margin-bottom: 3%;
   margin-top: 9%;
 }
@@ -190,7 +212,10 @@
   text-align: center;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-  color: #ccc;
+  color: #b0b0b0;
+  padding: 0.5rem;
+  background: #1e1e2f;
+  border-radius: 6px;
 }
 
 /* Navigation buttons styling */
@@ -209,6 +234,7 @@
   color: white;
   cursor: pointer;
   font-weight: bold;
+  transition: background 0.2s;
 }
 
 .profile-navigation button:hover {
@@ -216,6 +242,7 @@
 }
 
 .profile-navigation button:disabled {
-  background: #555;
+  background: #44446a;
   cursor: not-allowed;
+  opacity: 0.5;
 }
