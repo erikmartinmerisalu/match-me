@@ -36,7 +36,7 @@ function LogIn() {
 
       logIn();
       
-      navigate("/match");
+      navigate("/home");  // Changed from "/match" to "/home"
     } catch (err: any) {
       setError(err.message || "Something went wrong!");
     }

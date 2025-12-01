@@ -33,12 +33,41 @@ const ViewProfile: React.FC = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadProfile();
     checkConnection();
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    checkOnlineStatus();
+
+    const statusCheckInterval = setInterval(() => {
+      checkOnlineStatus();
+    }, 10000);
+
+    return () => clearInterval(statusCheckInterval);
+  }, [userId]);
+
+  const checkOnlineStatus = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/chat/users/${userId}/online-status`,
+        {
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+      setIsOnline(data.isOnline);
+    } catch (err) {
+      console.error("Failed to check online status", err);
+      setIsOnline(false);
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -81,14 +110,21 @@ const ViewProfile: React.FC = () => {
       <div className="profile-header">
         <div className="profile-pic-view">
           {profile.profilePic ? (
-            <img src={profile.profilePic}  />
+            <img src={profile.profilePic} />
           ) : (
             <span className="placeholder">👤</span>
           )}
         </div>
-        <h2>{profile.displayName}</h2>
+        <div>
+          <h2>{profile.displayName}</h2>
+          {isOnline ? (
+            <span className="online-indicator">● Online</span>
+          ) : (
+            <span className="offline-indicator">● Offline</span>
+          )}
+        </div>
         {profile.location && <p className="location">📍 {profile.location}</p>}
-        
+
         {isConnected && (
           <button className="message-btn" onClick={handleMessage}>
             💬 Message
@@ -126,9 +162,11 @@ const ViewProfile: React.FC = () => {
                   )}
                   {gameData.preferredServers && gameData.preferredServers.length > 0 && (
                     <div className="servers">
-                      <strong>Servers:</strong>{' '}
-                      {gameData.preferredServers.map(server => (
-                        <span key={server} className="tag">{server}</span>
+                      <strong>Servers:</strong>{" "}
+                      {gameData.preferredServers.map((server) => (
+                        <span key={server} className="tag">
+                          {server}
+                        </span>
                       ))}
                     </div>
                   )}
@@ -149,12 +187,11 @@ const ViewProfile: React.FC = () => {
           <section>
             <h3>Preferred Age Range</h3>
             <p>
-              {profile.preferredAgeMin && profile.preferredAgeMax 
+              {profile.preferredAgeMin && profile.preferredAgeMax
                 ? `${profile.preferredAgeMin} - ${profile.preferredAgeMax} years`
-                : profile.preferredAgeMin 
-                  ? `${profile.preferredAgeMin}+ years`
-                  : `Up to ${profile.preferredAgeMax} years`
-              }
+                : profile.preferredAgeMin
+                ? `${profile.preferredAgeMin}+ years`
+                : `Up to ${profile.preferredAgeMax} years`}
             </p>
           </section>
         )}
