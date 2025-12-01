@@ -54,7 +54,7 @@ public class UserController {
 
         User user = userOpt.get();
         if (!canViewProfile(currentUser, user)) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.notFound().build();
         }
 
         UserProfileSummaryDto dto = new UserProfileSummaryDto();
