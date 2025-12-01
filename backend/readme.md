@@ -34,7 +34,7 @@ Match-Me is a full-stack gamer-themed matching platform that connects users base
 # API Endpoints
 Are all included in the POSTMAN Collection.
 
-PostGreSQL server setup(Linux/Ubuntu):
+## PostGreSQL server setup(Linux/Ubuntu):
 # 1. Update package list
 sudo apt update
 # 2. Install PostgreSQL server and client
@@ -58,7 +58,7 @@ service postgresql status should show active (exited)—that means PostgreSQL is
 Make sure the password you set matches the one in your application.properties.
 After this, your Spring Boot app should be able to connect to the database.
 
-PostGreSQL server setup (Windows):
+## PostGreSQL server setup (Windows):
 # 1. Download PostgreSQL
 Go to the official installer page:
 https://www.postgresql.org/download/windows/
