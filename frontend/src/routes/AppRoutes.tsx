@@ -28,7 +28,7 @@ export default function AppRoutes() {
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           
           {/* Other protected routes */}
-          <Route path="/userprofile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          <Route path="/userprofile" element={<UserProfile />} />
           <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
           <Route path="/matches" element={<ProtectedRoute><Matches /></ProtectedRoute>} />
@@ -36,8 +36,9 @@ export default function AppRoutes() {
           <Route path="/chat/:userId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
           <Route path="/viewprofile/:userId" element={<ProtectedRoute><ViewProfile /></ProtectedRoute>} />
           
-          {/* Catch all - redirect to landing */}
-          <Route path="*" element={<LandingPage />} />
+          {/* Catch all */}
+          <Route path="*" element={<div>404 Not Found</div>} />
+
         </Routes>
     </div>
   )
